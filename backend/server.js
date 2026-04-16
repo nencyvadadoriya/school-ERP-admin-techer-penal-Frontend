@@ -51,7 +51,9 @@ app.use('/api/subject', subjectRoutes);
 app.use('/api/shift-break-time', shiftBreakTimeRoutes);
 app.use('/api/audit', auditRoutes);
 
-
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Welcome to School ERP API' });
+});
 
 app.get('/health', (req, res) => res.json({ success: true, message: 'School ERP API running', timestamp: new Date() }));
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
