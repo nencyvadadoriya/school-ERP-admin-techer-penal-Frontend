@@ -8,22 +8,30 @@ cloudinary.config({
 });
 
 const uploadToCloudinary = async (file, folder = 'school-erp') => {
-  try {
-    const result = await cloudinary.uploader.upload(file.path, {
-      folder: folder,
-      resource_type: 'auto',
-      transformation: [
-        { width: 500, height: 500, crop: 'limit' },
-        { quality: 'auto' },
-      ],
-    });
-    return {
-      url: result.secure_url,
-      publicId: result.public_id,
-    };
-  } catch (error) {
-    throw new Error('Error uploading to Cloudinary: ' + error.message);
-  }
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: folder,
+        resource_type: 'auto',
+        transformation: [
+          { width: 500, height: 500, crop: 'limit' },
+          { quality: 'auto' },
+        ],
+      },
+      (error, result) => {
+        if (error) {
+          return reject(new Error('Error uploading to Cloudinary: ' + error.message));
+        }
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+        });
+      }
+    );
+
+    // Write the file buffer to the stream
+    uploadStream.end(file.buffer);
+  });
 };
 
 const deleteFromCloudinary = async (publicId) => {
