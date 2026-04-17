@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AutoNotificationManager from '../../components/AutoNotificationManager';
 import { 
   FaUserGraduate, FaChalkboardTeacher, FaSchool, FaMoneyBillWave, 
   FaCalendarCheck, FaFileAlt, FaChartLine, FaTrophy, FaUsers,
@@ -125,6 +126,9 @@ const AdminDashboard: React.FC = () => {
             {checkingAttendance ? 'Checking...' : 'Check Attendance & Notify Teachers'}
           </button>
         </div>
+
+        {/* Auto Notification Center */}
+        <AutoNotificationManager />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

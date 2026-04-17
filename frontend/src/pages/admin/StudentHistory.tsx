@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { studentAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import StudentPrediction from '../../components/StudentPrediction';
 import { FaArrowLeft, FaUser, FaCalendarAlt, FaClock, FaIdCard, FaPhone, FaMapMarkerAlt, FaSchool, FaInfoCircle } from 'react-icons/fa';
 
 const StudentHistory: React.FC = () => {
@@ -200,6 +201,11 @@ const StudentHistory: React.FC = () => {
               <p className="text-gray-700">{student.address || 'No address provided'}</p>
               {student.pin && <p className="text-gray-500 mt-2">PIN: {student.pin}</p>}
             </div>
+          </div>
+
+          {/* Performance Prediction */}
+          <div className="md:col-span-2">
+            <StudentPrediction studentId={id!} />
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaRupeeSign, FaEye } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaRupeeSign, FaEye, FaCog, FaUnlock, FaHistory, FaChevronDown } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { auditAPI, classAPI, feesAPI, feesPageSecurityAPI, studentAPI } from '../../services/api';
 import Modal from '../../components/Modal';
@@ -7,7 +7,7 @@ import Badge from '../../components/Badge';
 import Spinner from '../../components/Spinner';
 import StatCard from '../../components/StatCard';
 
-const EMPTY = { student_id:'', gr_number:'', std:'', division:'', class_code:'', shift:'', medium:'', stream:'', fee_type:'Tuition', total_amount:'', amount_paid:'0', due_date:'', payment_mode:'Cash', academic_year:'2024-25', installment_number:1, status:'Pending', remarks:'' };
+const EMPTY = { student_id: '', gr_number: '', std: '', division: '', class_code: '', shift: '', medium: '', stream: '', fee_type: 'Tuition', total_amount: '', amount_paid: '0', due_date: '', payment_mode: 'Cash', academic_year: '2024-25', installment_number: 1, status: 'Pending', remarks: '' };
 
 const Fees: React.FC = () => {
   const [gateLoading, setGateLoading] = useState<boolean>(true);
@@ -21,12 +21,16 @@ const Fees: React.FC = () => {
   const [resetCode, setResetCode] = useState<string>('');
   const [resetNewPassword, setResetNewPassword] = useState<string>('');
   const [resetSent, setResetSent] = useState<boolean>(false);
-  const [activeGateTab, setActiveGateTab] = useState<'verify' | 'set' | 'change' | 'reset'>('verify');
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [settingsModal, setSettingsModal] = useState<boolean>(false);
+  const [settingsTab, setSettingsTab] = useState<'change' | 'reset'>('change');
+
+  const [activeGateTabLocal, setActiveGateTabLocal] = useState<'verify' | 'set'>('verify');
 
   const [fees, setFees] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
-  const [summary, setSummary] = useState({ totalCollected:0, totalAmount:0, pendingAmount:0, pendingCount:0 });
+  const [summary, setSummary] = useState({ totalCollected: 0, totalAmount: 0, pendingAmount: 0, pendingCount: 0 });
   const [loading, setLoading] = useState<boolean>(true);
   const [modal, setModal] = useState<boolean>(false);
   const [editing, setEditing] = useState<any | null>(null);
@@ -52,7 +56,7 @@ const Fees: React.FC = () => {
       setStudents(studentsR.data.data || []);
       setSummary(summaryR.data.data || {});
       setClasses(classesR.data.data || []);
-    } catch(e){} finally { setLoading(false); }
+    } catch (e) { } finally { setLoading(false); }
   };
 
   const stdOptions = Array.from(new Set((classes || []).map((c: any) => c.standard).filter(Boolean))).sort((a: any, b: any) => String(a).localeCompare(String(b), undefined, { numeric: true }));
@@ -63,7 +67,7 @@ const Fees: React.FC = () => {
     try {
       const r = await feesPageSecurityAPI.status();
       setIsPasswordSet(!!r.data?.data?.isPasswordSet);
-      setActiveGateTab(r.data?.data?.isPasswordSet ? 'verify' : 'set');
+      setActiveGateTabLocal(r.data?.data?.isPasswordSet ? 'verify' : 'set');
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Failed to load fees page security status');
     } finally {
@@ -71,27 +75,27 @@ const Fees: React.FC = () => {
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     loadGateStatus();
-  },[]);
+  }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (gateToken) {
       setLoading(true);
       fetchAll();
       // Record page access
       auditAPI.recordFeesPageView();
     }
-  },[gateToken]);
+  }, [gateToken]);
 
   const fetchHistory = async () => {
     try {
       setHistoryLoading(true);
       const r = await auditAPI.getFees({ limit: 100 });
       // Filter for fee-related actions
-      const entries = (r.data?.data || []).filter((h: any) => 
-        h.action.startsWith('FEES_') || 
-        h.action === 'Create Fee' || 
+      const entries = (r.data?.data || []).filter((h: any) =>
+        h.action.startsWith('FEES_') ||
+        h.action === 'Create Fee' ||
         h.action === 'Update Fee'
       );
       setHistory(entries);
@@ -122,10 +126,10 @@ const Fees: React.FC = () => {
       setStudentHistoryModal(true);
       const r = await auditAPI.getFees({ student_id: studentId, limit: 100 });
       // Filter for fee-related actions
-      const entries = (r.data?.data || []).filter((h: any) => 
-        h.action === 'FEES_RECORD_CREATE' || 
-        h.action === 'FEES_RECORD_UPDATE' || 
-        h.action === 'Create Fee' || 
+      const entries = (r.data?.data || []).filter((h: any) =>
+        h.action === 'FEES_RECORD_CREATE' ||
+        h.action === 'FEES_RECORD_UPDATE' ||
+        h.action === 'Create Fee' ||
         h.action === 'Update Fee'
       );
       setSelectedStudentHistory(entries);
@@ -143,6 +147,7 @@ const Fees: React.FC = () => {
       const token = r.data?.data?.gateToken;
       sessionStorage.setItem('fees_gate_token', token);
       setGateToken(token);
+      setGatePassword(''); // Clear password after successful verification
       toast.success('Access granted');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Incorrect password');
@@ -154,9 +159,8 @@ const Fees: React.FC = () => {
     try {
       await feesPageSecurityAPI.setPassword({ password: setPassword });
       toast.success('Fees page password set');
-      setSetPassword('');
-      setIsPasswordSet(true);
-      setActiveGateTab('verify');
+      setActiveGateTabLocal('verify');
+      setSettingsModal(false);
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to set password');
     }
@@ -171,7 +175,7 @@ const Fees: React.FC = () => {
       setChangeNewPassword('');
       sessionStorage.removeItem('fees_gate_token');
       setGateToken('');
-      setActiveGateTab('verify');
+      setActiveGateTabLocal('verify');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to change password');
     }
@@ -198,14 +202,14 @@ const Fees: React.FC = () => {
       setResetSent(false);
       sessionStorage.removeItem('fees_gate_token');
       setGateToken('');
-      setActiveGateTab('verify');
+      setActiveGateTabLocal('verify');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to reset password');
     }
   };
 
   const handleStudentChange = (e: any) => {
-    const student = students.find(s=>s._id===e.target.value);
+    const student = students.find(s => s._id === e.target.value);
     setForm({
       ...form,
       student_id: e.target.value,
@@ -256,22 +260,22 @@ const Fees: React.FC = () => {
       const student_name = student ? getFullName(student) : 'Unknown';
       const payload = { ...form, student_name };
 
-      if (editing) { 
-        await feesAPI.update(editing._id, payload); 
-        toast.success('Updated'); 
+      if (editing) {
+        await feesAPI.update(editing._id, payload);
+        toast.success('Updated');
       }
-      else { 
-        await feesAPI.create(payload); 
-        toast.success('Fee record created'); 
+      else {
+        await feesAPI.create(payload);
+        toast.success('Fee record created');
       }
       setModal(false); fetchAll();
-    } catch(err: any) { toast.error(err.response?.data?.message||'Error'); }
+    } catch (err: any) { toast.error(err.response?.data?.message || 'Error'); }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('This will permanently delete the fee record and all its history. Continue?')) return;
     try { await feesAPI.delete(id); toast.success('Fee record and history deleted permanently'); fetchAll(); }
-    catch(e) { toast.error('Error'); }
+    catch (e) { toast.error('Error'); }
   };
 
   const filtered = fees.filter(f =>
@@ -285,62 +289,79 @@ const Fees: React.FC = () => {
 
   if (!gateToken) {
     return (
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fees Management</h1>
-          <p className="text-sm text-gray-500">This page is protected. Enter password to continue.</p>
-        </div>
-
-        <div className="flex gap-2 flex-wrap">
-          <button className={`btn-secondary ${activeGateTab==='verify'?'ring-2 ring-primary-200':''}`} onClick={()=>setActiveGateTab('verify')}>Enter Password</button>
-          <button className={`btn-secondary ${activeGateTab==='set'?'ring-2 ring-primary-200':''}`} onClick={()=>setActiveGateTab('set')}>Add Password</button>
-          <button className={`btn-secondary ${activeGateTab==='change'?'ring-2 ring-primary-200':''}`} onClick={()=>setActiveGateTab('change')}>Change Password</button>
-          <button className={`btn-secondary ${activeGateTab==='reset'?'ring-2 ring-primary-200':''}`} onClick={()=>setActiveGateTab('reset')}>Reset Password</button>
-        </div>
-
-        {activeGateTab === 'verify' && (
-          <form onSubmit={handleVerifyGate} className="space-y-3">
-            {!isPasswordSet && (
-              <div className="text-sm text-orange-600">Password is not set yet. Please set it first.</div>
-            )}
-            <input type="password" className="input-field w-full" placeholder="Enter Fees page password" value={gatePassword} onChange={e=>setGatePassword(e.target.value)} disabled={!isPasswordSet} required={isPasswordSet} />
-            <button type="submit" className="btn-primary w-full" disabled={!isPasswordSet}>Continue</button>
-          </form>
-        )}
-
-        {activeGateTab === 'set' && (
-          <form onSubmit={handleSetPassword} className="space-y-3">
-            {isPasswordSet && (
-              <div className="text-sm text-gray-500">Password already set. Use change password.</div>
-            )}
-            <input type="password" className="input-field w-full" placeholder="Set new Fees page password" value={setPassword} onChange={e=>setSetPassword(e.target.value)} disabled={isPasswordSet} required={!isPasswordSet} />
-            <button type="submit" className="btn-primary w-full" disabled={isPasswordSet}>Set Password</button>
-          </form>
-        )}
-
-        {activeGateTab === 'change' && (
-          <form onSubmit={handleChangePassword} className="space-y-3">
-            <input type="password" className="input-field w-full" placeholder="Current password" value={changeCurrentPassword} onChange={e=>setChangeCurrentPassword(e.target.value)} required />
-            <input type="password" className="input-field w-full" placeholder="New password" value={changeNewPassword} onChange={e=>setChangeNewPassword(e.target.value)} required />
-            <button type="submit" className="btn-primary w-full">Change Password</button>
-          </form>
-        )}
-
-        {activeGateTab === 'reset' && (
-          <div className="space-y-4">
-            <form onSubmit={handleRequestReset} className="space-y-3">
-              <input type="email" className="input-field w-full" placeholder="Admin email" value={resetEmail} onChange={e=>setResetEmail(e.target.value)} required />
-              <button type="submit" className="btn-primary w-full">Send Reset Code</button>
-            </form>
-
-            {resetSent && (
-              <form onSubmit={handleConfirmReset} className="space-y-3">
-                <input className="input-field w-full" placeholder="6 digit code" value={resetCode} onChange={e=>setResetCode(e.target.value)} required />
-                <input type="password" className="input-field w-full" placeholder="New password" value={resetNewPassword} onChange={e=>setResetNewPassword(e.target.value)} required />
-                <button type="submit" className="btn-primary w-full">Confirm Reset</button>
-              </form>
-            )}
+      <div className="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-lg border border-gray-100 p-8 space-y-6">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center p-3 bg-primary-50 rounded-full mb-4">
+            <FaUnlock className="text-2xl text-primary-600" />
           </div>
+          <h1 className="text-2xl font-bold text-gray-900">Fees Management</h1>
+          <p className="text-sm text-gray-500 mt-1">This page is protected. Enter password to continue.</p>
+        </div>
+
+        <div className="flex bg-gray-50 p-1 rounded-lg">
+          <button
+            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeGateTabLocal === 'verify' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveGateTabLocal('verify')}
+          >
+            Enter Password
+          </button>
+          {!isPasswordSet && (
+            <button
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeGateTabLocal === 'set' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveGateTabLocal('set')}
+            >
+              Add Password
+            </button>
+          )}
+        </div>
+
+        {activeGateTabLocal === 'verify' && (
+          <form onSubmit={handleVerifyGate} className="space-y-4">
+            {!isPasswordSet && (
+              <div className="p-3 bg-orange-50 border border-orange-100 rounded-lg text-xs text-orange-700 flex items-center gap-2">
+                <span>⚠️ Password is not set yet. Please go to "Add Password" tab.</span>
+              </div>
+            )}
+            <div>
+              <input
+                type="password"
+                className="input-field w-full text-center text-lg tracking-widest"
+                placeholder="••••••••"
+                value={gatePassword}
+                onChange={e => setGatePassword(e.target.value)}
+                disabled={!isPasswordSet}
+                required={isPasswordSet}
+                autoComplete="new-password"
+              />
+            </div>
+            <button type="submit" className="btn-primary w-full py-3 text-base font-semibold" disabled={!isPasswordSet}>
+              Unlock Page
+            </button>
+          </form>
+        )}
+
+        {activeGateTabLocal === 'set' && (
+          <form onSubmit={handleSetPassword} className="space-y-4">
+            {isPasswordSet ? (
+              <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-xs text-green-700">
+                ✅ Password is already set.
+              </div>
+            ) : (
+              <>
+                <input
+                  type="password"
+                  className="input-field w-full text-center text-lg tracking-widest"
+                  placeholder="Set new password"
+                  value={setPassword}
+                  onChange={e => setSetPassword(e.target.value)}
+                  required
+                />
+                <button type="submit" className="btn-primary w-full py-3 text-base font-semibold">
+                  Set Password
+                </button>
+              </>
+            )}
+          </form>
         )}
       </div>
     );
@@ -352,19 +373,66 @@ const Fees: React.FC = () => {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold text-gray-900">Fees Management</h1><p className="text-sm text-gray-500">Track fee payments & EMI</p></div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2"
+              title="Settings"
+            >
+              <FaCog className={`text-xl transition-transform duration-300 ${showSettings ? 'rotate-90' : ''}`} />
+              <FaChevronDown className={`text-xs transition-transform ${showSettings ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showSettings && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in duration-200">
+                <button
+                  onClick={() => {
+                    setSettingsTab('change');
+                    setSettingsModal(true);
+                    setShowSettings(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 flex items-center gap-2"
+                >
+                  <FaUnlock className="text-xs" /> Change Password
+                </button>
+                <button
+                  onClick={() => {
+                    setSettingsTab('reset');
+                    setSettingsModal(true);
+                    setShowSettings(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-600 flex items-center gap-2"
+                >
+                  <FaHistory className="text-xs" /> Reset Password
+                </button>
+                <div className="h-px bg-gray-100 my-1"></div>
+                <button
+                  onClick={() => {
+                    sessionStorage.removeItem('fees_gate_token');
+                    setGateToken('');
+                    setGatePassword(''); // Clear the password when locking
+                    setShowSettings(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                >
+                  <FaUnlock className="text-xs" /> Lock Page
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
-            onClick={async ()=>{
+            onClick={async () => {
               const next = !showHistory;
               setShowHistory(next);
               if (next) await fetchHistory();
             }}
-            className="btn-secondary"
+            className="btn-secondary flex items-center gap-2"
           >
-            History
+            <FaHistory /> History
           </button>
-          <button onClick={()=>{sessionStorage.removeItem('fees_gate_token');setGateToken('');}} className="btn-secondary">Lock</button>
-          <button onClick={()=>{setEditing(null);setForm(EMPTY);setModal(true);}} className="btn-primary flex items-center gap-2"><FaPlus />Add Record</button>
+          <button onClick={() => { setEditing(null); setForm(EMPTY); setModal(true); }} className="btn-primary flex items-center gap-2"><FaPlus />Add Record</button>
         </div>
       </div>
 
@@ -396,7 +464,7 @@ const Fees: React.FC = () => {
                       <tr key={h._id} className="border-b border-gray-50 hover:bg-gray-50">
                         <td className="py-3">{h.createdAt ? new Date(h.createdAt).toLocaleDateString() : '-'}</td>
                         <td className="py-3">{h.createdAt ? new Date(h.createdAt).toLocaleTimeString() : '-'}</td>
-                        
+
                         <td className="py-3 font-medium">{h.action.replace(/_/g, ' ')}</td>
                         <td className="py-3">{h.actorEmail || '-'}</td>
                         <td className="py-3">
@@ -432,15 +500,15 @@ const Fees: React.FC = () => {
         </div>
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard title="Total Billed" value={`₹${(summary.totalAmount||0).toLocaleString()}`} icon={FaRupeeSign} color="blue" />
-        <StatCard title="Collected" value={`₹${(summary.totalCollected||0).toLocaleString()}`} icon={FaRupeeSign} color="green" />
-        <StatCard title="Pending Amount" value={`₹${(summary.pendingAmount||0).toLocaleString()}`} icon={FaRupeeSign} color="orange" />
-        <StatCard title="Pending Records" value={summary.pendingCount||0} icon={FaRupeeSign} color="red" />
+        <StatCard title="Total Billed" value={`₹${(summary.totalAmount || 0).toLocaleString()}`} icon={FaRupeeSign} color="blue" />
+        <StatCard title="Collected" value={`₹${(summary.totalCollected || 0).toLocaleString()}`} icon={FaRupeeSign} color="green" />
+        <StatCard title="Pending Amount" value={`₹${(summary.pendingAmount || 0).toLocaleString()}`} icon={FaRupeeSign} color="orange" />
+        <StatCard title="Pending Records" value={summary.pendingCount || 0} icon={FaRupeeSign} color="red" />
       </div>
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="relative mb-4">
           <FaSearch className="absolute left-3 top-3 text-gray-400" />
-          <input className="input-field pl-9" placeholder="Search by GR number or student name..." value={search} onChange={e=>setSearch(e.target.value)} />
+          <input className="input-field pl-9" placeholder="Search by GR number or student name..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -454,26 +522,26 @@ const Fees: React.FC = () => {
               <th className="pb-3 font-medium">Status</th>
               <th className="pb-3 font-medium">Actions</th>
             </tr></thead>
-            <tbody>{filtered.length===0
+            <tbody>{filtered.length === 0
               ? <tr><td colSpan={8} className="text-center py-8 text-gray-400">No records</td></tr>
-              : filtered.map(f=>(
-              <tr key={f._id} className="border-b border-gray-50 hover:bg-gray-50">
-                <td className="py-3 font-medium text-primary-600">{f.gr_number}</td>
-                <td className="py-3">{getFullName(f.student_id)}</td>
-                <td className="py-3">{f.fee_type}</td>
-                <td className="py-3">₹{f.total_amount?.toLocaleString()}</td>
-                <td className="py-3">₹{f.amount_paid?.toLocaleString()}</td>
-                <td className="py-3">{new Date(f.due_date).toLocaleDateString()}</td>
-                <td className="py-3"><Badge status={f.status} /></td>
-                <td className="py-3">
-                  <div className="flex gap-2">
-                    <button onClick={() => fetchStudentHistory(f.student_id?._id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="View Student History"><FaEye /></button>
-                    <button onClick={()=>{setEditing(f);setForm({...f,due_date:f.due_date?.split('T')[0]});setModal(true);}} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><FaEdit /></button>
-                    <button onClick={()=>handleDelete(f._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"><FaTrash /></button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+              : filtered.map(f => (
+                <tr key={f._id} className="border-b border-gray-50 hover:bg-gray-50">
+                  <td className="py-3 font-medium text-primary-600">{f.gr_number}</td>
+                  <td className="py-3">{getFullName(f.student_id)}</td>
+                  <td className="py-3">{f.fee_type}</td>
+                  <td className="py-3">₹{f.total_amount?.toLocaleString()}</td>
+                  <td className="py-3">₹{f.amount_paid?.toLocaleString()}</td>
+                  <td className="py-3">{new Date(f.due_date).toLocaleDateString()}</td>
+                  <td className="py-3"><Badge status={f.status} /></td>
+                  <td className="py-3">
+                    <div className="flex gap-2">
+                      <button onClick={() => fetchStudentHistory(f.student_id?._id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="View Student History"><FaEye /></button>
+                      <button onClick={() => { setEditing(f); setForm({ ...f, due_date: f.due_date?.split('T')[0] }); setModal(true); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><FaEdit /></button>
+                      <button onClick={() => handleDelete(f._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"><FaTrash /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -531,7 +599,49 @@ const Fees: React.FC = () => {
         )}
       </Modal>
 
-      <Modal isOpen={modal} onClose={()=>setModal(false)} title={editing?'Edit Fee Record':'Add Fee Record'} size="lg">
+      <Modal isOpen={settingsModal} onClose={() => setSettingsModal(false)} title={settingsTab === 'change' ? 'Change Page Password' : 'Reset Page Password'} size="md">
+        <div className="p-1">
+          {settingsTab === 'change' ? (
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                <input type="password" className="input-field w-full" placeholder="Enter current password" value={changeCurrentPassword} onChange={e => setChangeCurrentPassword(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input type="password" className="input-field w-full" placeholder="Enter new password" value={changeNewPassword} onChange={e => setChangeNewPassword(e.target.value)} required />
+              </div>
+              <button type="submit" className="btn-primary w-full py-2">Update Password</button>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <form onSubmit={handleRequestReset} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Admin Email</label>
+                  <input type="email" className="input-field w-full" placeholder="Enter registered admin email" value={resetEmail} onChange={e => setResetEmail(e.target.value)} required />
+                </div>
+                <button type="submit" className="btn-primary w-full py-2">Send Reset Code</button>
+              </form>
+
+              {resetSent && (
+                <form onSubmit={handleConfirmReset} className="space-y-4 pt-4 border-t border-gray-100">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
+                    <input className="input-field w-full text-center tracking-[0.5em] font-bold" placeholder="000000" maxLength={6} value={resetCode} onChange={e => setResetCode(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                    <input type="password" className="input-field w-full" placeholder="Enter new password" value={resetNewPassword} onChange={e => setResetNewPassword(e.target.value)} required />
+                  </div>
+                  <button type="submit" className="btn-primary w-full py-2">Confirm Reset</button>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal isOpen={modal} onClose={() => setModal(false)} title={editing ? 'Edit Fee Record' : 'Add Fee Record'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -550,23 +660,23 @@ const Fees: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Shift</label>
-              <select className="input-field" value={form.shift} onChange={e=>setForm({...form,shift:e.target.value})}>
+              <select className="input-field" value={form.shift} onChange={e => setForm({ ...form, shift: e.target.value })}>
                 <option value="">Select</option>
-                {['Morning','Afternoon'].map(s=><option key={s}>{s}</option>)}
+                {['Morning', 'Afternoon'].map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Stream</label>
-              <select className="input-field" value={form.stream} onChange={e=>setForm({...form,stream:e.target.value})}>
+              <select className="input-field" value={form.stream} onChange={e => setForm({ ...form, stream: e.target.value })}>
                 <option value="">Select</option>
-                {['Science-Maths','Science-Bio','Commerce','Foundation','Primary','Upper Primary','Secondary','Higher Secondary'].map(s=><option key={s}>{s}</option>)}
+                {['Science-Maths', 'Science-Bio', 'Commerce', 'Foundation', 'Primary', 'Upper Primary', 'Secondary', 'Higher Secondary'].map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Medium</label>
-              <select className="input-field" value={form.medium} onChange={e=>setForm({...form,medium:e.target.value})}>
+              <select className="input-field" value={form.medium} onChange={e => setForm({ ...form, medium: e.target.value })}>
                 <option value="">Select</option>
-                {['English','Gujarati','Hindi'].map(m=><option key={m}>{m}</option>)}
+                {['English', 'Gujarati', 'Hindi'].map(m => <option key={m}>{m}</option>)}
               </select>
             </div>
             <div>
@@ -580,7 +690,7 @@ const Fees: React.FC = () => {
             {!editing && <div className="col-span-2"><label className="block text-sm font-medium text-gray-700 mb-1">Student *</label>
               <select className="input-field" required value={form.student_id} onChange={handleStudentChange}>
                 <option value="">Select student</option>
-                {filteredStudents.map(s=>(
+                {filteredStudents.map(s => (
                   <option key={s._id} value={s._id}>
                     {getFullName(s)} ({s.gr_number})
                   </option>
@@ -588,36 +698,35 @@ const Fees: React.FC = () => {
               </select></div>}
 
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Fee Type</label>
-              <select className="input-field" value={form.fee_type} onChange={e=>setForm({...form,fee_type:e.target.value})}>
-                {['Tuition','Transport','Library','Lab','Sports','Other'].map(t=><option key={t}>{t}</option>)}
+              <select className="input-field" value={form.fee_type} onChange={e => setForm({ ...form, fee_type: e.target.value })}>
+                {['Tuition', 'Transport', 'Library', 'Lab', 'Sports', 'Other'].map(t => <option key={t}>{t}</option>)}
               </select></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
-              <input className="input-field" value={form.academic_year} onChange={e=>setForm({...form,academic_year:e.target.value})} /></div>
+              <input className="input-field" value={form.academic_year} onChange={e => setForm({ ...form, academic_year: e.target.value })} /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Total Amount *</label>
-              <input type="number" className="input-field" required value={form.total_amount} onChange={e=>setForm({...form,total_amount:e.target.value})} /></div>
+              <input type="number" className="input-field" required value={form.total_amount} onChange={e => setForm({ ...form, total_amount: e.target.value })} /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Amount Paid</label>
-              <input type="number" className="input-field" value={form.amount_paid} onChange={e=>setForm({...form,amount_paid:e.target.value})} /></div>
+              <input type="number" className="input-field" value={form.amount_paid} onChange={e => setForm({ ...form, amount_paid: e.target.value })} /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Due Date *</label>
-              <input type="date" className="input-field" required value={form.due_date} onChange={e=>setForm({...form,due_date:e.target.value})} /></div>
+              <input type="date" className="input-field" required value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label>
-              <select className="input-field" value={form.payment_mode} onChange={e=>setForm({...form,payment_mode:e.target.value})}>
-                {['Cash','Online','Cheque','DD'].map(m=><option key={m}>{m}</option>)}
+              <select className="input-field" value={form.payment_mode} onChange={e => setForm({ ...form, payment_mode: e.target.value })}>
+                {['Cash', 'Online', 'Cheque', 'DD'].map(m => <option key={m}>{m}</option>)}
               </select></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select className="input-field" value={form.status} onChange={e=>setForm({...form,status:e.target.value})}>
-                {['Pending','Partial','Paid','Overdue'].map(s=><option key={s}>{s}</option>)}
+              <select className="input-field" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
+                {['Pending', 'Partial', 'Paid', 'Overdue'].map(s => <option key={s}>{s}</option>)}
               </select></div>
           </div>
           <div><label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-            <input className="input-field" value={form.remarks} onChange={e=>setForm({...form,remarks:e.target.value})} /></div>
+            <input className="input-field" value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} /></div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" className="btn-primary flex-1">{editing?'Update':'Create'}</button>
-            <button type="button" onClick={()=>setModal(false)} className="btn-secondary flex-1">Cancel</button>
+            <button type="submit" className="btn-primary flex-1">{editing ? 'Update' : 'Create'}</button>
+            <button type="button" onClick={() => setModal(false)} className="btn-secondary flex-1">Cancel</button>
           </div>
         </form>
       </Modal>
     </div>
   );
 };
-
 export default Fees;
