@@ -7,9 +7,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://school-erp-admin-techer-penal-backe.vercel.app',
-        changeOrigin: true,
-        secure: false,
+        target: 'http://localhost:9005',
+        changeOrigin: true
       }
     }
   }

@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit, FaClock, FaCalendarAlt, FaLayerGroup, FaSearch, FaChevronDown } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { classAPI, shiftBreakTimeAPI, subjectAPI, teacherAPI, timetableAPI } from '../../services/api';
 import Modal from '../../components/Modal';
 import Spinner from '../../components/Spinner';
+import { Calendar, Clock, Layout, Users, BookOpen } from 'lucide-react';
+
+const themeConfig = {
+  primary: '#002B5B',
+  secondary: '#2D54A8',
+  accent: '#1F2937',
+  success: '#10B981',
+  warning: '#1F2937',
+  danger: '#EF4444',
+  info: '#3b82f6',
+  background: '#F0F2F5',
+  white: '#FFFFFF',
+  textPrimary: '#1F2937',
+  textSecondary: '#6B7280',
+};
 
 const EMPTY = {
   class_code: '',
@@ -40,6 +55,7 @@ const Timetable: React.FC = () => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState(EMPTY);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const [timingModalOpen, setTimingModalOpen] = useState<boolean>(false);
   const [timingForm, setTimingForm] = useState(DAY_TIMING_EMPTY);
@@ -52,6 +68,12 @@ const Timetable: React.FC = () => {
     break_start_time: '',
     break_end_time: '',
   });
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const handleSubjectChange = (subjectCode: string) => {
     const matchingTeachers = teachers.filter((t) => Array.isArray(t?.subjects) && t.subjects.includes(subjectCode));
@@ -411,7 +433,6 @@ const Timetable: React.FC = () => {
 
   const getAllSlotsForView = () => {
     // Build one row per period_number.
-    // Prefer Monday's time for consistency across the week (weekly default).
     const map = new Map<number, any>();
     const mondayPeriods = getDayPeriodsSorted('Monday');
 
@@ -478,7 +499,6 @@ const Timetable: React.FC = () => {
       }
     });
 
-    // If there are no slots or period 3 doesn't exist, still append break as standalone (if configured)
     if (slots.length > 0 && !slots.some((s: any) => Number(s?.period_number) === 3) && shiftBreakStart && shiftBreakEnd) {
       rows.push({
         key: `break-${selectedShift}-${shiftBreakStart}-${shiftBreakEnd}`,
@@ -500,172 +520,252 @@ const Timetable: React.FC = () => {
     });
   };
 
+  const inputCls = "w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all";
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Timetable</h1>
-          <p className="text-sm text-gray-500">Manage timetables for classes (day-wise dynamic periods & timings)</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={openShiftBreak} className="btn-secondary flex items-center gap-2">Set Shift Break</button>
-          <button onClick={openDayTiming} className="btn-secondary flex items-center gap-2">Set Day Timing</button>
-          <button onClick={openAdd} className="btn-primary flex items-center gap-2"><FaPlus />Add Entry</button>
-        </div>
-      </div>
-
-    
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-          <div className="w-full md:w-80">
-            <label className="block text-sm font-medium text-gray-700 mb-1">View Timetable (Class)</label>
-            <select
-              className="input-field"
-              value={viewClassCode}
-              onChange={(e) => {
-                const next = e.target.value;
-                setViewClassCode(next);
-                fetchViewTimetable(next);
-              }}
-              disabled={metaLoading}
-            >
-              <option value="">Select class</option>
-              {classes.map((c) => (
-                <option key={c._id || getClassCode(c)} value={getClassCode(c)}>
-                  {getClassLabel(c)}
-                </option>
-              ))}
-            </select>
+    <div className="min-h-screen" style={{ backgroundColor: themeConfig.background }}>
+      <div className={isMobile ? 'p-0' : 'p-6'}>
+        
+        {/* Desktop Header */}
+        {!isMobile && (
+          <div className="mb-6 flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex items-center gap-4">
+           
+              <div>
+                <h1 className="text-2xl font-black text-gray-900">Timetable Management</h1>
+                <p className="text-sm text-gray-500 font-medium">Manage class-wise dynamic periods and timings</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={openShiftBreak} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-gray-700 border border-gray-200 text-xs font-bold hover:bg-gray-50 transition-all shadow-sm">
+                <Clock size={14} className="text-gray-500" /> Set Shift Break
+              </button>
+              <button onClick={openDayTiming} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-gray-700 border border-gray-200 text-xs font-bold hover:bg-gray-50 transition-all shadow-sm">
+                <Calendar size={14} className="text-gray-500" /> Set Day Timing
+              </button>
+              <button onClick={openAdd} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-bold shadow-md active:scale-95 hover:brightness-110 transition-all" style={{ background: themeConfig.primary }}>
+                <FaPlus size={12} /> Add Entry
+              </button>
+            </div>
           </div>
-          <div className="text-xs text-gray-500">
-            {viewLoading ? 'Loading timetable...' : viewTimetable ? `Showing: ${viewTimetable.class_code}` : 'No timetable selected'}
+        )}
+
+        {/* Mobile Header */}
+        {isMobile && (
+          <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100 mb-4">
+            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}, ${themeConfig.secondary})` }}>
+              <div>
+                <h2 className="text-lg font-extrabold text-white">Timetable</h2>
+                <p className="text-[10px] text-white/70 font-medium tracking-wider">Dynamic Class Schedule</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={openAdd} className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center text-white active:scale-90 transition-transform shadow-lg">
+                  <FaPlus size={16} />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="mt-4 overflow-x-auto">
-          {viewLoading ? (
-            <div className="py-10"><Spinner /></div>
-          ) : !viewTimetable ? (
-            <div className="text-center py-10 text-gray-400">No timetable found for this class</div>
-          ) : (
-            <table className="min-w-full text-xs border border-gray-100">
-              <thead>
-                <tr className="bg-gray-50 text-gray-600">
-                  <th className="px-3 py-2 border-b border-gray-100 text-left whitespace-nowrap">Time / Period</th>
-                  {days.map((d) => (
-                    <th key={d} className="px-3 py-2 border-b border-gray-100 text-left whitespace-nowrap">{d}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {viewRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={days.length + 1} className="text-center py-10 text-gray-400">No periods added yet</td>
-                  </tr>
-                ) : (
-                  viewRows.map((row: any) => {
-                    if (row?.type === 'break') {
-                      return (
-                        <tr key={row.key} className="bg-blue-50">
-                          <td className="px-3 py-2 whitespace-nowrap text-gray-700 font-medium">
-                            <div>BREAK</div>
-                            <div className="text-xs text-gray-500">{row.start_time} - {row.end_time}</div>
-                          </td>
-                          {days.map((d: any) => (
-                            <td key={d} className="px-3 py-2 text-blue-600 text-sm">Break</td>
-                          ))}
-                        </tr>
-                      );
-                    }
+        <div className={`grid grid-cols-1 gap-6 ${isMobile ? 'px-4 pb-10' : ''}`}>
+          {/* Main View Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-5 border-b border-gray-50 bg-gray-50/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600">
+                  <Layout size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Schedule Viewer</h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase">{viewLoading ? 'Loading...' : viewTimetable ? `Class: ${viewTimetable.class_code}` : 'Select a class'}</p>
+                </div>
+              </div>
+              <div className="w-full md:w-80">
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+                  <select
+                    className={`${inputCls} !pl-10 !py-2.5 shadow-sm bg-white`}
+                    value={viewClassCode}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setViewClassCode(next);
+                      fetchViewTimetable(next);
+                    }}
+                    disabled={metaLoading}
+                  >
+                    <option value="">Select class to view...</option>
+                    {classes.map((c) => (
+                      <option key={c._id || getClassCode(c)} value={getClassCode(c)}>
+                        {getClassLabel(c)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
 
-                    const slot = row;
-                    return (
-                      <tr key={slot.key} className="border-t border-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-gray-700 font-medium">
-                          <div>Period {slot.period_number}</div>
-                          <div className="text-xs text-gray-400">{slot.start_time || '—'} - {slot.end_time || '—'}</div>
-                        </td>
-                        {days.map((d) => {
-                          const cell = getCell(d, slot);
-                          const subj = cell?.subject_name || cell?.subject_code;
-                          const tname = cell?.teacher_name || cell?.teacher_code;
-                          return (
-                            <td key={d} className="px-3 py-2 align-top border-l border-gray-50 min-w-[160px]">
-                              {cell ? (
-                                <div className="space-y-1">
-                                  <div className="font-semibold text-gray-900">{subj || '—'}</div>
-                                  <div className="text-gray-500 text-xs">{tname || '—'}</div>
-                                </div>
-                              ) : (
-                                <span className="text-gray-300">—</span>
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 text-left text-gray-500">
-                <th className="pb-3 font-medium">Class</th>
-                <th className="pb-3 font-medium">Day</th>
-                <th className="pb-3 font-medium">Period</th>
-                <th className="pb-3 font-medium">Time</th>
-                <th className="pb-3 font-medium">Subject</th>
-                <th className="pb-3 font-medium">Teacher</th>
-                <th className="pb-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-8 text-gray-400">No timetable entries</td></tr>
+            <div className="overflow-x-auto custom-scrollbar">
+              {viewLoading ? (
+                <div className="py-20 flex justify-center"><Spinner /></div>
+              ) : !viewTimetable ? (
+                <div className="py-20 text-center">
+                  <Calendar size={48} className="mx-auto text-gray-200 mb-4" />
+                  <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No timetable selected</p>
+                </div>
               ) : (
-                items.map(it => {
-                  return (
-                    <tr key={it._id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="py-3 font-medium text-primary-600">
-                        {getClassLabel(classes.find((c) => getClassCode(c) === it.class_code) || { class_code: it.class_code })}
-                      </td>
-                      <td className="py-3">{it.day || '—'}</td>
-                      <td className="py-3">{it.period || '—'}</td>
-                      <td className="py-3 text-xs text-gray-500">
-                        {it.start_time && it.end_time ? `${it.start_time} - ${it.end_time}` : '—'}
-                      </td>
-                      <td className="py-3">{getSubjectLabelByCode(it.subject) || it.subject || '—'}</td>
-                      <td className="py-3">{it.teacher_code ? getTeacherLabelByCode(it.teacher_code) : '—'}</td>
-                      <td className="py-3">
-                        <div className="flex gap-2">
-                          <button onClick={()=>openEdit(it)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"><FaEdit /></button>
-                          <button onClick={()=>handleDelete(it)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"><FaTrash /></button>
-                        </div>
-                      </td>
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50/50 border-b border-gray-100">
+                      <th className="px-4 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest sticky left-0 bg-white z-10 border-r border-gray-100 min-w-[100px]">Time / Period</th>
+                      {days.map((d) => (
+                        <th key={d} className="px-4 py-4 text-left text-[10px] font-black text-gray-700 uppercase tracking-widest min-w-[140px] border-l border-gray-100">{d}</th>
+                      ))}
                     </tr>
-                  );
-                })
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {viewRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={days.length + 1} className="py-20 text-center text-gray-400 font-bold italic uppercase tracking-widest">No periods added yet</td>
+                      </tr>
+                    ) : (
+                      viewRows.map((row: any) => {
+                        if (row?.type === 'break') {
+                          return (
+                            <tr key={row.key} className="bg-gray-50">
+                              <td className="px-4 py-3 sticky left-0 bg-gray-50 z-10 border-r border-gray-100">
+                                <div className="text-[10px] font-black text-gray-700 uppercase flex items-center gap-1.5"><Clock size={10} /> BREAK</div>
+                                <div className="text-[9px] font-bold text-gray-500 mt-0.5">{row.start_time} - {row.end_time}</div>
+                              </td>
+                              {days.map((d: any) => (
+                                <td key={d} className="px-4 py-3 border-l border-gray-100">
+                                  <div className="flex items-center gap-2 text-gray-400">
+                                    <div className="h-px flex-1 bg-gray-200"></div>
+                                    <span className="text-[9px] font-black uppercase tracking-widest">Recess</span>
+                                    <div className="h-px flex-1 bg-gray-200"></div>
+                                  </div>
+                                </td>
+                              ))}
+                            </tr>
+                          );
+                        }
+
+                        const slot = row;
+                        return (
+                          <tr key={slot.key} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-4 sticky left-0 bg-white group-hover:bg-gray-50 z-10 border-r border-gray-100">
+                              <div className="text-[10px] font-black text-gray-800 uppercase">Period {slot.period_number}</div>
+                              <div className="text-[9px] font-bold text-gray-400 mt-1">{slot.start_time || '—'} - {slot.end_time || '—'}</div>
+                            </td>
+                            {days.map((d) => {
+                              const cell = getCell(d, slot);
+                              const subj = cell?.subject_name || cell?.subject_code;
+                              const tname = cell?.teacher_name || cell?.teacher_code;
+                              return (
+                                <td key={d} className="px-4 py-4 border-l border-gray-100 align-top min-w-[140px]">
+                                  {cell ? (
+                                    <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm hover:border-gray-300 hover:shadow-md transition-all group cursor-default">
+                                      <div className="flex items-center gap-1.5 mb-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0"></div>
+                                        <div className="text-[11px] font-black text-gray-800 truncate group-hover:text-gray-900 transition-colors">{subj || '—'}</div>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 pl-3">
+                                        <Users size={9} className="text-gray-300" />
+                                        <div className="text-[9px] font-bold text-gray-400 truncate">{tname || '—'}</div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="h-full flex items-center justify-center opacity-20 py-4">
+                                      <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                                    </div>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
               )}
-            </tbody>
-          </table>
+            </div>
+          </div>
+
+          {/* All Entries Table Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-4">
+            <div className="p-5 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600">
+                  <BookOpen size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest">Global Entries</h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase">{items.length} Total Assignments</p>
+                </div>
+              </div>
+            </div>
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50/50 border-b border-gray-100">
+                    {['Class', 'Day', 'Period', 'Time', 'Subject', 'Teacher', 'Actions'].map(h => (
+                      <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 bg-white">
+                  {items.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-16 text-center text-gray-400 font-bold italic uppercase tracking-widest">No entries found</td>
+                    </tr>
+                  ) : (
+                    items.map(it => (
+                      <tr key={it._id} className="hover:bg-gray-50/50 transition-colors group">
+                        <td className="px-6 py-4">
+                          <p className="text-xs font-black text-gray-700 bg-gray-100 px-2 py-0.5 rounded-lg border border-gray-200 inline-block uppercase tracking-tighter">
+                            {getClassCode({ class_code: it.class_code })}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 text-xs font-bold text-gray-700">{it.day || '—'}</td>
+                        <td className="px-6 py-4">
+                          <span className="text-xs font-black text-gray-800">#{it.period}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                            <Clock size={12} className="text-gray-300" />
+                            {it.start_time && it.end_time ? `${it.start_time} - ${it.end_time}` : '—'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-xs font-black text-gray-800">
+                          {getSubjectLabelByCode(it.subject) || it.subject || '—'}
+                        </td>
+                        <td className="px-6 py-4 text-xs font-bold text-gray-500">
+                          {it.teacher_code ? getTeacherLabelByCode(it.teacher_code) : '—'}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex gap-2">
+                            <button onClick={()=>openEdit(it)} className="w-8 h-8 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-600 hover:text-white transition-all flex items-center justify-center shadow-sm"><FaEdit size={12} /></button>
+                            <button onClick={()=>handleDelete(it)} className="w-8 h-8 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center shadow-sm"><FaTrash size={12} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} title={editing ? 'Edit Entry' : 'Add Timetable Entry'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Class Code</label>
+      {/* Entry Modal */}
+      <Modal isOpen={modalOpen} onClose={closeModal} title={editing ? 'Edit Timetable Entry' : 'Add New Entry'} size="lg">
+        <form onSubmit={handleSubmit} className="space-y-4 p-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Class Selection *</label>
               <select
-                className="input-field"
+                className={inputCls}
                 required
                 value={form.class_code}
                 onChange={(e) => {
@@ -687,10 +787,10 @@ const Timetable: React.FC = () => {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Day</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Academic Day *</label>
               <select
-                className="input-field"
+                className={inputCls}
                 value={form.day}
                 onChange={(e) => {
                   const nextDay = e.target.value;
@@ -706,14 +806,14 @@ const Timetable: React.FC = () => {
                 }}
                 disabled={Boolean(editing)}
               >
-                {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(d=> <option key={d}>{d}</option>)}
+                {days.map(d=> <option key={d}>{d}</option>)}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Period Number</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Period Number *</label>
               <input
                 type="number"
-                className="input-field"
+                className={inputCls}
                 min={1}
                 value={form.period_number}
                 onChange={(e) => setForm({ ...form, period_number: Number(e.target.value) })}
@@ -721,39 +821,27 @@ const Timetable: React.FC = () => {
               />
             </div>
             {(String(form.day) === 'Monday' || String(form.day) === 'Saturday') ? (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                  <input
-                    type="time"
-                    className="input-field"
-                    value={form.start_time}
-                    onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-                    required
-                  />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Start Time</label>
+                  <input type="time" className={inputCls} value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} required />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                  <input
-                    type="time"
-                    className="input-field"
-                    value={form.end_time}
-                    onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-                    required
-                  />
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">End Time</label>
+                  <input type="time" className={inputCls} value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} required />
                 </div>
-              </>
+              </div>
             ) : (
-              <div className="col-span-2">
-                <div className="text-xs text-gray-500 mt-1">
-                  Start/End time will be inherited from Monday for this period.
+              <div className="flex items-center pt-5">
+                <div className="px-3 py-2 bg-gray-50 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-tighter border border-gray-100 flex items-center gap-2">
+                  <Clock size={14} /> Times inherited from Monday
                 </div>
               </div>
             )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Subject *</label>
               <select
-                className="input-field"
+                className={inputCls}
                 value={form.subject}
                 onChange={(e) => handleSubjectChange(e.target.value)}
                 disabled={metaLoading}
@@ -767,10 +855,10 @@ const Timetable: React.FC = () => {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Teacher Code</label>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Assign Teacher *</label>
               <select
-                className="input-field"
+                className={inputCls}
                 value={form.teacher_code}
                 onChange={(e) => setForm({ ...form, teacher_code: e.target.value })}
                 disabled={metaLoading}
@@ -785,25 +873,20 @@ const Timetable: React.FC = () => {
               </select>
             </div>
           </div>
-          <div className="flex gap-3 pt-2">
-            <button type="submit" className="btn-primary flex-1">Save</button>
-            <button type="button" onClick={closeModal} className="btn-secondary flex-1">Cancel</button>
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <button type="submit" className="flex-1 py-3 rounded-xl text-white text-sm font-black active:scale-95 transition-all shadow-md" style={{ background: themeConfig.primary }}>{editing ? 'Update Entry' : 'Save Entry'}</button>
+            <button type="button" onClick={closeModal} className="flex-1 py-3 rounded-xl text-sm font-black text-gray-500 border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-widest">Cancel</button>
           </div>
         </form>
       </Modal>
 
-      <Modal isOpen={timingModalOpen} onClose={closeTimingModal} title="Set Day Timing (Short Day Support)">
-        <form onSubmit={handleTimingSubmit} className="space-y-4">
+      {/* Timing Modal */}
+      <Modal isOpen={timingModalOpen} onClose={closeTimingModal} title="Set Day Timing">
+        <form onSubmit={handleTimingSubmit} className="space-y-4 p-2">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Class Code</label>
-              <select
-                className="input-field"
-                required
-                value={timingForm.class_code}
-                onChange={(e) => setTimingForm((p) => ({ ...p, class_code: e.target.value }))}
-                disabled={metaLoading}
-              >
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Class *</label>
+              <select className={inputCls} required value={timingForm.class_code} onChange={(e) => setTimingForm((p) => ({ ...p, class_code: e.target.value }))} disabled={metaLoading}>
                 <option value="">Select class</option>
                 {classes.map((c) => (
                   <option key={c._id || getClassCode(c)} value={getClassCode(c)}>
@@ -812,119 +895,63 @@ const Timetable: React.FC = () => {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Day</label>
-              <select
-                className="input-field"
-                value={timingForm.day}
-                onChange={(e) => setTimingForm((p) => ({ ...p, day: e.target.value }))}
-              >
-                {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(d=> <option key={d}>{d}</option>)}
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Day *</label>
+              <select className={inputCls} value={timingForm.day} onChange={(e) => setTimingForm((p) => ({ ...p, day: e.target.value }))}>
+                {days.map(d=> <option key={d}>{d}</option>)}
               </select>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">School Start Time</label>
-              <input
-                type="time"
-                className="input-field"
-                value={timingForm.day_start_time}
-                onChange={(e) => setTimingForm((p) => ({ ...p, day_start_time: e.target.value }))}
-              />
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Start Time</label>
+              <input type="time" className={inputCls} value={timingForm.day_start_time} onChange={(e) => setTimingForm((p) => ({ ...p, day_start_time: e.target.value }))} />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">School End Time</label>
-              <input
-                type="time"
-                className="input-field"
-                value={timingForm.day_end_time}
-                onChange={(e) => setTimingForm((p) => ({ ...p, day_end_time: e.target.value }))}
-              />
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">End Time</label>
+              <input type="time" className={inputCls} value={timingForm.day_end_time} onChange={(e) => setTimingForm((p) => ({ ...p, day_end_time: e.target.value }))} />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Break Start (optional)</label>
-              <input
-                type="time"
-                className="input-field"
-                value={timingForm.break_start_time}
-                onChange={(e) => setTimingForm((p) => ({ ...p, break_start_time: e.target.value }))}
-              />
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Break Start</label>
+              <input type="time" className={inputCls} value={timingForm.break_start_time} onChange={(e) => setTimingForm((p) => ({ ...p, break_start_time: e.target.value }))} />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Break End (optional)</label>
-              <input
-                type="time"
-                className="input-field"
-                value={timingForm.break_end_time}
-                onChange={(e) => setTimingForm((p) => ({ ...p, break_end_time: e.target.value }))}
-              />
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Break End</label>
+              <input type="time" className={inputCls} value={timingForm.break_end_time} onChange={(e) => setTimingForm((p) => ({ ...p, break_end_time: e.target.value }))} />
             </div>
           </div>
-
-          <div className="flex gap-3 pt-2">
-            <button type="submit" className="btn-primary flex-1">Save</button>
-            <button type="button" onClick={closeTimingModal} className="btn-secondary flex-1">Cancel</button>
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <button type="submit" className="flex-1 py-3 rounded-xl text-white text-sm font-black active:scale-95 transition-all shadow-md" style={{ background: themeConfig.primary }}>Save Timing</button>
+            <button type="button" onClick={closeTimingModal} className="flex-1 py-3 rounded-xl text-sm font-black text-gray-500 border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-widest">Cancel</button>
           </div>
         </form>
       </Modal>
 
-      <Modal isOpen={shiftBreakModalOpen} onClose={closeShiftBreakModal} title="Set Permanent Break Time (Shift Wise)">
-        <form onSubmit={handleShiftBreakSubmit} className="space-y-4">
+      {/* Shift Break Modal */}
+      <Modal isOpen={shiftBreakModalOpen} onClose={closeShiftBreakModal} title="Set Global Shift Break">
+        <form onSubmit={handleShiftBreakSubmit} className="space-y-4 p-2">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Shift *</label>
+            <select className={inputCls} required value={shiftBreakForm.shift} onChange={(e) => setShiftBreakForm((p) => ({ ...p, shift: e.target.value }))}>
+              <option value="Morning">Morning</option>
+              <option value="Afternoon">Afternoon</option>
+            </select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Shift</label>
-              <select
-                className="input-field"
-                value={shiftBreakForm.shift}
-                onChange={(e) => {
-                  const nextShift = e.target.value;
-                  const existing = shiftBreakTimes.find((x) => String(x.shift) === String(nextShift));
-                  setShiftBreakForm({
-                    shift: nextShift,
-                    break_start_time: existing?.break_start_time || '',
-                    break_end_time: existing?.break_end_time || '',
-                  });
-                }}
-                required
-              >
-                <option value="Morning">Morning</option>
-                <option value="Afternoon">Afternoon</option>
-              </select>
-              <div className="text-[11px] text-gray-500 mt-1">
-                {shiftBreakLoading ? 'Loading saved break times...' : null}
-              </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Break Start</label>
+              <input type="time" className={inputCls} value={shiftBreakForm.break_start_time} onChange={(e) => setShiftBreakForm((p) => ({ ...p, break_start_time: e.target.value }))} />
             </div>
-            <div />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Break Start Time</label>
-              <input
-                type="time"
-                className="input-field"
-                value={shiftBreakForm.break_start_time}
-                onChange={(e) => setShiftBreakForm((p) => ({ ...p, break_start_time: e.target.value }))}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Break End Time</label>
-              <input
-                type="time"
-                className="input-field"
-                value={shiftBreakForm.break_end_time}
-                onChange={(e) => setShiftBreakForm((p) => ({ ...p, break_end_time: e.target.value }))}
-                required
-              />
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Break End</label>
+              <input type="time" className={inputCls} value={shiftBreakForm.break_end_time} onChange={(e) => setShiftBreakForm((p) => ({ ...p, break_end_time: e.target.value }))} />
             </div>
           </div>
-
-          <div className="flex gap-3 pt-2">
-            <button type="submit" className="btn-primary flex-1">Save</button>
-            <button type="button" onClick={closeShiftBreakModal} className="btn-secondary flex-1">Cancel</button>
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <button type="submit" className="flex-1 py-3 rounded-xl text-white text-sm font-black active:scale-95 transition-all shadow-md" style={{ background: themeConfig.primary }}>Save Break</button>
+            <button type="button" onClick={closeShiftBreakModal} className="flex-1 py-3 rounded-xl text-sm font-black text-gray-500 border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all uppercase tracking-widest">Cancel</button>
           </div>
         </form>
       </Modal>
+
     </div>
   );
 };

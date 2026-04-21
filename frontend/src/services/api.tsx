@@ -179,4 +179,11 @@ export const dashboardAPI = {
   student: () => api.get('/dashboard/student'),
 };
 
+export const notificationAPI = {
+  getMyNotifications: () => api.get('/auto-notifications/my-notifications'),
+  markAsRead: (id: string) => api.patch(`/auto-notifications/${id}/mark-as-read`),
+  subscribePush: (subscription: any) => api.post('/auto-notifications/subscribe-push', { subscription }),
+  updateFCMToken: (token: string, role: string) => api.post(`/${role}/update-fcm-token`, { token }),
+};
+
 export default api;

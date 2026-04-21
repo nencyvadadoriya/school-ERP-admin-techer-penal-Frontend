@@ -3,6 +3,20 @@ import { FaCalendarAlt, FaChevronLeft, FaChevronRight, FaInfoCircle, FaPlus, FaT
 import Spinner from '../components/Spinner';
 import { eventAPI } from '../services/api';
 
+const themeConfig = {
+  primary: '#002B5B',
+  secondary: '#2D54A8',
+  accent: '#1F2937',
+  success: '#10B981',
+  warning: '#1F2937',
+  danger: '#EF4444',
+  info: '#3b82f6',
+  background: '#F0F2F5',
+  white: '#FFFFFF',
+  textPrimary: '#1F2937',
+  textSecondary: '#6B7280',
+};
+
 const HolidayCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [holidays, setHolidays] = useState<any[]>([]);
@@ -197,168 +211,182 @@ const HolidayCalendar: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Holiday Calendar</h1>
-          <p className="text-sm text-gray-500">View upcoming holidays and school breaks</p>
-        </div>
-        <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-          <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-md transition-colors text-gray-600">
-            <FaChevronLeft size={14} />
-          </button>
-          <span className="px-4 py-1 text-sm font-bold text-gray-700 min-w-[140px] text-center">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </span>
-          <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-md transition-colors text-gray-600">
-            <FaChevronRight size={14} />
-          </button>
-        </div>
-      </div>
-
-      {(!import.meta.env.VITE_CALENDARIFIC_API_KEY || import.meta.env.VITE_CALENDARIFIC_API_KEY === 'YOUR_CALENDARIFIC_API_KEY') && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg flex flex-col gap-2 text-sm shadow-sm">
-          <div className="flex items-center gap-3">
-            <FaInfoCircle className="flex-shrink-0 text-blue-500" />
-            <span className="font-bold">Action Required: Enable Holiday Calendar</span>
+    <div className="min-h-screen" style={{ backgroundColor: themeConfig.background }}>
+      <div className="p-6 space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div>
+            <h1 className="text-2xl font-black text-gray-900">Holiday Calendar</h1>
+            <p className="text-sm text-gray-500 font-medium">View upcoming holidays and school breaks</p>
           </div>
-          <div className="ml-7 space-y-2">
-            <p>To see real-time holidays, please follow these steps:</p>
-            <ol className="list-decimal ml-4 space-y-1">
-              <li>Get a free API key from <a href="https://calendarific.com/signup" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-blue-600">Calendarific</a>.</li>
-              <li>Open your <code>.env</code> file in the <code>frontend</code> directory.</li>
-              <li>Add: <code>VITE_CALENDARIFIC_API_KEY=your_key_here</code></li>
-              <li>Restart your development server.</li>
-            </ol>
+          <div className="flex items-center bg-gray-50 rounded-xl border border-gray-200 p-1.5">
+            <button onClick={prevMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
+              <FaChevronLeft size={14} />
+            </button>
+            <span className="px-6 py-1 text-sm font-black text-gray-800 min-w-[160px] text-center uppercase tracking-widest">
+              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </span>
+            <button onClick={nextMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
+              <FaChevronRight size={14} />
+            </button>
           </div>
         </div>
-      )}
 
-      {error && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg flex items-center gap-3 text-sm">
-          <FaInfoCircle className="flex-shrink-0" />
-          <span>{error}. Showing local calendar. (Please check API key configuration)</span>
-        </div>
-      )}
-
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-        <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
-              {day}
+        {(!import.meta.env.VITE_CALENDARIFIC_API_KEY || import.meta.env.VITE_CALENDARIFIC_API_KEY === 'YOUR_CALENDARIFIC_API_KEY') && (
+          <div className="bg-blue-50/50 border border-blue-100 text-blue-800 px-6 py-4 rounded-2xl flex flex-col gap-3 text-sm shadow-sm backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                <FaInfoCircle size={14} />
+              </div>
+              <span className="font-black uppercase tracking-wider">Action Required: Enable Holiday Calendar</span>
             </div>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="h-96 flex items-center justify-center">
-            <Spinner />
-          </div>
-        ) : (
-          <div className="grid grid-cols-7">
-            {renderCalendar()}
+            <div className="ml-11 space-y-2 text-blue-700/80 font-medium">
+              <p>To see real-time holidays, please follow these steps:</p>
+              <ol className="list-decimal ml-4 space-y-1">
+                <li>Get a free API key from <a href="https://calendarific.com/signup" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-900">Calendarific</a>.</li>
+                <li>Add <code>VITE_CALENDARIFIC_API_KEY=your_key</code> to your <code>.env</code>.</li>
+              </ol>
+            </div>
           </div>
         )}
-      </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-        <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <FaCalendarAlt className="text-primary-500" />
-          Holidays & Events in {monthNames[currentDate.getMonth()]}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {/* Public Holidays */}
-          {holidays
-            .filter(h => {
-              const d = new Date(h.date.iso);
-              return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
-            })
-            .map((h, idx) => (
-              <div key={`list-pub-${idx}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <div className="bg-white w-10 h-10 rounded flex flex-col items-center justify-center shadow-sm border border-gray-100 text-red-500">
-                  <span className="text-[10px] font-bold uppercase">{monthNames[new Date(h.date.iso).getMonth()].slice(0, 3)}</span>
-                  <span className="text-sm font-bold leading-none">{new Date(h.date.iso).getDate()}</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 leading-tight">{h.name}</p>
-                  <p className="text-[11px] text-gray-500">{h.type?.[0] || 'Public Holiday'}</p>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Calendar Section */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="grid grid-cols-7 bg-gray-50/50 border-b border-gray-100">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  <div key={day} className="py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    {day}
+                  </div>
+                ))}
               </div>
-            ))}
 
-          {/* Custom Events */}
-          {customEvents
-            .filter(e => {
-              const d = new Date(e.event_date);
-              return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
-            })
-            .map((e, idx) => (
-              <div key={`list-custom-${idx}`} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <div className="bg-white w-10 h-10 rounded flex flex-col items-center justify-center shadow-sm border border-gray-100 text-blue-500">
-                  <span className="text-[10px] font-bold uppercase">{monthNames[new Date(e.event_date).getMonth()].slice(0, 3)}</span>
-                  <span className="text-sm font-bold leading-none">{new Date(e.event_date).getDate()}</span>
+              {loading ? (
+                <div className="h-[500px] flex items-center justify-center">
+                  <Spinner />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-900 leading-tight">{e.title}</p>
-                  <p className="text-[11px] text-gray-500">School Holiday</p>
+              ) : (
+                <div className="grid grid-cols-7">
+                  {renderCalendar()}
                 </div>
-                {isAdmin && (
-                  <button onClick={() => handleDeleteEvent(e._id)} className="text-red-400 hover:text-red-600 p-1">
-                    <FaTrash size={12} />
-                  </button>
+              )}
+            </div>
+          </div>
+
+          {/* List Section */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-full">
+              <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+                Events: {monthNames[currentDate.getMonth()]}
+              </h2>
+              
+              <div className="space-y-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
+                {/* Public Holidays */}
+                {holidays
+                  .filter(h => {
+                    const d = new Date(h.date.iso);
+                    return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+                  })
+                  .map((h, idx) => (
+                    <div key={`list-pub-${idx}`} className="flex items-center gap-4 p-4 bg-gray-50/50 rounded-xl border border-gray-100 hover:shadow-md transition-all group">
+                      <div className="bg-white w-12 h-12 rounded-xl flex flex-col items-center justify-center shadow-sm border border-gray-100 group-hover:border-primary-200 transition-colors">
+                        <span className="text-[9px] font-black uppercase text-gray-400">{monthNames[new Date(h.date.iso).getMonth()].slice(0, 3)}</span>
+                        <span className="text-lg font-black text-gray-900 leading-none">{new Date(h.date.iso).getDate()}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black text-gray-800 truncate">{h.name}</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{h.type?.[0] || 'Public Holiday'}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                {/* Custom Events */}
+                {customEvents
+                  .filter(e => {
+                    const d = new Date(e.event_date);
+                    return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+                  })
+                  .map((e, idx) => (
+                    <div key={`list-custom-${idx}`} className="flex items-center gap-4 p-4 bg-primary-50/30 rounded-xl border border-primary-100/50 hover:shadow-md transition-all group">
+                      <div className="bg-white w-12 h-12 rounded-xl flex flex-col items-center justify-center shadow-sm border border-gray-100 group-hover:border-primary-200 transition-colors">
+                        <span className="text-[9px] font-black uppercase text-primary-400">{monthNames[new Date(e.event_date).getMonth()].slice(0, 3)}</span>
+                        <span className="text-lg font-black text-primary-600 leading-none">{new Date(e.event_date).getDate()}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-black text-gray-800 truncate">{e.title}</p>
+                        <p className="text-[10px] text-primary-400 font-bold uppercase tracking-wider">School Holiday</p>
+                      </div>
+                      {isAdmin && (
+                        <button onClick={() => handleDeleteEvent(e._id)} className="w-8 h-8 rounded-lg bg-white text-red-400 hover:text-red-600 hover:shadow-sm flex items-center justify-center transition-all opacity-0 group-hover:opacity-100">
+                          <FaTrash size={12} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                {holidays.filter(h => {
+                  const d = new Date(h.date.iso);
+                  return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+                }).length === 0 && customEvents.filter(e => {
+                  const d = new Date(e.event_date);
+                  return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
+                }).length === 0 && (
+                  <div className="py-12 text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-3 border border-gray-100">
+                      <FaCalendarAlt className="text-gray-200" size={20} />
+                    </div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No holidays this month</p>
+                  </div>
                 )}
               </div>
-            ))}
-
-          {holidays.filter(h => {
-            const d = new Date(h.date.iso);
-            return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
-          }).length === 0 && customEvents.filter(e => {
-            const d = new Date(e.event_date);
-            return d.getMonth() === currentDate.getMonth() && d.getFullYear() === currentDate.getFullYear();
-          }).length === 0 && (
-              <p className="text-sm text-gray-400 italic col-span-full py-2">No holidays scheduled for this month.</p>
-            )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Admin Modal for Adding Holiday */}
+      {/* Admin Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-bold text-gray-900">Add Holiday for {selectedDate}</h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative z-10 border border-gray-100 animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-gray-50 bg-gray-50/30">
+              <div>
+                <h3 className="text-lg font-black text-gray-900">Add Holiday</h3>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{formatDateLabel(selectedDate)}</p>
+              </div>
+              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
                 <FaTimes />
               </button>
             </div>
-            <form onSubmit={handleAddEvent} className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Holiday Title</label>
+            <form onSubmit={handleAddEvent} className="p-6 space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Holiday Title *</label>
                 <input
                   type="text"
                   required
                   value={eventTitle}
                   onChange={(e) => setEventTitle(e.target.value)}
-                  placeholder="e.g. Annual Day, Special Break"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="e.g. Annual Sports Meet"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-800 outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-50/50 transition-all font-bold placeholder:text-gray-300"
                   autoFocus
                 />
               </div>
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="flex-1 py-3.5 rounded-2xl text-xs font-black text-gray-500 uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2"
+                  className="flex-1 py-3.5 rounded-2xl text-xs font-black text-white uppercase tracking-widest bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-200 transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {submitting ? 'Adding...' : 'Add Holiday'}
+                  {submitting ? 'Adding...' : 'Add Event'}
                 </button>
               </div>
             </form>
@@ -367,6 +395,12 @@ const HolidayCalendar: React.FC = () => {
       )}
     </div>
   );
+};
+
+const formatDateLabel = (dStr: string) => {
+  if (!dStr) return '';
+  const d = new Date(dStr);
+  return d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 export default HolidayCalendar;

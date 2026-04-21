@@ -18,7 +18,9 @@ body {
 }
 
 /* Prevent horizontal scrolling across the site */
-html, body, #root {
+html,
+body,
+#root {
   overflow-x: hidden;
 }
 
@@ -29,21 +31,21 @@ code {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #f97316;
-  border-radius: 4px;
+  background: #002B5B40;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ea580c;
+  background: #002B5B60;
 }
 
 /* Custom styles */
@@ -51,20 +53,119 @@ code {
   .btn-primary {
     @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
-  
+
   .btn-secondary {
     @apply bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition-colors duration-200;
   }
-  
+
   .input-field {
     @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
   }
-  
+
   .card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
   }
-  
+
   .stat-card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+  }
+
+  /* Glassmorphism */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  .glass-card-dark {
+    @apply bg-slate-900/80 backdrop-blur-md border border-slate-700/50 shadow-2xl;
+  }
+
+  /* Gradients */
+  .bg-gradient-school {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  }
+
+  .bg-gradient-premium {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  }
+
+  .bg-gradient-orange {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  }
+
+  /* Animations */
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-[1.02];
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+/* === MOBILE OUTER PADDING FIX === */
+/* Remove green outer padding on mobile - applied via main layout wrapper */
+@media (max-width: 767px) {
+  main {
+    padding: 0 !important;
+    background-color: #F0F2F5 !important;
+  }
+  
+  /* Fix outer wrapper padding on mobile */
+  .flex-1.min-w-0.w-full.max-w-full.overflow-hidden.overflow-y-auto {
+    padding: 0 !important;
+    background-color: #F0F2F5 !important;
+  }
+  
+  /* Ensure min-h-screen background matches on mobile */
+  .min-h-screen.bg-\[\#F0F2F5\] {
+    background-color: #F0F2F5 !important;
+  }
+  
+  /* Remove extra padding from page containers on mobile */
+  .bg-\[#F0F2F5\] > div:first-child {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* Smooth scroll */
+html { scroll-behavior: smooth; }
+
+/* Better focus rings */
+*:focus-visible { outline: 2px solid #2D54A8; outline-offset: 2px; }
+
+/* Mobile bottom nav safe area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-bottom-nav {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
 }

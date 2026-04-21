@@ -3,19 +3,20 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import PushNotificationManager from './components/PushNotificationManager';
 
-// Auth Pages
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import VerifyOTP from './pages/auth/VerifyOTP';
 import ResetPassword from './pages/auth/ResetPassword';
 import ChangePassword from './pages/auth/ChangePassword';
 
-// Layouts
 import Sidebar from './components/Sidebar';
+import MobileBottomNav from './components/MobileBottomNav';
+import MobileHeader from './components/MobileHeader';
 import Header from './components/Header';
+// MobileMenuSheet is used internally by MobileBottomNav
 
-// Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminManagement from './pages/admin/AdminManagement';
 import Students from './pages/admin/Students';
@@ -34,7 +35,6 @@ import SubjectAssignment from './pages/admin/SubjectAssignment';
 import Timetable from './pages/admin/Timetable';
 import LeaveManagement from './pages/admin/LeaveManagement';
 
-// Teacher Pages
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import MarkAttendance from './pages/teacher/MarkAttendance';
 import TeacherHomework from './pages/teacher/TeacherHomework';
@@ -47,12 +47,10 @@ import TeacherNotices from './pages/teacher/TeacherNotices';
 import StudentLeaveApprovals from './pages/teacher/StudentLeaveApprovals';
 import HolidayCalendar from './pages/HolidayCalendar';
 
-// Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentTimetable from './pages/student/StudentTimetable';
 import StudentLeave from './pages/student/StudentLeave';
 
-// Common
 import Profile from './pages/Profile';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -60,25 +58,38 @@ import 'react-toastify/dist/ReactToastify.css';
 const PrivateRoute: React.FC<any> = ({ children, role }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (role && user.role !== role) return <Navigate to="/login" replace />;
+  if (role) {
+    const allowedRoles = Array.isArray(role) ? role : [role];
+    if (!allowedRoles.includes(user.role)) return <Navigate to="/login" replace />;
+  }
   return children;
 };
 
 const DashboardLayout: React.FC<any> = ({ children }) => {
-  const { user } = useAuth();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const toggleSidebar = () => setIsOpen(prev => !prev);
+  const [isDesktopOpen, setIsDesktopOpen] = useState<boolean>(false);
+  const toggleDesktop = () => setIsDesktopOpen(prev => !prev);
 
   return (
     <div className="flex h-screen w-full max-w-full overflow-x-hidden bg-gray-100">
-      <div className="flex-shrink-0">
-        <Sidebar isOpen={isOpen} toggleSidebar={toggleSidebar} />
+      {/* Desktop sidebar only */}
+      <div className="hidden lg:flex h-screen bg-gray-50 overflow-hidden flex-shrink-0">
+        <PushNotificationManager />
+        <Sidebar isOpen={isDesktopOpen} toggleSidebar={toggleDesktop} />
       </div>
       <div className="flex-1 min-w-0 w-full max-w-full flex flex-col overflow-hidden">
-        <Header toggleSidebar={toggleSidebar} />
-        <main className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto bg-gray-100 p-6 text-xs [&_h1]:text-base md:[&_h1]:text-lg [&_h2]:text-xs [&_h3]:text-xs [&_p]:text-xs">
+        <div className="hidden lg:block">
+          <Header toggleSidebar={toggleDesktop} />
+        </div>
+        <div className="lg:hidden">
+          <MobileHeader />
+        </div>
+        <main className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto bg-[#F0F2F5] pb-20 lg:pb-0">
           {children}
         </main>
+        {/* Mobile bottom nav includes MobileMenuSheet grid internally */}
+        <div className="lg:hidden">
+          <MobileBottomNav />
+        </div>
       </div>
     </div>
   );
@@ -86,38 +97,36 @@ const DashboardLayout: React.FC<any> = ({ children }) => {
 
 function AppContent() {
   const { user } = useAuth();
+  const defaultDashboardPath = user?.role === 'sub_admin' ? '/admin/dashboard' : `/${user?.role}/dashboard`;
 
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/login" element={!user ? <Login /> : <Navigate to={`/${user.role}/dashboard`} replace />} />
+      <Route path="/login" element={!user ? <Login /> : <Navigate to={defaultDashboardPath} replace />} />
       <Route path="/auth/forgot-password" element={<ForgotPassword />} />
       <Route path="/auth/verify-otp" element={<VerifyOTP />} />
       <Route path="/auth/reset-password" element={<ResetPassword />} />
       <Route path="/auth/change-password" element={<ChangePassword />} />
 
-      {/* Admin Routes */}
-      <Route path="/admin/dashboard" element={<PrivateRoute role="admin"><DashboardLayout><AdminDashboard /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/admins" element={<PrivateRoute role="admin"><DashboardLayout><AdminManagement /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/students" element={<PrivateRoute role="admin"><DashboardLayout><Students /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/student-history/:id" element={<PrivateRoute role="admin"><DashboardLayout><StudentHistory /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/teachers" element={<PrivateRoute role="admin"><DashboardLayout><Teachers /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/teacher-history/:id" element={<PrivateRoute role="admin"><DashboardLayout><TeacherHistory /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/classes" element={<PrivateRoute role="admin"><DashboardLayout><Classes /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/subjects" element={<PrivateRoute role="admin"><DashboardLayout><Subjects /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/attendance" element={<PrivateRoute role="admin"><DashboardLayout><Attendance /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/exams" element={<PrivateRoute role="admin"><DashboardLayout><Exams /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/fees" element={<PrivateRoute role="admin"><DashboardLayout><Fees /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/notices" element={<PrivateRoute role="admin"><DashboardLayout><Notices /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/events" element={<PrivateRoute role="admin"><DashboardLayout><Events /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/assign-class-teacher" element={<PrivateRoute role="admin"><DashboardLayout><AssignClassTeacher /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/subject-assignment" element={<PrivateRoute role="admin"><DashboardLayout><SubjectAssignment /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/timetable" element={<PrivateRoute role="admin"><DashboardLayout><Timetable /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/calendar" element={<PrivateRoute role="admin"><DashboardLayout><HolidayCalendar /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/leaves" element={<PrivateRoute role="admin"><DashboardLayout><LeaveManagement /></DashboardLayout></PrivateRoute>} />
-      <Route path="/admin/profile" element={<PrivateRoute role="admin"><DashboardLayout><Profile /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/dashboard" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><AdminDashboard /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/admins" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><AdminManagement /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/students" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Students /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/student-history/:id" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><StudentHistory /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/teachers" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Teachers /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/teacher-history/:id" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><TeacherHistory /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/classes" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Classes /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/subjects" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Subjects /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/attendance" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Attendance /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/exams" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Exams /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/fees" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Fees /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/notices" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Notices /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/events" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Events /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/assign-class-teacher" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><AssignClassTeacher /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/subject-assignment" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><SubjectAssignment /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/timetable" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Timetable /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/calendar" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><HolidayCalendar /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/leaves" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><LeaveManagement /></DashboardLayout></PrivateRoute>} />
+      <Route path="/admin/profile" element={<PrivateRoute role={['admin','sub_admin']}><DashboardLayout><Profile /></DashboardLayout></PrivateRoute>} />
 
-      {/* Teacher Routes */}
       <Route path="/teacher/dashboard" element={<PrivateRoute role="teacher"><DashboardLayout><TeacherDashboard /></DashboardLayout></PrivateRoute>} />
       <Route path="/teacher/attendance" element={<PrivateRoute role="teacher"><DashboardLayout><MarkAttendance /></DashboardLayout></PrivateRoute>} />
       <Route path="/teacher/exams" element={<PrivateRoute role="teacher"><DashboardLayout><TeacherExams /></DashboardLayout></PrivateRoute>} />
@@ -131,7 +140,6 @@ function AppContent() {
       <Route path="/teacher/leave" element={<PrivateRoute role="teacher"><DashboardLayout><TeacherLeave /></DashboardLayout></PrivateRoute>} />
       <Route path="/teacher/profile" element={<PrivateRoute role="teacher"><DashboardLayout><Profile /></DashboardLayout></PrivateRoute>} />
 
-      {/* Student Routes */}
       <Route path="/student/dashboard" element={<PrivateRoute role="student"><DashboardLayout><StudentDashboard /></DashboardLayout></PrivateRoute>} />
       <Route path="/student/timetable" element={<PrivateRoute role="student"><DashboardLayout><StudentTimetable /></DashboardLayout></PrivateRoute>} />
       <Route path="/student/calendar" element={<PrivateRoute role="student"><DashboardLayout><HolidayCalendar /></DashboardLayout></PrivateRoute>} />

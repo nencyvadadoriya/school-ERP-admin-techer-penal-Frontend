@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { teacherAPI, classAPI, subjectAPI } from '../../services/api';
 import { toast } from 'react-toastify';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaHistory } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaHistory } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const Teachers: React.FC = () => {
@@ -35,10 +35,34 @@ const Teachers: React.FC = () => {
     return `STD-${standard}-${division}-${medium}-${stream || 'NA'}-${shift || 'NA'}`;
   };
 
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<string>('list');
+
+  const theme = {
+    primary: '#002B5B',
+    secondary: '#2D54A8',
+    accent: '#FFC107',
+    background: '#F0F2F5',
+    white: '#FFFFFF',
+    textPrimary: '#1F2937',
+    textSecondary: '#6B7280',
+    success: '#10B981',
+    danger: '#EF4444'
+  };
+
+ 
+
   useEffect(() => {
     fetchTeachers();
     fetchClasses();
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
 
   // Jab assigned_class change ho, toh us class ke subjects fetch karo
   useEffect(() => {
@@ -257,386 +281,298 @@ const Teachers: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    const renderMobileContent = () => {
+      return (
+        <div className="p-2 space-y-3">
+          <div className="rounded-xl p-4 text-white overflow-hidden relative shadow-md"
+            style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-[8px] opacity-80 uppercase tracking-widest font-bold">Admin Panel</p>
+                  <h2 className="text-lg font-extrabold mt-0.5">Teachers</h2>
+                  <div className="flex items-center mt-2 text-[9px] opacity-70">
+                    <FaPlus size={10} className="mr-1.5" />
+                    <span>{teachers.length} Active Staff</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={openAddForm}
+                  className="bg-white/20 hover:bg-white/30 p-2 rounded-lg backdrop-blur-md transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <FaPlus size={12} className="text-white" />
+                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">Add</span>
+                </button>
+              </div>
+            </div>
+            <div className="absolute right-[-10px] top-[-10px] opacity-10">
+              <FaPlus size={80} />
+            </div>
+          </div>
+
+          <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+            <div className="relative group">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs" />
+              <input
+                type="text"
+                placeholder="Search teachers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-[10px] focus:outline-none focus:ring-1 transition-all"
+                style={{ '--tw-ring-color': `${theme.primary}20` } as any}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 pb-20">
+            {filtered.map((t) => (
+              <div key={t._id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center font-bold text-primary-600 text-sm"
+                      style={{ backgroundColor: `${theme.primary}10`, color: theme.primary }}>
+                      {(t.first_name?.charAt(0) || '') + (t.last_name?.charAt(0) || '')}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-900 leading-tight">{t.first_name} {t.last_name}</h4>
+                      <p className="text-[9px] text-gray-400 font-medium mt-0.5">{t.email}</p>
+                    </div>
+                  </div>
+                  <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider ${t.is_active ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                    {t.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div className="bg-gray-50 p-1.5 rounded-lg text-center">
+                    <p className="text-[7px] text-gray-400 font-bold uppercase">Class</p>
+                    <p className="text-[9px] font-bold text-gray-700 truncate">{t.assigned_class || 'None'}</p>
+                  </div>
+                  <div className="bg-gray-50 p-1.5 rounded-lg text-center">
+                    <p className="text-[7px] text-gray-400 font-bold uppercase">Exp.</p>
+                    <p className="text-[9px] font-bold text-gray-700">{t.experience} Yrs</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                   <button onClick={() => navigate(`/admin/teacher-history/${t._id}`)} className="flex-1 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-bold flex items-center justify-center gap-1.5">
+                    <FaHistory size={10}/> History
+                  </button>
+                  <button onClick={() => openEditForm(t)} className="flex-1 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-bold flex items-center justify-center gap-1.5">
+                    <FaEdit size={10}/> Edit
+                  </button>
+                  <button onClick={() => handleDelete(t._id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg">
+                    <FaTrash size={10}/>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="min-h-screen bg-[#F0F2F5] pb-6">
+        <div className="p-0">
+          {renderMobileContent()}
+        </div>
+
+        {showForm && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-2 sm:p-4">
+            <div className="bg-white rounded-2xl w-[95%] sm:w-full max-w-lg p-4 sm:p-6 shadow-2xl overflow-y-auto max-h-[90vh] border border-gray-100">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-bold" style={{ color: theme.primary }}>
+                  {selectedTeacher ? 'Edit Teacher' : 'Add Teacher'}
+                </h2>
+                <button onClick={() => setShowForm(false)} className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors text-xl">
+                  &times;
+                </button>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 ml-1">First Name</label>
+                    <input name="first_name" value={formData.first_name} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 ml-1">Last Name</label>
+                    <input name="last_name" value={formData.last_name} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-gray-500 ml-1">Email</label>
+                  <input name="email" type="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 ml-1">Phone</label>
+                    <input name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 ml-1">Experience (Yrs)</label>
+                    <input name="experience" type="number" value={formData.experience} onChange={handleChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                  </div>
+                </div>
+                {!selectedTeacher && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 ml-1">Password</label>
+                    <input name="password" type="password" value={formData.password} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                  </div>
+                )}
+                 <div className="space-y-1">
+                    <label className="text-xs font-semibold text-gray-500 ml-1">Assigned Class</label>
+                    <select value={formData.assigned_class} onChange={handleClassChange} name="assigned_class" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" required>
+                      <option value="">Select class</option>
+                      {classOptions.map((cls) => (
+                        <option key={cls._id} value={buildClassCode(cls)}>{cls.standard}{cls.division} - {cls.medium}</option>
+                      ))}
+                    </select>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl text-sm font-bold text-gray-500 border border-gray-200">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 rounded-xl text-sm font-bold text-white" style={{ backgroundColor: theme.primary }}>Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 min-h-screen" style={{ backgroundColor: theme.background }}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Teachers Management</h1>
-          <p className="text-gray-600 mt-1">Manage all teachers in your school</p>
+          <h1 className="text-lg sm:text-xl font-black tracking-tight" style={{ color: theme.primary }}>Teachers Management</h1>
+          <p className="text-[10px] sm:text-xs font-medium text-gray-500">Manage all staff and teaching assignments</p>
         </div>
-        <button onClick={openAddForm} className="btn-primary flex items-center space-x-2">
-          <FaPlus />
+        <button 
+          onClick={openAddForm} 
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white text-xs font-bold shadow-md transition-all active:scale-95 hover:brightness-110"
+          style={{ backgroundColor: theme.primary }}
+        >
+          <FaPlus size={12} />
           <span>Add Teacher</span>
         </button>
       </div>
 
-      <div className="card">
-        <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+        <div className="relative group max-w-md">
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs" />
           <input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder="Search teachers..."
             value={searchTerm}
-            onChange={(e: any) => setSearchTerm(e.target.value)}
-            className="input-field pl-10"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-1 transition-all"
+            style={{ '--tw-ring-color': `${theme.primary}40` } as any}
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="card overflow-hidden p-0">
-        <div className="overflow-x-auto shadow-sm">
-          <div className="inline-block min-w-full align-middle">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">#</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Teacher Name</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Email</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Phone</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Exp.</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Assigned Class</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Subjects</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-100">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="px-4 py-3 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">#</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Name</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Contact</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Experience</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Class</th>
+                <th className="px-4 py-3 text-left text-[9px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                <th className="px-4 py-3 text-right text-[9px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map((t, index) => (
+                <tr key={t._id} className="hover:bg-gray-50/50 transition-colors group">
+                  <td className="px-4 py-3 text-xs font-medium text-gray-400">{index + 1}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg flex items-center justify-center font-bold text-[10px]"
+                        style={{ backgroundColor: `${theme.primary}10`, color: theme.primary }}>
+                        {(t.first_name?.charAt(0) || '') + (t.last_name?.charAt(0) || '')}
+                      </div>
+                      <span className="text-xs font-bold text-gray-900">{t.first_name} {t.last_name}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-500">{t.email}<br/><span className="text-[9px] text-gray-400">{t.phone}</span></td>
+                  <td className="px-4 py-3 text-xs font-bold text-gray-700">{t.experience} Yrs</td>
+                  <td className="px-4 py-3 text-xs font-medium text-gray-600">{t.assigned_class || 'None'}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${t.is_active ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                      {t.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-1.5">
+                       <button onClick={() => navigate(`/admin/teacher-history/${t._id}`)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"><FaHistory size={12} /></button>
+                      <button onClick={() => openEditForm(t)} className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all"><FaEdit size={12} /></button>
+                      <button onClick={() => handleDelete(t._id)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"><FaTrash size={12} /></button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filtered.map((t , index) => (
-                  <tr key={t._id || t.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10">
-                          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                            <span className="text-primary-600 font-medium text-xs sm:text-sm">
-                              {(t.first_name?.charAt(0) || '') + (t.last_name?.charAt(0) || '')}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">
-                            {t.first_name} {t.last_name}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 max-w-[150px] truncate">
-                      {t.email}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {t.phone}
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {t.experience}y
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {Array.isArray(t.assigned_class)
-                        ? (t.assigned_class.join(', ') || 'Not assigned')
-                        : (t.assigned_class || 'Not assigned')}
-                    </td>
-                    <td className="px-3 py-4 text-sm text-gray-500 max-w-[200px]">
-                      <div className="flex flex-wrap gap-1">
-                        {(t.subjects || []).slice(0, 3).map((subject, idx) => (
-                          <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                            {subject}
-                          </span>
-                        ))}
-                        {(t.subjects || []).length > 3 && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                            +{t.subjects.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${t.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {t.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => navigate(`/admin/teacher-history/${t._id || t.id}`)} 
-                          className="text-primary-600 hover:text-primary-900"
-                          title="View History"
-                        >
-                          <FaHistory />
-                        </button>
-                        <button 
-                          onClick={() => openEditForm(t)} 
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Edit"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(t._id || t.id)} 
-                          className="text-red-600 hover:text-red-900"
-                          title="Delete"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {filtered.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No teachers found</p>
-        </div>
-      )}
-
-      {/* Add/Edit Teacher Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">{selectedTeacher ? 'Edit Teacher' : 'Add Teacher'}</h3>
-              <button onClick={() => setShowForm(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold" style={{ color: theme.primary }}>{selectedTeacher ? 'Edit Teacher' : 'Add Teacher'}</h2>
+              <button onClick={() => setShowForm(false)} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
             </div>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* First Name */}
+            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  name="first_name" 
-                  value={formData.first_name} 
-                  onChange={handleChange} 
-                  placeholder="Enter first name" 
-                  className="input-field" 
-                  required 
-                />
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">First Name</label>
+                <input name="first_name" value={formData.first_name} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2" style={{ '--tw-ring-color': `${theme.primary}20` } as any} />
               </div>
-
-              {/* Last Name */}
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  name="last_name" 
-                  value={formData.last_name} 
-                  onChange={handleChange} 
-                  placeholder="Enter last name" 
-                  className="input-field" 
-                  required 
-                />
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Last Name</label>
+                <input name="last_name" value={formData.last_name} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2" style={{ '--tw-ring-color': `${theme.primary}20` } as any} />
               </div>
-
-              {/* Email */}
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  name="email" 
-                  value={formData.email} 
-                  onChange={handleChange} 
-                  placeholder="teacher@example.com" 
-                  type="email"
-                  className="input-field" 
-                  required 
-                />
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Email</label>
+                <input name="email" type="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2" style={{ '--tw-ring-color': `${theme.primary}20` } as any} />
               </div>
-
-              {/* Phone */}
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
-                <input 
-                  name="phone" 
-                  value={formData.phone} 
-                  onChange={handleChange} 
-                  placeholder="Enter phone number" 
-                  className="input-field" 
-                />
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Phone</label>
+                <input name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2" style={{ '--tw-ring-color': `${theme.primary}20` } as any} />
               </div>
-
-              {/* Password */}
               {!selectedTeacher && (
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Password <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Set teacher login password"
-                    type="password"
-                    className="input-field"
-                    required
-                  />
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                  <input name="password" type="password" value={formData.password} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2" style={{ '--tw-ring-color': `${theme.primary}20` } as any} />
                 </div>
               )}
-
-              {/* Experience */}
-              <div className="space-y-1 ">
-                <label className="block text-sm font-medium text-gray-700">
-                  Experience (years)
-                </label>
-                <input 
-                  name="experience" 
-                  value={formData.experience} 
-                  onChange={handleChange} 
-                  placeholder="Years of experience" 
-                  type="number"
-                  className="input-field" 
-                />
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Experience (Years)</label>
+                <input name="experience" type="number" value={formData.experience} onChange={handleChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2" style={{ '--tw-ring-color': `${theme.primary}20` } as any} />
               </div>
-
-              {/* About/Bio */}
-              <div className="space-y-1 col-span-1 md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  About / Bio
-                </label>
-                <textarea 
-                  name="about" 
-                  value={formData.about} 
-                  onChange={handleChange} 
-                  placeholder="Write a brief description about the teacher..." 
-                  className="input-field h-24" 
-                />
-              </div>
-
-              {/* Assigned Class - Dropdown */}
-              <div className="space-y-1 col-span-1 md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Assigned Class <span className="text-red-500">*</span>
-                </label>
-                <select 
-                  value={formData.assigned_class}
-                  onChange={handleClassChange}
-                  name="assigned_class"
-                  className="input-field cursor-pointer"
-                  required
-                >
-                  <option value="">Select a class</option>
-                  {classOptions.length > 0 ? (
-                    classOptions.map((cls) => (
-                      <option 
-                        key={cls._id || cls.id} 
-                        value={buildClassCode(cls)}
-                      >
-                        Std {cls.standard} - Div {cls.division} - {cls.medium}{cls.stream ? ` - ${cls.stream}` : ''}{cls.shift ? ` - ${cls.shift}` : ''}
-                      </option>
-                    ))
-                  ) : (
-                    <option disabled>
-                      {formData.medium ? 'No classes available for selected medium.' : 'No classes available. Please add classes first.'}
-                    </option>
-                  )}
-                </select>
-                <p className="text-xs text-gray-500">Select the class assigned to this teacher</p>
-              </div>
-
-              {/* Medium - Dropdown */}
-              <div className="space-y-1 col-span-1 md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Medium <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.medium}
-                  onChange={handleChange}
-                  name="medium"
-                  className="input-field cursor-pointer"
-                  required
-                >
-                  <option value="">Select medium</option>
-                  {Array.from(new Set((classes || []).map((c) => c?.medium).filter(Boolean))).map((m: any) => (
-                    <option key={m} value={m}>{m}</option>
+              <div className="col-span-2 space-y-1">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Assigned Class</label>
+                <select value={formData.assigned_class} onChange={handleClassChange} name="assigned_class" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2" style={{ '--tw-ring-color': `${theme.primary}20` } as any} required>
+                  <option value="">Select class</option>
+                  {classOptions.map((cls) => (
+                    <option key={cls._id} value={buildClassCode(cls)}>{cls.standard}{cls.division} - {cls.medium}</option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500">Select the medium for this teacher assignment</p>
               </div>
-
-              {/* Subjects - Multi Select Dropdown (Class ke hisab se subjects) */}
-              <div className="space-y-1 col-span-1 md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Subjects <span className="text-red-500">*</span>
-                </label>
-                {formData.assigned_class ? (
-                  <>
-                    {availableSubjects.length > 0 ? (
-                      <>
-                        <select 
-                          multiple
-                          value={formData.subjects}
-                          onChange={handleSubjectsChange}
-                          className="input-field min-h-[150px] cursor-pointer"
-                          size={6}
-                          required
-                        >
-                          {availableSubjects.map((subject) => (
-                            <option 
-                              key={subject} 
-                              value={subject}
-                              className="py-2 px-2 hover:bg-primary-50"
-                            >
-                              {subject}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="mt-2">
-                          {formData.subjects.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {formData.subjects.map((subject) => (
-                                <span 
-                                  key={subject} 
-                                  className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800"
-                                >
-                                  {subject}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setFormData({
-                                        ...formData,
-                                        subjects: formData.subjects.filter(s => s !== subject)
-                                      });
-                                    }}
-                                    className="ml-1 text-blue-600 hover:text-blue-800"
-                                  >
-                                    ×
-                                  </button>
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500">Hold Ctrl/Cmd to select multiple subjects</p>
-                      </>
-                    ) : (
-                      <div className="input-field bg-gray-50 text-gray-500 text-center py-4">
-                        No subjects available for this class. Please add subjects to the class first.
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="input-field bg-gray-50 text-gray-500 text-center py-4">
-                    Please select a class first to see available subjects
-                  </div>
-                )}
-              </div>
-
-              <div className="col-span-1 md:col-span-2 flex justify-end space-x-2 mt-4">
-                <button type="button" onClick={() => setShowForm(false)} className="btn-secondary">Cancel</button>
-                <button type="submit" className="btn-primary">Save Teacher</button>
+              <div className="col-span-2 flex justify-end gap-3 mt-4">
+                <button type="button" onClick={() => setShowForm(false)} className="px-6 py-2 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 border border-gray-200 transition-colors">Cancel</button>
+                <button type="submit" className="px-8 py-2 rounded-xl text-sm font-bold text-white shadow-lg transition-all active:scale-95" style={{ backgroundColor: theme.primary }}>Save Teacher</button>
               </div>
             </form>
           </div>

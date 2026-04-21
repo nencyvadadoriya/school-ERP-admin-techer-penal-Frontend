@@ -4,6 +4,7 @@ import Spinner from '../../components/Spinner';
 import Badge from '../../components/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
+import { FaFileAlt } from 'react-icons/fa';
 
 // Normalize class code: "STD-1-A-English-Primary-Morning" -> "1aenglish"
 const normalizeCode = (s: string) =>
@@ -17,6 +18,15 @@ const StudentLeaveApprovals: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [myClasses, setMyClasses] = useState<string[]>([]); // resolved DB class_codes
   const [tabClass, setTabClass] = useState<string>('');
+
+  const theme = {
+    primary: '#002B5B',
+    secondary: '#2D54A8',
+    background: '#F0F2F5',
+    white: '#FFFFFF',
+    textPrimary: '#1F2937',
+    textSecondary: '#6B7280'
+  };
 
   // Get assigned class codes strictly from teacher dashboard API
   const fetchAssignedClassCodes = async (): Promise<string[]> => {
@@ -122,23 +132,32 @@ const StudentLeaveApprovals: React.FC = () => {
     handleAction(selectedLeave._id, 'Rejected', rejectionReason);
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
+      <p className="text-sm font-bold text-gray-500 animate-pulse">Loading student leave requests...</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Student Leaves (My Classes)</h1>
-        <p className="text-sm text-gray-500">
-          Approve / reject leave applications for students in your assigned classes
-        </p>
+    <div className="p-3 md:p-4 space-y-4 min-h-screen" style={{ backgroundColor: theme.background }}>
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div>
+          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>Student Leave Approvals</h1>
+          <p className="text-[10px] font-medium text-gray-500">Review and manage leave applications from your students</p>
+        </div>
+        <button onClick={loadAll} className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold border border-gray-200 transition-all active:scale-95 hover:bg-gray-100 text-[11px]">
+          Refresh List
+        </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="mb-3 flex items-end gap-3 flex-wrap">
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Filter by Class</label>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Filter by Class</label>
             <select
-              className="input-field w-64"
+              className="w-full sm:w-56 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none cursor-pointer"
               value={tabClass}
               onChange={e => setTabClass(e.target.value)}
             >
@@ -148,77 +167,91 @@ const StudentLeaveApprovals: React.FC = () => {
               ))}
             </select>
           </div>
-          <button onClick={loadAll} className="btn-secondary mb-0.5">Refresh</button>
-          {myClasses.length === 0 && (
-            <p className="text-sm text-red-500">No classes assigned to you. Contact admin.</p>
-          )}
-        </div>
-
-        <div className="text-xs text-gray-400 mb-2">
-          {displayedLeaves.length} leave application{displayedLeaves.length !== 1 ? 's' : ''} found
+          <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+            <span>{displayedLeaves.length} Requests</span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-gray-500">
-                <th className="px-5 py-3 font-medium">Student</th>
-                <th className="px-5 py-3 font-medium">Class</th>
-                <th className="px-5 py-3 font-medium">From</th>
-                <th className="px-5 py-3 font-medium">To</th>
-                <th className="px-5 py-3 font-medium">Reason</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Actions</th>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                <th className="px-5 py-3">Student Information</th>
+                <th className="px-5 py-3 text-center">Class</th>
+                <th className="px-5 py-3">Duration</th>
+                <th className="px-5 py-3">Reason</th>
+                <th className="px-5 py-3 text-center">Status</th>
+                <th className="px-5 py-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50 text-[11px]">
               {displayedLeaves.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-gray-400">
-                    {myClasses.length === 0
-                      ? 'No classes assigned. Please ask admin to assign you a class.'
-                      : 'No leave applications found for your classes.'}
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                    <p className="text-xs font-bold uppercase tracking-widest">No requests pending</p>
                   </td>
                 </tr>
               ) : (
                 displayedLeaves.map(l => (
-                  <tr key={l._id} className="border-t border-gray-50 hover:bg-gray-50">
-                    <td className="px-5 py-3 font-medium">{l.student_name || l.gr_number}</td>
-                    <td className="px-5 py-3">{l.class_code}</td>
-                    <td className="px-5 py-3">{new Date(l.from_date).toLocaleDateString()}</td>
-                    <td className="px-5 py-3">{new Date(l.to_date).toLocaleDateString()}</td>
-                    <td className="px-5 py-3 max-w-xs truncate" title={l.reason}>{l.reason}</td>
-                    <td className="px-5 py-3"><Badge status={l.status} /></td>
-                    <td className="px-5 py-3">
-                      {l.status === 'Pending' ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleAction(l._id, 'Approved')}
-                            disabled={!!actionLoading}
-                            className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200 disabled:opacity-50"
-                          >
-                            {actionLoading === l._id + 'Approved' ? '...' : 'Approve'}
-                          </button>
-                          <button
-                            onClick={() => handleRejectClick(l)}
-                            disabled={!!actionLoading}
-                            className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 disabled:opacity-50"
-                          >
-                            {actionLoading === l._id + 'Rejected' ? '...' : 'Reject'}
-                          </button>
+                  <tr key={l._id} className="hover:bg-gray-50/50 transition-colors group">
+                    <td className="px-5 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px]">
+                          {l.student_name ? l.student_name.charAt(0) : 'S'}
                         </div>
-                      ) : (
-                        <div className="flex flex-col gap-1">
-                          <span className="text-gray-400 text-xs">
-                            {l.approved_by ? `By: ${l.approved_by}` : '—'}
-                          </span>
-                          {l.status === 'Rejected' && l.rejection_reason && (
-                            <span className="text-[10px] text-red-500 italic max-w-[150px] break-words">
-                              Reason: {l.rejection_reason}
+                        <div className="flex flex-col">
+                          <span className="font-black text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">{l.student_name || 'N/A'}</span>
+                          <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter mt-0.5">GR: {l.gr_number || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-2.5 text-center">
+                      <span className="text-[10px] font-black text-primary-600 bg-primary-50 px-2 py-0.5 rounded-md uppercase tracking-wider">{l.class_code}</span>
+                    </td>
+                    <td className="px-5 py-2.5">
+                      <div className="flex flex-col">
+                        <span className="font-black text-gray-900 uppercase">{new Date(l.from_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">to {new Date(l.to_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-2.5 max-w-[180px]">
+                      <p className="font-medium text-gray-600 line-clamp-2 leading-relaxed italic border-l-2 border-gray-100 pl-2" title={l.reason}>{l.reason}</p>
+                    </td>
+                    <td className="px-5 py-2.5 text-center">
+                      <Badge status={l.status} />
+                    </td>
+                    <td className="px-5 py-2.5">
+                      <div className="flex justify-end">
+                        {l.status === 'Pending' ? (
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => handleAction(l._id, 'Approved')}
+                              disabled={!!actionLoading}
+                              className="px-3 py-1 bg-green-50 text-green-700 rounded-lg text-[9px] font-black uppercase tracking-wider hover:bg-green-100 transition-colors disabled:opacity-50 border border-green-100"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectClick(l)}
+                              disabled={!!actionLoading}
+                              className="px-3 py-1 bg-red-50 text-red-700 rounded-lg text-[9px] font-black uppercase tracking-wider hover:bg-red-100 transition-colors disabled:opacity-50 border border-red-100"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-end">
+                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">
+                              {l.approved_by ? `By: ${l.approved_by}` : '—'}
                             </span>
-                          )}
-                        </div>
-                      )}
+                            {l.status === 'Rejected' && l.rejection_reason && (
+                              <span className="text-[9px] text-red-500 font-bold italic max-w-[120px] truncate">
+                                {l.rejection_reason}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -229,28 +262,28 @@ const StudentLeaveApprovals: React.FC = () => {
       </div>
 
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Reject Leave Application</h3>
-            <p className="text-sm text-gray-500 mb-4">Please provide a reason for rejecting this leave request. This will be visible to the student.</p>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl border border-gray-100">
+            <h3 className="text-lg font-black text-gray-900 mb-1">Reject Request</h3>
+            <p className="text-xs font-medium text-gray-500 mb-4 leading-relaxed">Provide a reason for rejection.</p>
             <textarea
-              className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary-500 outline-none min-h-[100px]"
-              placeholder="Enter rejection reason..."
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-red-500/10 outline-none min-h-[100px] transition-all resize-none"
+              placeholder="Reason..."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
             />
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex gap-3 mt-6">
               <button 
                 onClick={() => setShowRejectModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="flex-1 py-2.5 text-xs font-black text-gray-500 hover:bg-gray-50 rounded-xl transition-all border border-gray-200"
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmReject}
-                className="px-4 py-2 text-sm font-medium bg-red-600 text-white hover:bg-red-700 rounded-lg"
+                className="flex-1 py-2.5 text-xs font-black bg-red-600 text-white hover:bg-red-700 rounded-xl shadow-md transition-all active:scale-95"
               >
-                Reject Leave
+                Reject
               </button>
             </div>
           </div>

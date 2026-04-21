@@ -1,101 +1,94 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { IconType } from 'react-icons';
-
 import {
-  FaTachometerAlt,
-  FaUserGraduate,
-  FaChalkboardTeacher,
-  FaBook,
-  FaCalendarCheck,
-  FaClipboardList,
-  FaMoneyBillWave,
-  FaBell,
-  FaCalendarAlt,
-  FaFileAlt,
-  FaClock,
-  FaSignOutAlt,
-  FaUser,
-  FaSchool,
-  FaBars,
-  FaChevronLeft,
-  FaChevronRight,
-} from 'react-icons/fa';
+  LayoutDashboard, Users, GraduationCap, UserSquare2,
+  BookOpen, CalendarCheck2, ClipboardList, Wallet, Bell,
+  CalendarDays, FileText, Clock, LogOut, User, School,
+  ChevronLeft, ChevronRight, ChevronDown, Settings,
+  ShieldCheck, BookMarked, Presentation, X
+} from 'lucide-react';
 
 interface MenuItem {
-  path: string;
-  icon: IconType;
+  path?: string;
+  icon: any;
   label: string;
   section: string;
+  subItems?: { path: string; label: string }[];
 }
 
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
+  mobileOnly?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly }) => {
   const { user, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+  const toggleCollapse = () => { setIsCollapsed(!isCollapsed); setOpenDropdown(null); };
+  const toggleDropdown = (label: string) => {
+    if (isCollapsed) setIsCollapsed(false);
+    setOpenDropdown(openDropdown === label ? null : label);
   };
 
   const adminMenuItems: MenuItem[] = [
-    { path: '/admin/dashboard', icon: FaTachometerAlt, label: 'Dashboard', section: 'main' },
-    { path: '/admin/admins', icon: FaUser, label: 'Admin Management', section: 'management' },
-    { path: '/admin/students', icon: FaUserGraduate, label: 'Students', section: 'management' },
-    { path: '/admin/teachers', icon: FaChalkboardTeacher, label: 'Teachers', section: 'management' },
-    { path: '/admin/subject-assignment', icon: FaBook, label: 'Subject Assignment', section: 'management' },
-    { path: '/admin/assign-class-teacher', icon: FaChalkboardTeacher, label: 'Assign Class Teacher', section: 'management' },
-    { path: '/admin/classes', icon: FaSchool, label: 'Classes', section: 'management' },
-    { path: '/admin/subjects', icon: FaBook, label: 'Subjects', section: 'management' },
-    { path: '/admin/attendance', icon: FaCalendarCheck, label: 'Attendance', section: 'academic' },
-    { path: '/admin/exams', icon: FaClipboardList, label: 'Exams', section: 'academic' },
-    { path: '/admin/fees', icon: FaMoneyBillWave, label: 'Fees', section: 'finance' },
-    { path: '/admin/notices', icon: FaBell, label: 'Notices', section: 'communication' },
-    { path: '/admin/events', icon: FaCalendarAlt, label: 'Events', section: 'communication' },
-    { path: '/admin/leaves', icon: FaFileAlt, label: 'Leave Management', section: 'communication' },
-    { path: '/admin/timetable', icon: FaClock, label: 'Timetable', section: 'academic' },
-    { path: '/admin/calendar', icon: FaCalendarAlt, label: 'Holiday Calendar', section: 'academic' },
+    { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard', section: 'main' },
+    { label: 'User Management', icon: Users, section: 'management', subItems: [
+      { path: '/admin/admins', label: 'Admins' },
+      { path: '/admin/students', label: 'Students' },
+      { path: '/admin/teachers', label: 'Teachers' },
+    ]},
+    { label: 'Academic Setup', icon: BookOpen, section: 'management', subItems: [
+      { path: '/admin/classes', label: 'Classes' },
+      { path: '/admin/subjects', label: 'Subjects' },
+      { path: '/admin/subject-assignment', label: 'Subject Assignment' },
+      { path: '/admin/assign-class-teacher', label: 'Assign Teacher' },
+    ]},
+    { path: '/admin/attendance', icon: CalendarCheck2, label: 'Attendance', section: 'academic' },
+    { path: '/admin/exams', icon: ClipboardList, label: 'Exams', section: 'academic' },
+    { path: '/admin/timetable', icon: Clock, label: 'Timetable', section: 'academic' },
+    { path: '/admin/calendar', icon: CalendarDays, label: 'Holiday Calendar', section: 'academic' },
+    { path: '/admin/fees', icon: Wallet, label: 'Fees Management', section: 'finance' },
+    { label: 'Communication', icon: Bell, section: 'communication', subItems: [
+      { path: '/admin/notices', label: 'Notices' },
+      { path: '/admin/events', label: 'Events' },
+      { path: '/admin/leaves', label: 'Leave Management' },
+    ]},
   ];
 
   const teacherMenuItems: MenuItem[] = [
-    { path: '/teacher/dashboard', icon: FaTachometerAlt, label: 'Dashboard', section: 'main' },
-    { path: '/teacher/attendance', icon: FaCalendarCheck, label: 'Attendance', section: 'academic' },
-    { path: '/teacher/homework', icon: FaClipboardList, label: 'Homework', section: 'academic' },
-    { path: '/teacher/exams', icon: FaClipboardList, label: 'Exams', section: 'academic' },
-    { path: '/teacher/results', icon: FaFileAlt, label: 'Results', section: 'academic' },
-    { path: '/teacher/timetable', icon: FaClock, label: 'Timetable', section: 'academic' },
-    { path: '/teacher/calendar', icon: FaCalendarAlt, label: 'Holiday Calendar', section: 'academic' },
-    { path: '/teacher/leaves', icon: FaFileAlt, label: 'Student Leaves', section: 'communication' },
-    { path: '/teacher/notices', icon: FaBell, label: 'Notices', section: 'communication' },
-    { path: '/teacher/events', icon: FaCalendarAlt, label: 'Events', section: 'communication' },
-    { path: '/teacher/leave', icon: FaFileAlt, label: 'Leave Application', section: 'communication' },
+    { path: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard', section: 'main' },
+    { path: '/teacher/attendance', icon: CalendarCheck2, label: 'Attendance', section: 'academic' },
+    { path: '/teacher/homework', icon: ClipboardList, label: 'Homework', section: 'academic' },
+    { path: '/teacher/exams', icon: ClipboardList, label: 'Exams', section: 'academic' },
+    { path: '/teacher/results', icon: FileText, label: 'Results', section: 'academic' },
+    { path: '/teacher/timetable', icon: Clock, label: 'Timetable', section: 'academic' },
+    { path: '/teacher/calendar', icon: CalendarDays, label: 'Holiday Calendar', section: 'academic' },
+    { label: 'Communication', icon: Bell, section: 'communication', subItems: [
+      { path: '/teacher/notices', label: 'Notices' },
+      { path: '/teacher/events', label: 'Events' },
+      { path: '/teacher/leaves', label: 'Student Leaves' },
+      { path: '/teacher/leave', label: 'Leave Application' },
+    ]},
   ];
 
   const studentMenuItems: MenuItem[] = [
-    { path: '/student/dashboard', icon: FaTachometerAlt, label: 'Dashboard', section: 'main' },
-    { path: '/student/attendance', icon: FaCalendarCheck, label: 'Attendance', section: 'academic' },
-    { path: '/student/homework', icon: FaClipboardList, label: 'Homework', section: 'academic' },
-    { path: '/student/results', icon: FaFileAlt, label: 'Results', section: 'academic' },
-    { path: '/student/fees', icon: FaMoneyBillWave, label: 'Fees', section: 'finance' },
-    { path: '/student/timetable', icon: FaClock, label: 'Timetable', section: 'academic' },
-    { path: '/student/calendar', icon: FaCalendarAlt, label: 'Holiday Calendar', section: 'academic' },
-    { path: '/student/notices', icon: FaBell, label: 'Notices & Events', section: 'communication' },
-    { path: '/student/leave', icon: FaFileAlt, label: 'Leave Application', section: 'communication' },
+    { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard', section: 'main' },
+    { path: '/student/timetable', icon: Clock, label: 'Timetable', section: 'academic' },
+    { path: '/student/calendar', icon: CalendarDays, label: 'Holiday Calendar', section: 'academic' },
+    { path: '/student/leave', icon: FileText, label: 'Leave Application', section: 'communication' },
   ];
 
   const getMenuItems = (): MenuItem[] => {
-    if (user?.role === 'admin') return adminMenuItems;
+    if (user?.role === 'admin' || user?.role === 'sub_admin') return adminMenuItems;
     if (user?.role === 'teacher') return teacherMenuItems;
     if (user?.role === 'student') return studentMenuItems;
     return [];
   };
 
-  // Group menu items by section
   const groupMenuItemsBySection = (items: MenuItem[]) => {
     const sections = {
       main: { title: '', order: 1, showTitle: false },
@@ -104,191 +97,310 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       finance: { title: 'Finance', order: 4, showTitle: true },
       communication: { title: 'Communication', order: 5, showTitle: true }
     };
-
     const grouped: Record<string, MenuItem[]> = {};
     items.forEach(item => {
       const section = item.section;
-      if (!grouped[section]) {
-        grouped[section] = [];
-      }
+      if (!grouped[section]) grouped[section] = [];
       grouped[section].push(item);
     });
-
     return { grouped, sections };
   };
 
   const { grouped, sections } = groupMenuItemsBySection(getMenuItems());
-
-  // Sort sections by order
   const sortedSections = Object.keys(grouped).sort((a, b) =>
-    (sections[a]?.order || 999) - (sections[b]?.order || 999)
+    (sections[a as keyof typeof sections]?.order || 999) - (sections[b as keyof typeof sections]?.order || 999)
   );
 
+  // Mobile sidebar is a full overlay drawer
+  if (mobileOnly) {
+    return (
+      <>
+        <style>{`
+          .mobile-drawer {
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+          }
+          .mobile-drawer-open { transform: translateX(0); }
+          .mobile-drawer-closed { transform: translateX(-100%); }
+          .mobile-sidebar-scrollbar::-webkit-scrollbar { width: 3px; }
+          .mobile-sidebar-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+          .mobile-nav-link { display: flex; align-items: center; padding: 11px 16px; border-radius: 12px; transition: all 0.18s; margin-bottom: 2px; }
+          .mobile-nav-link-active { background: rgba(45,84,168,0.9); }
+          .mobile-nav-link-inactive:hover { background: rgba(255,255,255,0.06); }
+          .mobile-subnav-link { display: flex; align-items: center; padding: 9px 16px 9px 48px; border-radius: 10px; transition: all 0.18s; margin-bottom: 1px; }
+          .mobile-subnav-link-active { background: rgba(255,255,255,0.12); color: white; font-weight: 600; }
+          .mobile-subnav-link-inactive { color: rgba(255,255,255,0.5); }
+          .mobile-subnav-link-inactive:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+        `}</style>
+
+        {/* Overlay */}
+        {isOpen && (
+          <div className="fixed inset-0 bg-black/60 z-40 backdrop-blur-[2px]" onClick={toggleSidebar} />
+        )}
+
+        {/* Drawer */}
+        <aside
+          className={`mobile-drawer fixed top-0 left-0 z-50 h-full w-[280px] flex flex-col ${isOpen ? 'mobile-drawer-open' : 'mobile-drawer-closed'}`}
+          style={{ background: 'linear-gradient(180deg, #002B5B 0%, #001d3d 100%)' }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                <School size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white font-bold text-[15px] tracking-wide">SmartSchool</p>
+                <p className="text-white/50 text-[10px] uppercase tracking-widest">ERP System</p>
+              </div>
+            </div>
+            <button onClick={toggleSidebar} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/20">
+              <X size={16} className="text-white/70" />
+            </button>
+          </div>
+
+          {/* User Info Card */}
+          <div className="mx-4 mt-4 mb-3 p-3 rounded-xl bg-white/8 border border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                {user?.profile_image
+                  ? <img src={user.profile_image} alt="" className="w-full h-full object-cover rounded-xl" />
+                  : <User size={18} className="text-white" />
+                }
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold text-sm truncate">{user?.first_name} {user?.last_name}</p>
+                <p className="text-white/50 text-xs capitalize">{user?.role?.replace('_', ' ')}</p>
+              </div>
+              <div className="w-2 h-2 rounded-full bg-green-400"></div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto mobile-sidebar-scrollbar px-3 py-1">
+            {sortedSections.map(sectionKey => {
+              const sectionConfig = sections[sectionKey as keyof typeof sections];
+              return (
+                <div key={sectionKey}>
+                  {sectionConfig?.showTitle && (
+                    <p className="text-[9px] font-bold text-white/25 uppercase tracking-[0.2em] px-4 mt-5 mb-2">
+                      {sectionConfig.title}
+                    </p>
+                  )}
+                  {grouped[sectionKey].map(item => (
+                    <div key={item.label}>
+                      {item.subItems ? (
+                        <div>
+                          <button
+                            onClick={() => toggleDropdown(item.label)}
+                            className={`w-full mobile-nav-link ${openDropdown === item.label ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`}
+                          >
+                            <item.icon size={17} className={openDropdown === item.label ? 'text-white' : 'text-white/55'} />
+                            <span className={`ml-3 text-[13px] font-medium flex-1 text-left ${openDropdown === item.label ? 'text-white' : 'text-white/70'}`}>
+                              {item.label}
+                            </span>
+                            <ChevronDown
+                              size={13}
+                              className={`text-white/30 transition-transform duration-200 ${openDropdown === item.label ? 'rotate-180 text-white/60' : ''}`}
+                            />
+                          </button>
+                          {openDropdown === item.label && (
+                            <div>
+                              {item.subItems.map(sub => (
+                                <NavLink
+                                  key={sub.path}
+                                  to={sub.path}
+                                  onClick={toggleSidebar}
+                                  className={({ isActive }) =>
+                                    `mobile-subnav-link text-[12px] ${isActive ? 'mobile-subnav-link-active' : 'mobile-subnav-link-inactive'}`
+                                  }
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-white/30 mr-2.5 flex-shrink-0"></span>
+                                  {sub.label}
+                                </NavLink>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <NavLink
+                          to={item.path!}
+                          onClick={toggleSidebar}
+                          className={({ isActive }) =>
+                            `mobile-nav-link ${isActive ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              <item.icon size={17} className={isActive ? 'text-white' : 'text-white/55'} />
+                              <span className={`ml-3 text-[13px] font-medium ${isActive ? 'text-white' : 'text-white/70'}`}>
+                                {item.label}
+                              </span>
+                              {isActive && (
+                                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white/80"></div>
+                              )}
+                            </>
+                          )}
+                        </NavLink>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </nav>
+
+          {/* Footer */}
+          <div className="p-3 border-t border-white/10 space-y-1">
+            <NavLink
+              to={`/${user?.role}/profile`}
+              onClick={toggleSidebar}
+              className={({ isActive }) =>
+                `mobile-nav-link ${isActive ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <User size={17} className={isActive ? 'text-white' : 'text-white/55'} />
+                  <span className={`ml-3 text-[13px] font-medium ${isActive ? 'text-white' : 'text-white/70'}`}>My Profile</span>
+                </>
+              )}
+            </NavLink>
+            <button
+              onClick={logout}
+              className="w-full flex items-center px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors"
+            >
+              <LogOut size={17} />
+              <span className="ml-3 text-[13px] font-medium">Logout</span>
+            </button>
+          </div>
+        </aside>
+      </>
+    );
+  }
+
+  // Desktop sidebar (original)
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-primary-500 text-white p-2 rounded-lg shadow-lg"
-      >
-        <FaBars className="text-xl" />
-      </button>
-
-      {/* Overlay for mobile */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+      `}</style>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={toggleSidebar}
-        ></div>
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={toggleSidebar}></div>
       )}
-
-      {/* Sidebar */}
       <aside
-        className={`fixed lg:relative top-0 left-0 z-50 lg:z-auto h-screen bg-white border-r border-gray-200 transform transition-all duration-300 ease-in-out flex flex-col ${isCollapsed ? 'w-20' : 'w-56'
-          } ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:transform-none`}
+        className={`fixed lg:relative top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out flex flex-col ${isCollapsed ? 'w-14' : 'w-60'} ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        style={{ backgroundColor: '#002B5B' }}
       >
-        {/* Logo Section with Collapse Button */}
-        <div className={`h-14 flex-shrink-0 flex items-center justify-between border-b border-gray-200 bg-primary-500 ${isCollapsed ? 'px-2' : 'px-4'}`}>
+        <div className={`h-16 flex-shrink-0 flex items-center justify-between border-b border-white/5 ${isCollapsed ? 'px-2' : 'px-5'}`}>
           {!isCollapsed && (
-            <h1 className="text-lg font-bold text-white">School ERP</h1>
+            <div className="flex items-center space-x-2.5">
+              <span className="font-bold text-white text-lg tracking-tight">SmartSchool ERP</span>
+            </div>
           )}
           {isCollapsed && (
             <div className="w-full flex justify-center">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden bg-white">
-                <img
-                  src="/logo.png"
-                  alt="Logo"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                <School className="text-[#002B5B] w-5 h-5" />
               </div>
             </div>
           )}
-          <button
-            onClick={toggleCollapse}
-            className="text-white hover:bg-primary-600 p-1 rounded-lg transition-colors hidden lg:block"
-          >
-            {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+          <button onClick={toggleCollapse} className="text-white/40 hover:text-white p-1 rounded-lg transition-colors hidden lg:block hover:bg-white/5">
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
         </div>
 
-        {/* Menu Items with Section Titles - Scrollable Area */}
-        <nav className="flex-1 overflow-y-auto min-h-0 p-2">
-          {!isCollapsed ? (
-            // Expanded view with section titles
-            <div className="space-y-4">
-              {sortedSections.map(sectionKey => {
-                const sectionConfig = sections[sectionKey];
-                const shouldShowTitle = sectionConfig?.showTitle !== false;
-
-                return (
-                  <div key={sectionKey}>
-                    {shouldShowTitle && sectionConfig?.title && (
-                      <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
-                        {sectionConfig.title}
-                      </h3>
-                    )}
-                    <ul className="space-y-0.5">
-                      {grouped[sectionKey].map((item) => (
-                        <li key={item.path}>
-                          <NavLink
-                            to={item.path}
-                            className={({ isActive }) =>
-                              `flex items-center rounded-lg transition-all duration-200 ${
-                                isActive
-                                  ? 'bg-primary-50 text-primary-600'
-                                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                              } space-x-2 px-3 py-2`
-                            }
-                            onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+        <nav className="flex-1 overflow-y-auto custom-scrollbar pt-3 pb-4 px-2 space-y-0.5">
+          {sortedSections.map(sectionKey => {
+            const sectionConfig = sections[sectionKey as keyof typeof sections];
+            return (
+              <div key={sectionKey}>
+                {!isCollapsed && sectionConfig?.showTitle && (
+                  <h3 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] px-4 mt-4 mb-1.5">
+                    {sectionConfig.title}
+                  </h3>
+                )}
+                <ul className="space-y-0.5">
+                  {grouped[sectionKey].map(item => (
+                    <li key={item.label}>
+                      {item.subItems ? (
+                        <div>
+                          <button
+                            onClick={() => toggleDropdown(item.label)}
+                            className={`w-full flex items-center justify-between rounded-lg px-2 py-2 transition-all duration-200 ${openDropdown === item.label ? 'bg-white/5 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'} ${isCollapsed ? 'justify-center' : ''}`}
                           >
-                            <item.icon className="text-sm flex-shrink-0" />
-                            <span className="text-[11px] font-medium truncate">{item.label}</span>
-                          </NavLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            // Collapsed view - only icons with tooltips, no section titles
-            <ul className="space-y-0.5">
-              {sortedSections.map(sectionKey => (
-                <React.Fragment key={sectionKey}>
-                  {grouped[sectionKey].map((item) => (
-                    <li key={item.path}>
-                      <NavLink
-                        to={item.path}
-                        className={({ isActive }) =>
-                          `flex items-center justify-center rounded-lg transition-all duration-200 ${
-                            isActive
-                              ? 'bg-primary-50 text-primary-600'
-                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                          } px-2 py-3`
-                        }
-                        onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                        title={item.label}
-                      >
-                        <item.icon className="text-base flex-shrink-0" />
-                      </NavLink>
+                            <div className="flex items-center space-x-2.5">
+                              <item.icon size={18} className={openDropdown === item.label ? 'text-white' : 'text-white/60'} />
+                              {!isCollapsed && <span className="text-[13px] font-medium">{item.label}</span>}
+                            </div>
+                            {!isCollapsed && (
+                              <ChevronDown size={12} className={`transition-transform duration-200 text-white/30 ${openDropdown === item.label ? 'rotate-180 text-white/70' : ''}`} />
+                            )}
+                          </button>
+                          {openDropdown === item.label && !isCollapsed && (
+                            <ul className="mt-0.5 space-y-0.5">
+                              {item.subItems.map(sub => (
+                                <li key={sub.path}>
+                                  <NavLink
+                                    to={sub.path}
+                                    className={({ isActive }) =>
+                                      `flex items-center py-2 pl-10 pr-4 text-[12px] rounded-lg transition-all duration-200 ${isActive ? 'text-white font-semibold bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`
+                                    }
+                                  >
+                                    {sub.label}
+                                  </NavLink>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ) : (
+                        <NavLink
+                          to={item.path!}
+                          className={({ isActive }) =>
+                            `flex items-center rounded-lg px-2 py-2 transition-all duration-200 ${isActive ? 'bg-[#2D54A8] text-white shadow-sm font-semibold' : 'text-white/70 hover:bg-white/5 hover:text-white'} ${isCollapsed ? 'justify-center' : ''}`
+                          }
+                          onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                        >
+                          {({ isActive }) => (
+                            <>
+                              <item.icon size={18} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/60'}`} />
+                              {!isCollapsed && <span className="ml-2.5 text-[13px] font-medium">{item.label}</span>}
+                            </>
+                          )}
+                        </NavLink>
+                      )}
                     </li>
                   ))}
-                </React.Fragment>
-              ))}
-            </ul>
-          )}
+                </ul>
+              </div>
+            );
+          })}
         </nav>
 
-        {/* Profile & Logout - Fixed at bottom */}
-        <div className="flex-shrink-0 border-t border-gray-200 p-2">
-          {!isCollapsed ? (
-            <div className="space-y-0.5">
-              <NavLink
-                to={`/${user?.role}/profile`}
-                className={({ isActive }) =>
-                  `flex items-center rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  } space-x-2 px-3 py-2`
-                }
-              >
-                <FaUser className="text-sm flex-shrink-0" />
-                <span className="text-[11px] font-medium truncate">Profile</span>
-              </NavLink>
-              <button
-                onClick={logout}
-                className="w-full flex items-center rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 space-x-2 px-3 py-2"
-              >
-                <FaSignOutAlt className="text-sm flex-shrink-0" />
-                <span className="text-[11px] font-medium truncate">Logout</span>
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-0.5">
-              <NavLink
-                to={`/${user?.role}/profile`}
-                className={({ isActive }) =>
-                  `flex items-center justify-center rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? 'bg-primary-50 text-primary-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  } px-2 py-3`
-                }
-                title="Profile"
-              >
-                <FaUser className="text-base flex-shrink-0" />
-              </NavLink>
-              <button
-                onClick={logout}
-                className="w-full flex items-center justify-center rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 px-2 py-3"
-                title="Logout"
-              >
-                <FaSignOutAlt className="text-base flex-shrink-0" />
-              </button>
-            </div>
-          )}
+        <div className="p-3 border-t border-white/10">
+          <NavLink
+            to={`/${user?.role}/profile`}
+            className={({ isActive }) =>
+              `flex items-center rounded-xl px-2 py-2 transition-all duration-200 ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'} ${isCollapsed ? 'justify-center' : ''}`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <User size={18} className={isActive ? 'text-white' : 'text-white/60'} />
+                {!isCollapsed && <span className="ml-2.5 text-sm font-medium">My Profile</span>}
+              </>
+            )}
+          </NavLink>
+          <button
+            onClick={logout}
+            className={`w-full flex items-center rounded-xl px-2 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200 mt-1 ${isCollapsed ? 'justify-center' : ''}`}
+          >
+            <LogOut size={18} />
+            {!isCollapsed && <span className="ml-2.5 text-sm font-medium">Logout</span>}
+          </button>
         </div>
       </aside>
     </>

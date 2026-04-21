@@ -10,9 +10,6 @@ import {
   AreaChart, Area 
 } from 'recharts';
 import { dashboardAPI, attendanceAPI } from '../../services/api';
-import StatCard from '../../components/StatCard';
-import Badge from '../../components/Badge';
-import Spinner from '../../components/Spinner';
 import { useAuth } from '../../context/AuthContext';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -22,13 +19,21 @@ const TeacherDashboard: React.FC = () => {
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const theme = {
+    primary: '#002B5B',
+    secondary: '#2D54A8',
+    background: '#F0F2F5',
+    white: '#FFFFFF',
+    textPrimary: '#1F2937',
+    textSecondary: '#6B7280'
+  };
+
   useEffect(() => {
     dashboardAPI.teacher()
       .then(r => setData(r.data.data))
       .catch(console.error)
       .finally(() => setLoading(false));
 
-    // Check for missing attendance
     attendanceAPI.checkMyMissingAttendance()
       .then(r => {
         if (r.data.success && r.data.has_missing) {
@@ -36,255 +41,223 @@ const TeacherDashboard: React.FC = () => {
           toast.warning(`Pending Attendance: You haven't marked attendance for ${classes} today.`, {
             position: "top-right",
             autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
           });
         }
       })
       .catch(err => console.error('Error checking missing attendance:', err));
   }, []);
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="flex items-center justify-center h-96">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
+    </div>
+  );
 
   return (
-    <div className="space-y-3">
-      <div>
-        <h1 className="text-base md:text-lg font-bold text-gray-900">Welcome, {user?.first_name || 'Teacher'}</h1>
-        <p className="text-gray-500 text-xs mt-0.5">Here's your overview for today</p>
+    <div className="space-y-4 p-3 md:p-4 min-h-screen" style={{ backgroundColor: theme.background }}>
+      {/* Welcome Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div>
+          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>
+            Welcome back, {user?.first_name || 'Teacher'}!
+          </h1>
+          <p className="text-[10px] font-medium text-gray-500">Here's your school overview for today</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-right hidden md:block">
+            <p className="text-xs font-bold text-gray-900">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <p className="text-[10px] text-gray-400">School Session 2024-25</p>
+          </div>
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${theme.primary}10`, color: theme.primary }}>
+            <FaCalendarCheck size={18} />
+          </div>
+        </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <StatCard title="My Classes" value={data?.myClasses?.length || 0} icon={FaChalkboardTeacher} color="blue" />
-        <StatCard title="Total Students" value={data?.totalStudentsInClasses || 0} icon={FaUsers} color="green" />
-        <StatCard 
-          title="Student Leaves" 
-          value={data?.pendingStudentLeaves || 0} 
-          icon={FaFileAlt} 
-          color={data?.pendingStudentLeaves > 0 ? "orange" : "blue"} 
-          subtitle="pending approval" 
-        />
-        <StatCard title="Homework Given" value={data?.homeworkGiven || 0} icon={FaClipboardList} color="purple" />
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { title: "My Classes", value: data?.myClasses?.length || 0, icon: FaChalkboardTeacher, color: '#3b82f6', bg: 'bg-blue-50' },
+          { title: "Total Students", value: data?.totalStudentsInClasses || 0, icon: FaUsers, color: '#10b981', bg: 'bg-green-50' },
+          { title: "Student Leaves", value: data?.pendingStudentLeaves || 0, icon: FaFileAlt, color: '#f59e0b', bg: 'bg-amber-50', sub: 'pending' },
+          { title: "Homework Given", value: data?.homeworkGiven || 0, icon: FaClipboardList, color: '#8b5cf6', bg: 'bg-purple-50' }
+        ].map((stat, i) => (
+          <div key={i} className={`p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow group`}>
+            <div className="flex items-center justify-between mb-2">
+              <div className={`p-2 rounded-lg ${stat.bg}`} style={{ color: stat.color }}>
+                <stat.icon size={16} />
+              </div>
+              <span className="text-[8px] font-black uppercase tracking-wider text-gray-400">Status</span>
+            </div>
+            <h3 className="text-xl font-black" style={{ color: theme.primary }}>{stat.value}</h3>
+            <p className="text-xs font-bold text-gray-500">{stat.title}</p>
+            {stat.sub && <p className="text-[8px] font-medium text-amber-600 uppercase tracking-tight">{stat.sub}</p>}
+          </div>
+        ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {/* Attendance Trend Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaChartLine className="text-blue-500" /> Monthly Attendance Trend
-          </h2>
-          <div style={{ height: '250px' }}>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Attendance Trend */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-black flex items-center gap-2" style={{ color: theme.primary }}>
+              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600"><FaChartLine size={12} /></div>
+              Monthly Attendance
+            </h2>
+            <select className="text-[10px] font-bold bg-gray-50 border-none rounded-lg px-2 py-1 outline-none">
+              <option>Last 6 Months</option>
+            </select>
+          </div>
+          <div style={{ height: '220px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data?.charts?.attendanceTrend || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Area type="monotone" dataKey="percentage" stroke="#3b82f6" fill="#93c5fd" name="Attendance %" />
+                <defs>
+                  <linearGradient id="colorAttend" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={theme.primary} stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor={theme.primary} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}} />
+                <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}} />
+                <Tooltip 
+                  contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px'}}
+                />
+                <Area type="monotone" dataKey="percentage" stroke={theme.primary} strokeWidth={2} fillOpacity={1} fill="url(#colorAttend)" name="Attendance %" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Class Strength Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaUsers className="text-green-500" /> Class Strength (Boys vs Girls)
-          </h2>
-          <div style={{ height: '250px' }}>
+        {/* Class Strength */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-black flex items-center gap-2" style={{ color: theme.primary }}>
+              <div className="p-1.5 rounded-lg bg-green-50 text-green-600"><FaUsers size={12} /></div>
+              Gender Distribution
+            </h2>
+          </div>
+          <div style={{ height: '220px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data?.charts?.classStrength || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="class_code" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="boys" fill="#3b82f6" name="Boys" />
-                <Bar dataKey="girls" fill="#ec489a" name="Girls" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="class_code" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}} />
+                <Tooltip 
+                  cursor={{fill: '#f8fafc'}}
+                  contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px'}}
+                />
+                <Legend iconType="circle" wrapperStyle={{paddingTop: '10px', fontSize: '10px', fontWeight: 'bold'}} />
+                <Bar dataKey="boys" fill={theme.primary} radius={[4, 4, 0, 0]} barSize={15} name="Boys" />
+                <Bar dataKey="girls" fill="#ec489a" radius={[4, 4, 0, 0]} barSize={15} name="Girls" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Subject-wise Performance */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaTrophy className="text-yellow-500" /> Subject-wise Performance
-          </h2>
-          <div style={{ height: '250px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data?.charts?.subjectPerformance || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="subject" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Bar dataKey="avgScore" fill="#f59e0b" name="Avg Score %" />
-              </BarChart>
-            </ResponsiveContainer>
+        {/* performance and fee status grids */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:col-span-2">
+          {/* Performance */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <h2 className="text-sm font-black mb-4 flex items-center gap-2" style={{ color: theme.primary }}>
+              <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600"><FaTrophy size={12} /></div>
+              Subject Performance
+            </h2>
+            <div style={{ height: '200px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data?.charts?.subjectPerformance || []} layout="vertical">
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="subject" type="category" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 700, fill: '#64748b'}} width={60} />
+                  <Tooltip contentStyle={{borderRadius: '10px', border: 'none', fontSize: '10px'}} />
+                  <Bar dataKey="avgScore" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={12} name="Avg %" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Fee Status */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+            <h2 className="text-sm font-black mb-4 flex items-center gap-2 justify-center" style={{ color: theme.primary }}>
+              <div className="p-1.5 rounded-lg bg-teal-50 text-teal-600"><FaMoneyBillWave size={12} /></div>
+              Fee Collection
+            </h2>
+            <div style={{ height: '200px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Paid', value: data?.charts?.feeStatus?.paid || 0 },
+                      { name: 'Partial', value: data?.charts?.feeStatus?.partial || 0 },
+                      { name: 'Unpaid', value: data?.charts?.feeStatus?.unpaid || 0 }
+                    ]}
+                    innerRadius={45}
+                    outerRadius={70}
+                    paddingAngle={6}
+                    dataKey="value"
+                  >
+                    <Cell fill="#10b981" stroke="none" />
+                    <Cell fill="#f59e0b" stroke="none" />
+                    <Cell fill="#ef4444" stroke="none" />
+                  </Pie>
+                  <Tooltip />
+                  <Legend verticalAlign="bottom" height={30} iconType="circle" wrapperStyle={{fontSize: '10px'}} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
-        {/* Fee Status Pie Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaMoneyBillWave className="text-teal-500" /> Students Fee Status
-          </h2>
-          <div style={{ height: '250px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Paid', value: data?.charts?.feeStatus?.paid || 0 },
-                    { name: 'Partial', value: data?.charts?.feeStatus?.partial || 0 },
-                    { name: 'Unpaid', value: data?.charts?.feeStatus?.unpaid || 0 }
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  <Cell fill="#10b981" />
-                  <Cell fill="#f59e0b" />
-                  <Cell fill="#ef4444" />
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+        {/* Classes and Exams */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-50 flex items-center justify-between">
+            <h2 className="text-sm font-black" style={{ color: theme.primary }}>My Classes</h2>
+            <span className="text-[8px] font-black bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Session</span>
           </div>
-        </div>
-
-        {/* Top Students */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaGraduationCap className="text-indigo-500" /> Top Performing Students
-          </h2>
-          <div className="space-y-3">
-            {data?.charts?.topStudents?.length > 0 ? (
-              data.charts.topStudents.map((s: any, i: number) => (
-                <div key={i} className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">{s.name}</span>
-                  <span className="text-sm font-bold text-blue-600">{s.avg}%</span>
+          <div className="p-3 space-y-2">
+            {!data?.myClasses?.length ? (
+              <p className="text-center py-6 text-[10px] text-gray-400 font-medium">No classes assigned</p>
+            ) : (
+              data.myClasses.map((c: any, idx: number) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs shadow-sm" style={{ color: theme.primary }}>
+                      {c.standard}{c.division}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">{c.class_code}</p>
+                      <p className="text-[9px] text-gray-500 font-medium">{c.medium} Medium | {c.shift}</p>
+                    </div>
+                  </div>
+                  <button className="p-1.5 text-gray-400 hover:text-primary-600"><FaChartLine size={14} /></button>
                 </div>
               ))
-            ) : (
-              <p className="text-gray-400 text-xs">No data available</p>
             )}
           </div>
         </div>
 
-        {/* Weak Students */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaUserSlash className="text-red-500" /> Students Needing Attention
-          </h2>
-          <div className="space-y-3">
-            {data?.charts?.weakStudents?.length > 0 ? (
-              data.charts.weakStudents.map((s: any, i: number) => (
-                <div key={i} className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">{s.name}</span>
-                  <span className="text-sm font-bold text-red-600">{s.avg}%</span>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-50 flex items-center justify-between">
+            <h2 className="text-sm font-black" style={{ color: theme.primary }}>Upcoming Exams</h2>
+            <div className="w-6 h-6 rounded-lg bg-red-50 text-red-500 flex items-center justify-center"><FaCalendarCheck size={12} /></div>
+          </div>
+          <div className="p-3 space-y-2">
+            {!data?.upcomingExamsNext2Days?.length ? (
+              <p className="text-center py-6 text-[10px] text-gray-400 font-medium">No schedules found</p>
+            ) : (
+              data.upcomingExamsNext2Days.map((ex: any, idx: number) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-red-50/50 rounded-xl border border-red-100/50">
+                  <div>
+                    <p className="text-xs font-bold text-gray-900">{ex.exam_name}</p>
+                    <p className="text-[9px] text-red-600 font-bold uppercase tracking-wider">{ex.class_code} • {ex.subject_code}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-gray-900">{new Date(ex.exam_date).toLocaleDateString()}</p>
+                    <p className="text-[8px] text-gray-500 font-bold uppercase">Date</p>
+                  </div>
                 </div>
               ))
-            ) : (
-              <p className="text-gray-400 text-xs">No data available</p>
             )}
           </div>
-        </div>
-
-        {/* Homework Analysis */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 lg:col-span-2">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaClipboardList className="text-purple-500" /> Homework Distribution by Subject
-          </h2>
-          <div style={{ height: '250px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data?.charts?.homeworkData || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="subject" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#8b5cf6" name="Homework Count" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Holiday / Leave Impact Chart */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <FaCalendarCheck className="text-orange-500" /> Today's Leave Impact
-          </h2>
-          <div style={{ height: '250px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={data?.charts?.holidayImpact || []}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  paddingAngle={5}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  <Cell fill="#10b981" />
-                  <Cell fill="#f43f5e" />
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-2">
-          <h2 className="text-xs font-semibold text-gray-900 mb-2">My Classes</h2>
-          {!data?.myClasses?.length ? <p className="text-gray-400 text-xs">No classes assigned</p>
-          : <div className="space-y-2">
-            {data.myClasses.map((c: any, idx: number)=>(
-              <div key={c._id || c.class_code || idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900">{c.class_code}</p>
-                  <p className="text-xs text-gray-500">Std {c.standard} – {c.division} | {c.medium}</p>
-                </div>
-                <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-full">{c.shift}</span>
-              </div>
-            ))}
-          </div>}
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-2">
-          <h2 className="text-xs font-semibold text-gray-900 mb-2">Upcoming Exams</h2>
-          {!data?.upcomingExamsNext2Days?.length ? <p className="text-gray-400 text-xs">No exams in next 2 days</p>
-          : <div className="space-y-2">
-            {data.upcomingExamsNext2Days.map((ex: any, idx: number)=>(
-              <div key={ex._id || idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-gray-900">{ex.exam_name}</p>
-                  <p className="text-xs text-gray-500">{ex.class_code} | {ex.subject_code}</p>
-                </div>
-                <p className="text-xs text-gray-500">{new Date(ex.exam_date).toLocaleDateString()}</p>
-              </div>
-            ))}
-          </div>}
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-2 lg:col-span-2">
-          <h2 className="text-xs font-semibold text-gray-900 mb-2">My Leave Applications</h2>
-          {!data?.myLeaves?.length ? <p className="text-gray-400 text-xs">No leave applications</p>
-          : <table className="w-full text-xs">
-            <thead><tr className="text-left text-gray-500 border-b border-gray-100">
-              <th className="pb-2 font-medium">Type</th><th className="pb-2 font-medium">From</th><th className="pb-2 font-medium">To</th><th className="pb-2 font-medium">Status</th>
-            </tr></thead>
-            <tbody>{data.myLeaves.map((l: any, idx: number)=>(
-              <tr key={l._id || idx} className="border-t border-gray-50">
-                <td className="py-2">{l.leave_type}</td>
-                <td className="py-2">{new Date(l.from_date).toLocaleDateString()}</td>
-                <td className="py-2">{new Date(l.to_date).toLocaleDateString()}</td>
-                <td className="py-2"><Badge status={l.status} /></td>
-              </tr>
-            ))}</tbody>
-          </table>}
         </div>
       </div>
     </div>

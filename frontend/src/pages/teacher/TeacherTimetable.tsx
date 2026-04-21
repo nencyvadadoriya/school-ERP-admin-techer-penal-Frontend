@@ -41,23 +41,15 @@ const TeacherTimetable: React.FC = () => {
   const [metaLoading, setMetaLoading] = useState<boolean>(true);
   const [shiftBreakTimes, setShiftBreakTimes] = useState<any[]>([]);
 
-  // Resolve actual DB class_code by matching against all classes
-  const resolveActualClassCode = async (rawCode: string, allClasses: any[]): Promise<string> => {
-    const variants = getCodeVariants(rawCode);
-    // Direct match first
-    for (const v of variants) {
-      const found = allClasses.find((c: any) => c.class_code === v);
-      if (found) return found.class_code;
-    }
-    // Normalized match
-    const targetNorm = normalizeCode(rawCode);
-    const found = allClasses.find((c: any) => normalizeCode(c.class_code) === targetNorm);
-    if (found) return found.class_code;
-    // Return the shortest variant (most likely correct)
-    return variants.sort((a, b) => a.length - b.length)[0] || rawCode;
+  const theme = {
+    primary: '#002B5B',
+    secondary: '#2D54A8',
+    background: '#F0F2F5',
+    white: '#FFFFFF',
+    textPrimary: '#1F2937',
+    textSecondary: '#6B7280'
   };
 
-  // Fetch teacher's assigned class objects using multiple fallback strategies
   const fetchAssignedClasses = async (): Promise<any[]> => {
     try {
       const dR = await dashboardAPI.teacher();
@@ -114,17 +106,18 @@ const TeacherTimetable: React.FC = () => {
   const getClassLabel = (c: any) => {
     if (!c) return '';
     if (c.standard && c.division) {
-      const medium = c.medium ? ` | ${c.medium}` : '';
-      const stream = c.stream ? ` | ${c.stream}` : '';
-      const shift = c.shift ? ` | ${c.shift}` : '';
-      return `${c.class_code} (Std ${c.standard}-${c.division}${medium}${stream}${shift})`;
+      return `${c.class_code} (Std ${c.standard}-${c.division})`;
     }
     return c.class_code;
   };
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-  if (metaLoading) return <Spinner />;
+  if (metaLoading) return (
+    <div className="flex items-center justify-center h-96">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
+    </div>
+  );
 
   const viewSchedule = Array.isArray(viewTimetable?.schedule) ? viewTimetable.schedule : [];
   const allPeriods: any[] = [];
@@ -146,19 +139,6 @@ const TeacherTimetable: React.FC = () => {
 
   const getAllSlotsForView = () => {
     const map = new Map<number, any>();
-    const mondayPeriods = getDayPeriodsSorted('Monday');
-
-    mondayPeriods.forEach((p: any) => {
-      const pn = Number(p?.period_number);
-      if (!pn) return;
-      map.set(pn, {
-        key: `P${pn}`,
-        period_number: pn,
-        start_time: toTimeStr(p?.start_time),
-        end_time: toTimeStr(p?.end_time),
-      });
-    });
-
     days.forEach((d) => {
       getDayPeriodsSorted(d).forEach((p: any) => {
         const pn = Number(p?.period_number);
@@ -174,14 +154,12 @@ const TeacherTimetable: React.FC = () => {
         }
       });
     });
-
     const arr = Array.from(map.values());
     arr.sort((a: any, b: any) => Number(a.period_number) - Number(b.period_number));
     return arr;
   };
 
   const viewSlots = getAllSlotsForView();
-
   const selectedViewClass = classes.find((c: any) => c?.class_code === viewClassCode);
   const selectedShift = selectedViewClass?.shift || '';
   const shiftBreak = selectedShift ? shiftBreakTimes.find((x: any) => String(x.shift) === String(selectedShift)) : null;
@@ -191,7 +169,6 @@ const TeacherTimetable: React.FC = () => {
   const buildViewRows = () => {
     const slots = [...viewSlots].sort((a: any, b: any) => Number(a?.period_number) - Number(b?.period_number));
     const rows: any[] = [];
-
     slots.forEach((slot: any) => {
       rows.push(slot);
       if (Number(slot?.period_number) === 3 && shiftBreakStart && shiftBreakEnd) {
@@ -203,7 +180,6 @@ const TeacherTimetable: React.FC = () => {
         });
       }
     });
-
     if (slots.length > 0 && !slots.some((s: any) => Number(s?.period_number) === 3) && shiftBreakStart && shiftBreakEnd) {
       rows.push({
         key: `break-${selectedShift}-${shiftBreakStart}-${shiftBreakEnd}`,
@@ -212,12 +188,10 @@ const TeacherTimetable: React.FC = () => {
         end_time: shiftBreakEnd,
       });
     }
-
     return rows;
   };
 
   const viewRows = buildViewRows();
-
   const getCell = (day: string, slot: any) => {
     return allPeriods.find((p: any) => {
       if (String(p.day) !== String(day)) return false;
@@ -226,91 +200,83 @@ const TeacherTimetable: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Class Timetable</h1>
-        <p className="text-sm text-gray-500">View timetable for your assigned class</p>
+    <div className="p-3 md:p-4 space-y-4 min-h-screen" style={{ backgroundColor: theme.background }}>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div>
+          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>Class Timetable</h1>
+          <p className="text-[10px] font-medium text-gray-500">View timetable for your assigned classes</p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <select
+            className="w-full sm:w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none cursor-pointer"
+            value={viewClassCode}
+            onChange={(e) => {
+              const next = e.target.value;
+              setViewClassCode(next);
+              fetchViewTimetable(next);
+            }}
+          >
+            <option value="">Select Class</option>
+            {classes.map((c: any) => (
+              <option key={c.class_code} value={c.class_code}>
+                {getClassLabel(c)}
+              </option>
+            ))}
+          </select>
+          {viewClassCode && (
+            <button
+              onClick={() => fetchViewTimetable(viewClassCode)}
+              className="px-4 py-2 bg-gray-50 text-gray-600 rounded-xl border border-gray-200 text-[11px] font-black uppercase tracking-wider hover:bg-gray-100 transition-all active:scale-95"
+            >
+              Refresh
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="flex items-end gap-3 md:items-center md:justify-between flex-col md:flex-row">
-          <div className="w-full md:w-80">
-            <label className="block text-sm font-medium text-gray-700 mb-1">View Timetable (Class)</label>
-            {classes.length === 0 ? (
-              <p className="text-sm text-red-500 mt-1">No classes assigned. Please contact admin.</p>
-            ) : (
-              <select
-                className="input-field"
-                value={viewClassCode}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setViewClassCode(next);
-                  fetchViewTimetable(next);
-                }}
-              >
-                <option value="">Select class</option>
-                {classes.map((c: any) => (
-                  <option key={c.class_code} value={c.class_code}>
-                    {getClassLabel(c)}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="text-xs text-gray-500">
-              {viewLoading
-                ? 'Loading timetable...'
-                : viewTimetable
-                ? `Showing: ${viewTimetable.class_code}`
-                : 'No timetable selected'}
-            </div>
-            {viewClassCode && (
-              <button
-                onClick={() => fetchViewTimetable(viewClassCode)}
-                className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-600"
-              >
-                Refresh
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4 overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
           {viewLoading ? (
-            <div className="py-10"><Spinner /></div>
+            <div className="py-12 flex flex-col items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" style={{ borderBottomColor: theme.primary }}></div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Loading...</p>
+            </div>
           ) : !viewTimetable ? (
-            <div className="text-center py-10 text-gray-400">
-              {viewClassCode
-                ? 'No timetable found for this class. Admin needs to create it.'
-                : 'Please select a class to view timetable.'}
+            <div className="text-center py-12">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                {viewClassCode ? 'No timetable found' : 'Select a class to view'}
+              </p>
             </div>
           ) : (
-            <table className="min-w-full text-xs border border-gray-100">
+            <table className="min-w-full text-[11px] border-collapse">
               <thead>
-                <tr className="bg-gray-50 text-gray-600">
-                  <th className="px-3 py-2 border-b border-gray-100 text-left whitespace-nowrap">Time / Period</th>
+                <tr className="bg-gray-50/50 text-gray-400 font-black uppercase tracking-widest">
+                  <th className="px-4 py-3 border-b border-gray-100 text-left whitespace-nowrap">Time / Period</th>
                   {days.map(d => (
-                    <th key={d} className="px-3 py-2 border-b border-gray-100 text-left whitespace-nowrap">{d}</th>
+                    <th key={d} className="px-4 py-3 border-b border-gray-100 text-left whitespace-nowrap">{d}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-50">
                 {viewRows.length === 0 ? (
                   <tr>
-                    <td colSpan={days.length + 1} className="text-center py-10 text-gray-400">No periods added yet</td>
+                    <td colSpan={days.length + 1} className="text-center py-10 text-gray-400 font-bold uppercase tracking-widest">No periods found</td>
                   </tr>
                 ) : (
                   viewRows.map((row: any) => {
                     if (row?.type === 'break') {
                       return (
-                        <tr key={row.key} className="bg-blue-50">
-                          <td className="px-3 py-2 whitespace-nowrap text-gray-700 font-medium">
-                            <div>BREAK</div>
-                            <div className="text-xs text-gray-500">{row.start_time} - {row.end_time}</div>
+                        <tr key={row.key} className="bg-blue-50/50">
+                          <td className="px-4 py-3 whitespace-nowrap text-primary-700 font-black">
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary-600 animate-pulse"></span>
+                              RECESS / BREAK
+                            </div>
+                            <div className="text-[9px] text-primary-500/70 font-bold mt-0.5">{row.start_time} - {row.end_time}</div>
                           </td>
                           {days.map((d: any) => (
-                            <td key={d} className="px-3 py-2 text-blue-600 text-sm">Break</td>
+                            <td key={d} className="px-4 py-3 text-primary-500 font-bold italic opacity-60">Break</td>
                           ))}
                         </tr>
                       );
@@ -318,24 +284,24 @@ const TeacherTimetable: React.FC = () => {
 
                     const slot = row;
                     return (
-                      <tr key={slot.key} className="border-t border-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-gray-700 font-medium">
-                          <div>Period {slot.period_number}</div>
-                          <div className="text-xs text-gray-400">{slot.start_time || '—'} - {slot.end_time || '—'}</div>
+                      <tr key={slot.key} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap text-gray-700 font-black border-r border-gray-50">
+                          <div className="text-gray-900">Period {slot.period_number}</div>
+                          <div className="text-[9px] text-gray-400 font-bold mt-0.5 uppercase tracking-tighter">{slot.start_time || '—'} - {slot.end_time || '—'}</div>
                         </td>
                         {days.map((d) => {
                           const cell = getCell(d, slot);
                           const subj = cell?.subject_name || cell?.subject_code;
                           const tname = cell?.teacher_name || cell?.teacher_code;
                           return (
-                            <td key={d} className="px-3 py-2 align-top border-l border-gray-50 min-w-[160px]">
+                            <td key={d} className="px-4 py-3 align-top border-l border-gray-50 min-w-[140px]">
                               {cell ? (
-                                <div className="space-y-1">
-                                  <div className="font-semibold text-gray-900">{subj || '—'}</div>
-                                  <div className="text-gray-500 text-xs">{tname || '—'}</div>
+                                <div className="space-y-0.5">
+                                  <div className="font-black text-gray-900 group-hover:text-primary-600 transition-colors leading-tight">{subj || '—'}</div>
+                                  <div className="text-[10px] text-gray-500 font-bold opacity-70 uppercase tracking-tighter">{tname || '—'}</div>
                                 </div>
                               ) : (
-                                <span className="text-gray-300">—</span>
+                                <span className="text-gray-200">—</span>
                               )}
                             </td>
                           );

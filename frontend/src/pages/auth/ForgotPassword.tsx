@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { adminAPI, teacherAPI } from '../../services/api';
-import { FaAlignLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaEnvelope, FaUserShield, FaChalkboardTeacher, FaGraduationCap } from 'react-icons/fa';
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -12,7 +12,6 @@ const ForgotPassword: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Try to detect role from URL or state if needed, default to admin
     const searchParams = new URLSearchParams(location.search);
     const roleParam = searchParams.get('role');
     if (roleParam === 'teacher') setRole('teacher');
@@ -25,7 +24,7 @@ const ForgotPassword: React.FC = () => {
       const api = role === 'admin' ? adminAPI : teacherAPI;
       const res = await api.forgotPassword({ email });
       if (res.data.success) {
-        toast.success('OTP sent to your email!');
+        toast.success('Verification code sent to your email!');
         navigate('/auth/verify-otp', { state: { email, role } });
       }
     } catch (error: any) {
@@ -36,44 +35,88 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6">
-        <Link to="/login" className="inline-flex items-center text-primary-600 mb-4 text-sm">
-          <FaAlignLeft className="mr-2" /> Back to Login
-        </Link>
-        <h2 className="text-2xl font-bold mb-2">Forgot Password?</h2>
-        <p className="text-gray-600 text-sm mb-6">
-          Select your role and enter email to receive OTP
-        </p>
-        
-        <div className="flex gap-4 mb-6">
+    <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center p-4">
+      <div className="w-full max-w-[380px] bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-2xl shadow-slate-200/50 animate-fade-in border border-white relative">
+        {/* Top-Left Back Button */}
+        <div className="absolute top-6 left-6">
+          <Link 
+            to="/login" 
+            className="inline-flex items-center text-[10px] font-black text-[#6B7280] uppercase tracking-wider hover:text-primary-600 transition-colors group"
+          >
+            <FaArrowLeft className="mr-1.5 transition-transform group-hover:-translate-x-0.5" size={10} /> 
+            Back
+          </Link>
+        </div>
+
+        {/* Header */}
+        <div className="mb-4 pt-6 text-center">
+          <div className="inline-flex items-center justify-center p-2.5 bg-primary-50 rounded-2xl mb-2">
+            <FaGraduationCap className="text-3xl text-primary-600" />
+          </div>
+          <h2 className="text-xl font-black text-[#1F2937] mb-0.5 tracking-tight">Forgot Password?</h2>
+          <p className="text-[11px] text-[#6B7280] font-bold uppercase tracking-widest opacity-60 hidden sm:block">
+            Enter your email to reset
+          </p>
+        </div>
+
+        {/* Role Selector */}
+        <div className="flex p-1 bg-slate-100/80 rounded-xl mb-6">
           <button
             onClick={() => setRole('admin')}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg border ${role === 'admin' ? 'bg-primary-50 border-primary-600 text-primary-600' : 'bg-white border-gray-200 text-gray-500'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-black transition-all duration-300 ${
+              role === 'admin'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-slate-200'
+                : 'text-[#6B7280]'
+            }`}
           >
-            Admin
+            <FaUserShield className={role === 'admin' ? 'text-primary-600' : 'text-slate-400'} size={14} />
+            ADMIN
           </button>
           <button
             onClick={() => setRole('teacher')}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg border ${role === 'teacher' ? 'bg-primary-50 border-primary-600 text-primary-600' : 'bg-white border-gray-200 text-gray-500'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-black transition-all duration-300 ${
+              role === 'teacher'
+                ? 'bg-white text-primary-600 shadow-sm ring-1 ring-slate-200'
+                : 'text-[#6B7280]'
+            }`}
           >
-            Teacher
+            <FaChalkboardTeacher className={role === 'teacher' ? 'text-primary-600' : 'text-slate-400'} size={14} />
+            TEACHER
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="input-field w-full px-3 py-2 mb-4"
-            placeholder="Email"
-            required
-          />
-          <button type="submit" disabled={loading} className="w-full btn-primary py-2">
-            {loading ? 'Sending OTP...' : 'Send OTP'}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-[#1F2937] uppercase tracking-widest ml-1 opacity-60">Email Address</label>
+            <div className="relative group">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                <FaEnvelope size={12} />
+              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-11 bg-white border border-slate-200 rounded-xl pl-10 pr-4 text-xs font-bold text-[#1F2937] transition-all focus:border-primary-500 focus:ring-4 focus:ring-primary-500/5 outline-none placeholder:text-slate-300"
+                placeholder="name@school.com"
+                required
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 bg-[#002B5B] hover:bg-[#00224a] text-white text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary-500/20 transition-all active:scale-[0.98] mt-2"
+          >
+            {loading ? 'Sending Code...' : 'Send Reset Code'}
           </button>
         </form>
+
+        <div className="mt-8 text-center border-t border-slate-100 pt-6">
+          <p className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest">
+            Back to <Link to="/login" className="text-primary-600 font-black">Login</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

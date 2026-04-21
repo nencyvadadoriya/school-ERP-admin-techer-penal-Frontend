@@ -287,14 +287,23 @@ const TeacherHomework: React.FC = () => {
     return filteredResults;
   };
 
+  const theme = {
+    primary: '#002B5B',
+    secondary: '#2D54A8',
+    background: '#F0F2F5',
+    white: '#FFFFFF',
+    textPrimary: '#1F2937',
+    textSecondary: '#6B7280'
+  };
+
   if (error) {
     return (
-      <div className="p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
-        <h2 className="font-bold">Error Loading Homework</h2>
-        <p>{error}</p>
+      <div className="p-6 bg-red-50 text-red-700 rounded-2xl border border-red-100 max-w-2xl mx-auto mt-10 text-center">
+        <h2 className="text-lg font-black mb-2">Error Loading Homework</h2>
+        <p className="text-sm font-medium opacity-80 mb-6">{error}</p>
         <button 
           onClick={() => { setError(null); fetchData(); }}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          className="px-6 py-2 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-200 transition-all active:scale-95"
         >
           Try Again
         </button>
@@ -305,115 +314,130 @@ const TeacherHomework: React.FC = () => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <Spinner />
-        <p className="text-gray-500 animate-pulse">Loading homework details...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
+        <p className="text-sm font-bold text-gray-500 animate-pulse">Loading homework assignments...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+    <div className="p-3 md:p-4 space-y-4 min-h-screen" style={{ backgroundColor: theme.background }}>
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Homework Management</h1>
-          <p className="text-sm text-gray-500 mt-1">Create and track assignments for your classes</p>
+          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>Homework Management</h1>
+          <p className="text-[10px] font-medium text-gray-500">Create and track assignments for your classes</p>
         </div>
         <button 
           onClick={()=>{setEditing(null);setForm(EMPTY);setModal(true);}} 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-bold shadow-md transition-all active:scale-95 hover:brightness-110 text-xs"
+          style={{ backgroundColor: theme.primary }}
         >
-          <FaPlus /> Assign New
+          <FaPlus size={12} />
+          <span>Assign New</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {items.length===0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-100">
-            <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaPlus className="text-gray-300 text-xl" />
+          <div className="col-span-full bg-white rounded-xl p-10 text-center border border-gray-100 shadow-sm">
+            <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center mx-auto mb-4 text-gray-300">
+              <FaPlus size={20} />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">No homework yet</h3>
-            <p className="text-gray-500 max-w-xs mx-auto mt-1">Get started by creating your first homework assignment for your assigned classes.</p>
+            <h3 className="text-sm font-black text-gray-900 mb-1">No Homework Found</h3>
+            <p className="text-[10px] font-medium text-gray-500 max-w-xs mx-auto">
+              You haven't assigned any homework yet.
+            </p>
           </div>
         ) : (
           items.map(hw=>(
-            <div key={hw._id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow p-5 group">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="bg-blue-50 text-blue-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider">
-                      {hw.subject_code}
-                    </span>
-                    <span className="bg-gray-100 text-gray-600 text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider">
-                      Class: {hw.class_code}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-lg leading-tight group-hover:text-blue-600 transition-colors">{hw.title}</h3>
-                  {hw.description && (
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2 leading-relaxed italic border-l-2 border-gray-100 pl-3">
-                      {hw.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-4 mt-4 text-xs font-medium">
-                    <div className="flex items-center gap-1.5 text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full">
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-600 animate-pulse" />
-                      Due: {new Date(hw.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </div>
-                  </div>
+            <div key={hw._id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-4 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                <button 
+                  onClick={()=>{setEditing(hw);setForm({...hw,due_date:hw.due_date?.split('T')[0]});setModal(true);}} 
+                  className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <FaEdit size={12} />
+                </button>
+                <button 
+                  onClick={async () => { if (window.confirm('Are you sure you want to delete this assignment?')) { await homeworkAPI.delete(hw._id); toast.success('Deleted'); fetchData(); } }} 
+                  className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                >
+                  <FaTrash size={12} />
+                </button>
+              </div>
+
+              <div className="flex flex-col h-full">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[8px] font-black uppercase tracking-wider">
+                    {hw.subject_code}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-gray-50 text-gray-600 text-[8px] font-black uppercase tracking-wider">
+                    {hw.class_code}
+                  </span>
                 </div>
-                <div className="flex flex-col gap-2 shrink-0">
-                  <button 
-                    onClick={()=>{setEditing(hw);setForm({...hw,due_date:hw.due_date?.split('T')[0]});setModal(true);}} 
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                    title="Edit Assignment"
-                  >
-                    <FaEdit size={18} />
-                  </button>
-                  <button 
-                    onClick={async () => { if (window.confirm('Are you sure you want to delete this assignment?')) { await homeworkAPI.delete(hw._id); toast.success('Deleted'); fetchData(); } }} 
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                    title="Delete Assignment"
-                  >
-                    <FaTrash size={18} />
-                  </button>
+
+                <h3 className="text-sm font-black text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
+                  {hw.title}
+                </h3>
+
+                {hw.description && (
+                  <p className="text-[11px] font-medium text-gray-500 mb-4 line-clamp-2 leading-relaxed flex-grow">
+                    {hw.description}
+                  </p>
+                )}
+
+                <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
+                    <div className="w-1 h-1 rounded-full bg-orange-600 animate-pulse" />
+                    <span className="text-[8px] font-black uppercase tracking-tight">Due {new Date(hw.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                  </div>
+                  <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">
+                    {new Date(hw.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </div>
           ))
         )}
       </div>
+
       <Modal isOpen={modal} onClose={() => setModal(false)} title={editing ? 'Edit Homework' : 'Assign Homework'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-            <input className="input-field" required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+        <form onSubmit={handleSubmit} className="space-y-4 p-1">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Homework Title</label>
+            <input 
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none" 
+              required 
+              value={form.title} 
+              onChange={e => setForm({ ...form, title: e.target.value })} 
+              placeholder="Homework Title"
+            />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Standard (Class Code) *</label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Class</label>
               <select
-                className="input-field"
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none cursor-pointer"
                 required
                 value={normalizeClassCode(form.class_code)}
-                onChange={e => {
-                  console.log('Selected class code:', e.target.value);
-                  setForm({ ...form, class_code: normalizeClassCode(e.target.value) });
-                }}
+                onChange={e => setForm({ ...form, class_code: normalizeClassCode(e.target.value) })}
               >
-                <option value="">Select Standard</option>
-                {classes.length === 0 && <option disabled>No classes assigned</option>}
+                <option value="">Select Class</option>
                 {classes.map((c, idx) => (
                   <option key={c._id || c.class_code || idx} value={normalizeClassCode(c.class_code)}>
-                    {normalizeClassCode(c.class_code) || (c.standard && c.division ? `${c.standard}-${c.division}` : 'Unnamed Class')}
+                    {normalizeClassCode(c.class_code)}
                   </option>
                 ))}
               </select>
-              <p className="text-[10px] text-gray-400 mt-1"></p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Subject</label>
               <select
-                className="input-field"
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none cursor-pointer disabled:opacity-50"
                 required
                 value={form.subject_code}
                 onChange={e => setForm({ ...form, subject_code: e.target.value })}
@@ -426,17 +450,44 @@ const TeacherHomework: React.FC = () => {
               </select>
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Due Date *</label>
-            <input type="date" className="input-field" required value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} />
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Deadline</label>
+            <input 
+              type="date" 
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none cursor-pointer" 
+              required 
+              value={form.due_date} 
+              onChange={e => setForm({ ...form, due_date: e.target.value })} 
+            />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea className="input-field" rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Instructions</label>
+            <textarea 
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none resize-none" 
+              rows={3} 
+              value={form.description} 
+              onChange={e => setForm({ ...form, description: e.target.value })} 
+              placeholder="Homework details..."
+            />
           </div>
+
           <div className="flex gap-3 pt-2">
-            <button type="submit" className="btn-primary flex-1">{editing ? 'Update' : 'Assign'}</button>
-            <button type="button" onClick={() => setModal(false)} className="btn-secondary flex-1">Cancel</button>
+            <button 
+              type="button" 
+              onClick={() => setModal(false)} 
+              className="flex-1 py-2.5 rounded-xl text-xs font-black text-gray-500 border border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="flex-1 py-2.5 rounded-xl text-xs font-black text-white shadow-md transition-all active:scale-95 hover:brightness-110"
+              style={{ backgroundColor: theme.primary }}
+            >
+              {editing ? 'Update' : 'Assign'}
+            </button>
           </div>
         </form>
       </Modal>
