@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaCog, FaUnlock, FaHistory, FaChevronDown, FaChevronRight, FaDownload, FaArrowLeft } from 'react-icons/fa';
 import { LuIndianRupee } from "react-icons/lu";
@@ -266,7 +267,11 @@ const Fees: React.FC = () => {
     );
   }
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
+      <ListSkeleton />
+    </div>
+  );
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme.background }}>

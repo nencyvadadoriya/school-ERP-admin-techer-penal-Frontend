@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { studentAPI, classAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import {
@@ -550,12 +551,9 @@ const Students: React.FC = () => {
   // LOADING
   // ─────────────────────────────────────────────────────────────────────────────
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: T.bg }}>
+    <div className="s-wrap">
       <GlobalStyles />
-      <div style={{ textAlign: 'center' }}>
-        <div className="spinner-ring" style={{ margin: '0 auto 14px' }} />
-        <p style={{ color: T.muted, fontSize: 13, fontWeight: 500, margin: 0 }}>Loading students…</p>
-      </div>
+      <ListSkeleton />
     </div>
   );
 
@@ -1105,19 +1103,19 @@ const Students: React.FC = () => {
           <div>
             <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0 }}>Students</h1>
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button onClick={openBulk} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 11, fontWeight: 700, padding: '6px 12px', cursor: 'pointer' }}>
-              + Bulk
-            </button>
-            <button onClick={openAdd} style={{ background: '#fff', border: 'none', borderRadius: 8, color: '#002B5B', fontSize: 11, fontWeight: 800, padding: '6px 14px', cursor: 'pointer' }}>
-              + Add
-            </button>
-          </div>
         </div>
       </div>
 
       {/* Search & Filters */}
       <div style={{ padding: '12px 14px 0' }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+          <button onClick={openBulk} style={{ flex: 1, background: T.primary, border: `1.5px solid rgba(255,255,255,0.2)`, borderRadius: 10, color: '#fff', fontSize: 12, fontWeight: 700, padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <FaPlus size={12} /> Bulk
+          </button>
+          <button onClick={openAdd} style={{ flex: 1, background: T.secondary, border: 'none', borderRadius: 10, color: '#fff', fontSize: 12, fontWeight: 800, padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <FaPlus size={12} /> Add
+          </button>
+        </div>
         <div style={{ background: '#fff', borderRadius: 10, border: `1px solid ${T.border}`, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           <input type="text" placeholder="Search by name or GR…" value={search} onChange={e => setSearch(e.target.value)} style={{ border: 'none', outline: 'none', fontSize: 12, color: T.text, flex: 1, background: 'transparent' }} />

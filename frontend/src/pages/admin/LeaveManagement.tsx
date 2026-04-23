@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { leaveAPI } from '../../services/api';
 import Badge from '../../components/Badge';
 import Spinner from '../../components/Spinner';
@@ -51,7 +52,11 @@ const LeaveManagement: React.FC = () => {
     try { await leaveAPI.updateTeacherLeave(id, { status, rejection_reason: reason, approved_by: 'Admin' }); toast.success(`Leave ${status}`); fetch(); setShowRejectModal(false); setRejectionReason(''); } catch { toast.error('Error'); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   const leaves = tab === 'student' ? studentLeaves : teacherLeaves;
   const pendingStudents = studentLeaves.filter(l => l.status === 'Pending').length;

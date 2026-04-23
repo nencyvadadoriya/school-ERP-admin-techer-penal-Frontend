@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import PushNotificationManager from './components/PushNotificationManager';
+import { SidebarSkeleton } from './components/Skeleton';
 
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -66,24 +67,32 @@ const PrivateRoute: React.FC<any> = ({ children, role }) => {
 };
 
 const DashboardLayout: React.FC<any> = ({ children }) => {
+  const { loading: authLoading } = useAuth();
   const [isDesktopOpen, setIsDesktopOpen] = useState<boolean>(false);
   const toggleDesktop = () => setIsDesktopOpen(prev => !prev);
+  const location = useLocation();
+
+  const isDashboard = location.pathname.includes('/dashboard');
 
   return (
     <div className="flex h-screen w-full max-w-full overflow-x-hidden bg-gray-100">
       {/* Desktop sidebar only */}
       <div className="hidden lg:flex h-screen bg-gray-50 overflow-hidden flex-shrink-0">
         <PushNotificationManager />
-        <Sidebar isOpen={isDesktopOpen} toggleSidebar={toggleDesktop} />
+        {authLoading ? (
+          <SidebarSkeleton />
+        ) : (
+          <Sidebar isOpen={isDesktopOpen} toggleSidebar={toggleDesktop} />
+        )}
       </div>
       <div className="flex-1 min-w-0 w-full max-w-full flex flex-col overflow-hidden">
         <div className="hidden lg:block">
           <Header toggleSidebar={toggleDesktop} />
         </div>
         <div className="lg:hidden">
-          <MobileHeader />
+          {isDashboard && <MobileHeader />}
         </div>
-        <main className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto bg-[#F0F2F5] pb-20 lg:pb-0">
+        <main className={`flex-1 min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto bg-[#F0F2F5] pb-20 lg:pb-0 ${!isDashboard ? 'pt-0' : ''}`}>
           {children}
         </main>
         {/* Mobile bottom nav includes MobileMenuSheet grid internally */}
@@ -158,7 +167,14 @@ function App() {
       <Router>
         <AuthProvider>
           <AppContent />
-          <ToastContainer position="top-right" autoClose={3000} />
+          <ToastContainer 
+            position="top-right" 
+            autoClose={3000} 
+            toastClassName={() => 
+              "relative flex p-1 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer bg-white text-gray-800 shadow-lg mb-2 ml-auto mr-2 md:mr-4 md:mb-4 w-[280px] sm:w-auto"
+            }
+            bodyClassName={() => "flex text-sm font-white font-med block p-2"}
+          />
         </AuthProvider>
       </Router>
     </ErrorBoundary>

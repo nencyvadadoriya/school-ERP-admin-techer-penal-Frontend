@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { examAPI, classAPI, subjectAPI } from '../../services/api';
 import Modal from '../../components/Modal';
-import Spinner from '../../components/Spinner';
 import { ClipboardList, BookOpen, Calendar, Clock, Layout, CheckCircle, Circle, Trash2, Edit3 } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 
@@ -70,7 +70,11 @@ const Exams: React.FC = () => {
   const selectedClass = classes.find(c => c.class_code === form.class_code);
   const subjectOptions = selectedClass?.subjects?.length ? subjects.filter(s => selectedClass.subjects.includes(s.subject_code)) : subjects;
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   const inputCls = "w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all";
 

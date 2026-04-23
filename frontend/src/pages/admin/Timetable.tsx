@@ -3,8 +3,9 @@ import { FaPlus, FaTrash, FaEdit, FaClock, FaCalendarAlt, FaLayerGroup, FaSearch
 import { toast } from 'react-toastify';
 import { classAPI, shiftBreakTimeAPI, subjectAPI, teacherAPI, timetableAPI } from '../../services/api';
 import Modal from '../../components/Modal';
-import Spinner from '../../components/Spinner';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { Calendar, Clock, Layout, Users, BookOpen } from 'lucide-react';
+import Spinner from '../../components/Spinner';
 
 const themeConfig = {
   primary: '#002B5B',
@@ -408,7 +409,11 @@ const Timetable: React.FC = () => {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const viewSchedule = Array.isArray(viewTimetable?.schedule) ? viewTimetable.schedule : [];

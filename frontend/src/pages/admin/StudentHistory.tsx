@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { studentAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import StudentPrediction from '../../components/StudentPrediction';
@@ -34,13 +35,11 @@ const StudentHistory: React.FC = () => {
     fetchStudentDetails();
   }, [id, navigate]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   if (!student) return null;
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { teacherAPI, classAPI, subjectAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaHistory, FaChevronRight, FaArrowLeft as IconBack, FaUsers } from 'react-icons/fa';
@@ -288,13 +289,11 @@ const Teachers: React.FC = () => {
     ? classes.filter((c) => c?.medium === formData.medium)
     : classes;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="bg-gray-100 min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   if (isMobile) {
     const renderMobileContent = () => {

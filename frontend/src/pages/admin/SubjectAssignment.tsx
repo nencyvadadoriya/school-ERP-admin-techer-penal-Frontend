@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { teacherAPI, classAPI, subjectAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import { FaSave, FaTrash, FaPlus, FaChalkboardTeacher, FaBook, FaLayerGroup, FaHistory, FaSearch, FaEdit, FaFilter, FaTimes, FaChevronDown } from 'react-icons/fa';
@@ -246,7 +247,11 @@ const SubjectAssignment: React.FC = () => {
     a.teacher_code.toLowerCase().includes(historySearch.toLowerCase())
   );
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   const filteredClasses = classes.filter(c => !selectedMedium || c.medium === selectedMedium);
   const firstSelectedClass = classes.find(c => c._id === selectedClassIds[0]);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { adminAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaUserPlus, FaUserShield, FaShieldAlt, FaPhone, FaEnvelope, FaCircle } from 'react-icons/fa';
@@ -181,13 +182,11 @@ const AdminManagement: React.FC = () => {
     indigo: '#6366F1'
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   if (isMobile) {
     const renderMobileContent = () => {

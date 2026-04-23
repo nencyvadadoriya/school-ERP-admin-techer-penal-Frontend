@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { eventAPI } from '../../services/api';
 import Modal from '../../components/Modal';
 import Spinner from '../../components/Spinner';
@@ -58,7 +59,11 @@ const Events: React.FC = () => {
     } catch (err: any) { toast.error(err.response?.data?.message || 'Error'); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   const types = ['All', 'Academic', 'Sports', 'Cultural', 'Holiday', 'Meeting', 'Other'];
   const filtered = activeType === 'All' ? events : events.filter(e => e.event_type === activeType);

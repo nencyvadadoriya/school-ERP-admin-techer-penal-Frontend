@@ -74,43 +74,22 @@ const Login: React.FC = () => {
         </div>
         
         <div className="relative z-10 text-white max-w-lg">
-          <div className="bg-white/20 p-4 rounded-2xl w-fit mb-8 backdrop-blur-sm">
-            <FaGraduationCap className="text-5xl" />
-          </div>
+          <h1 className="text-2xl   font-bold mb-3 text-[#fff] tracking-tight">School ERP</h1>
           <h2 className="text-5xl font-extrabold mb-6 leading-tight tracking-tight">
             Manage Your School with Confidence
           </h2>
           <p className="text-xl text-primary-50 leading-relaxed mb-8">
             Empowering administrators and teachers with an all-in-one ERP solution for seamless school management.
           </p>
-          <div className="flex gap-4">
-            <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20 flex-1">
-              <p className="text-3xl font-bold">100%</p>
-              <p className="text-sm text-primary-100">Digital workflow</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20 flex-1">
-              <p className="text-3xl font-bold">24/7</p>
-              <p className="text-sm text-primary-100">Live support</p>
-            </div>
-          </div>
+          
         </div>
       </div>
 
       {/* Right Side - Login Form (Centered Card for Mobile) */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-[380px] bg-white lg:bg-transparent rounded-[2.5rem] lg:rounded-none p-6 sm:p-8 lg:p-0 shadow-2xl shadow-slate-200/50 lg:shadow-none animate-fade-in border border-white lg:border-none">
-          {/* Logo Section */}
-          <div className="mb-4 text-center">
-            <div className="inline-flex items-center justify-center p-2.5 bg-primary-50 rounded-2xl mb-2">
-              <FaGraduationCap className="text-3xl text-primary-600" />
-            </div>
-            <h1 className="text-2xl font-black text-[#1F2937] tracking-tight">School ERP</h1>
-          </div>
-
-          <div className="mb-4 text-center hidden lg:block">
-            <h2 className="text-xl font-black text-[#1F2937] mb-0.5 tracking-tight">Welcome Back</h2>
-            <p className="text-[11px] text-[#6B7280] font-bold uppercase tracking-widest opacity-60">Access your dashboard</p>
-          </div>
+         
+          
 
           {/* Role Selector */}
           <div className="flex p-1 bg-slate-100/80 rounded-xl mb-6">
@@ -200,11 +179,7 @@ const Login: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-8 text-center border-t border-slate-100 pt-6">
-            <p className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest">
-              Technical help? <a href="#" className="text-primary-600 font-black">Support</a>
-            </p>
-          </div>
+          
         </div>
       </div>
     </div>

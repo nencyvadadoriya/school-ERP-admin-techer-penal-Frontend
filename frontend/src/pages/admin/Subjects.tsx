@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaTh, FaList, FaFilter, FaTimes, FaBook, FaGraduationCap, FaLayerGroup, FaChevronDown } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import api from '../../services/api';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
+import { subjectAPI, classAPI, default as api } from '../../services/api';
 import Modal from '../../components/Modal';
-import Spinner from '../../components/Spinner';
 import BulkAddSubject from '../../components/BulkAddSubject';
 import StatCard from '../../components/StatCard';
 
@@ -258,7 +258,11 @@ const Subjects = () => {
 
   const groupedData = groupByStandardAndMedium();
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: themeConfig.background }}>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { Plus, Edit, Trash2, Calendar, BookOpen, Layout, ChevronDown } from 'lucide-react';
 import { toast } from 'react-toastify';
-import api, { homeworkAPI, classAPI, subjectAPI, dashboardAPI, studentAPI } from '../../services/api';
+import Skeleton, { ListSkeleton, CardSkeleton } from '../../components/Skeleton';
+import { homeworkAPI, classAPI, subjectAPI, dashboardAPI, studentAPI } from '../../services/api';
 import Modal from '../../components/Modal';
-import Spinner from '../../components/Spinner';
 import { useAuth } from '../../context/AuthContext';
 
 const EMPTY = { class_code: '', subject_code: '', title: '', description: '', due_date: '' };
@@ -29,6 +29,18 @@ const TeacherHomework: React.FC = () => {
   const [modal, setModal] = useState<boolean>(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState(EMPTY);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
+
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          item.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesClass = !selectedClass || item.class_code === selectedClass;
+    const matchesSubject = !selectedSubject || item.subject_code === selectedSubject;
+    return matchesSearch && matchesClass && matchesSubject;
+  });
 
   const fetchData = async () => {
     try {
@@ -311,96 +323,139 @@ const TeacherHomework: React.FC = () => {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
-        <p className="text-sm font-bold text-gray-500 animate-pulse">Loading homework assignments...</p>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <CardSkeleton />
+    </div>
+  );
 
   return (
-    <div className="p-3 md:p-4 space-y-4 min-h-screen" style={{ backgroundColor: theme.background }}>
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div>
-          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>Homework Management</h1>
-          <p className="text-[10px] font-medium text-gray-500">Create and track assignments for your classes</p>
+    <div className="min-h-screen bg-[#F0F2F5] pb-24 md:pb-8">
+      {/* Desktop Header Card */}
+      <div className="hidden md:block px-8 pt-8">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex justify-between items-center relative overflow-hidden">
+          <div className="max-w-[60%]">
+            <h1 className="text-2xl font-black text-[#002B5B] tracking-tight">Homework Management</h1>
+            <p className="text-gray-400 text-sm font-medium mt-1">Create and manage student assignments efficiently</p>
+          </div>
+          <div className="flex items-center gap-4 relative z-10">
+            <button 
+              onClick={()=>{setEditing(null);setForm(EMPTY);setModal(true);}} 
+              className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-[#002B5B] text-white shadow-lg rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-[#003B7B] transition-all active:scale-95"
+            >
+              <Plus size={14} />
+              <span>Assign New Homework</span>
+            </button>
+          </div>
+          <div className="absolute -right-20 -top-20 w-48 h-48 bg-[#002B5B]/5 rounded-full blur-3xl"></div>
         </div>
-        <button 
-          onClick={()=>{setEditing(null);setForm(EMPTY);setModal(true);}} 
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-bold shadow-md transition-all active:scale-95 hover:brightness-110 text-xs"
-          style={{ backgroundColor: theme.primary }}
-        >
-          <FaPlus size={12} />
-          <span>Assign New</span>
-        </button>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {items.length===0 ? (
-          <div className="col-span-full bg-white rounded-xl p-10 text-center border border-gray-100 shadow-sm">
-            <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center mx-auto mb-4 text-gray-300">
-              <FaPlus size={20} />
+      {/* Header Gradient (Mobile Only) */}
+      <div className="md:hidden bg-[#002B5B] text-white px-5 pt-8 pb-12 rounded-b-[32px] relative overflow-hidden">
+        <div className="relative z-10">
+          <h1 className="text-xl font-black tracking-tight">Homework</h1>
+          <p className="text-[10px] text-white/70 font-medium uppercase tracking-widest mt-0.5">Assignments & Tasks</p>
+        </div>
+        <div className="absolute top-[-20%] right-[-10%] w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="px-4 md:px-8 -mt-6 md:mt-6 relative z-20 space-y-4">
+        {/* Mobile Action Button */}
+        <div className="flex justify-center -mt-2 mb-4 md:hidden">
+          <button 
+            onClick={()=>{setEditing(null);setForm(EMPTY);setModal(true);}} 
+            className="w-full max-w-[200px] flex items-center justify-center gap-2 py-3 bg-white text-[#002B5B] shadow-xl rounded-2xl text-[11px] font-black uppercase tracking-wider hover:bg-gray-50 transition-all active:scale-95 border border-gray-100"
+          >
+            <Plus size={16} />
+            <span>Assign New Homework</span>
+          </button>
+        </div>
+
+        {/* Desktop Search & Filters */}
+        <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <input 
+                type="text"
+                placeholder="Search homework..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none"
+              />
+              <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
             </div>
-            <h3 className="text-sm font-black text-gray-900 mb-1">No Homework Found</h3>
-            <p className="text-[10px] font-medium text-gray-500 max-w-xs mx-auto">
-              You haven't assigned any homework yet.
-            </p>
+            <div className="relative">
+              <select 
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="w-full pl-3 pr-10 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none appearance-none cursor-pointer"
+              >
+                <option value="">All Classes</option>
+                {classes.map((c, idx) => (
+                  <option key={idx} value={c.class_code}>{c.class_code}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+            </div>
+            <div className="relative">
+              <select 
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="w-full pl-3 pr-10 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none appearance-none cursor-pointer"
+              >
+                <option value="">All Subjects</option>
+                {[...new Set(items.map(i => i.subject_code))].map((s, idx) => (
+                  <option key={idx} value={s}>{s}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+            </div>
           </div>
-        ) : (
-          items.map(hw=>(
-            <div key={hw._id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 p-4 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                <button 
-                  onClick={()=>{setEditing(hw);setForm({...hw,due_date:hw.due_date?.split('T')[0]});setModal(true);}} 
-                  className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <FaEdit size={12} />
-                </button>
-                <button 
-                  onClick={async () => { if (window.confirm('Are you sure you want to delete this assignment?')) { await homeworkAPI.delete(hw._id); toast.success('Deleted'); fetchData(); } }} 
-                  className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                >
-                  <FaTrash size={12} />
-                </button>
+        </div>
+
+        {/* Homework Cards */}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredItems.length === 0 ? (
+            <div className="col-span-full bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-3 text-gray-300">
+                <BookOpen size={24} />
               </div>
-
-              <div className="flex flex-col h-full">
-                <div className="flex items-center gap-1.5 mb-3">
-                  <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[8px] font-black uppercase tracking-wider">
-                    {hw.subject_code}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-gray-50 text-gray-600 text-[8px] font-black uppercase tracking-wider">
-                    {hw.class_code}
-                  </span>
-                </div>
-
-                <h3 className="text-sm font-black text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
-                  {hw.title}
-                </h3>
-
-                {hw.description && (
-                  <p className="text-[11px] font-medium text-gray-500 mb-4 line-clamp-2 leading-relaxed flex-grow">
-                    {hw.description}
-                  </p>
-                )}
-
-                <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-orange-600 bg-orange-50 px-2 py-1 rounded-lg">
-                    <div className="w-1 h-1 rounded-full bg-orange-600 animate-pulse" />
-                    <span className="text-[8px] font-black uppercase tracking-tight">Due {new Date(hw.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
-                  </div>
-                  <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">
-                    {new Date(hw.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
+              <h3 className="text-xs font-black text-gray-900 mb-1">No Homework Found</h3>
+              <p className="text-[10px] font-medium text-gray-400">Assignments will appear here.</p>
             </div>
-          ))
-        )}
+          ) : (
+            filteredItems.map((hw) => (
+              <div key={hw._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 relative group flex flex-col transition-all hover:shadow-md hover:border-[#002B5B]/10">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] px-2 py-0.5 rounded-md bg-[#002B5B]/5 text-[#002B5B] font-black uppercase tracking-wider inline-block w-fit">
+                      {hw.subject_code}
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+                      Std {hw.standard}-{hw.division}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => {setEditing(hw); setForm({ ...hw, class_code: hw.class_code }); setModal(true);}} className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all"><Edit size={12} /></button>
+                    <button onClick={async () => { if(window.confirm('Delete?')) { try { await homeworkAPI.delete(hw._id); toast.success('Deleted'); fetchData(); } catch(e) { toast.error('Error'); } } }} className="p-2 text-rose-600 bg-rose-50 rounded-lg hover:bg-rose-100 transition-all"><Trash2 size={12} /></button>
+                  </div>
+                </div>
+
+                <h3 className="text-sm font-black text-gray-900 mb-1.5 leading-tight">{hw.title}</h3>
+                <p className="text-xs font-medium text-gray-500 line-clamp-2 leading-relaxed mb-4 flex-grow">{hw.description || hw.content}</p>
+
+                <div className="flex items-center justify-between pt-3 border-t border-gray-50 mt-auto">
+                  <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">
+                    <Calendar size={10} />
+                    <span className="text-[10px] font-black uppercase tracking-tight">Due: {new Date(hw.due_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                  </div>
+                  <span className="text-[9px] font-bold text-gray-300 uppercase">{new Date(hw.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       <Modal isOpen={modal} onClose={() => setModal(false)} title={editing ? 'Edit Homework' : 'Assign Homework'}>

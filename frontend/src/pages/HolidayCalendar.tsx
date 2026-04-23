@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FaCalendarAlt, FaChevronLeft, FaChevronRight, FaInfoCircle, FaPlus, FaTrash, FaTimes } from 'react-icons/fa';
+import { 
+  Calendar, ChevronLeft, ChevronRight, Info, 
+  Plus, Trash2, X, AlertCircle 
+} from 'lucide-react';
 import Spinner from '../components/Spinner';
 import { eventAPI } from '../services/api';
 
@@ -199,7 +202,7 @@ const HolidayCalendar: React.FC = () => {
                     }}
                     className="ml-1 text-red-400 hover:text-red-600 pointer-events-auto"
                   >
-                    <FaTrash size={8} />
+                    <Trash2 size={8} />
                   </button>
                 )}
               </div>
@@ -207,7 +210,7 @@ const HolidayCalendar: React.FC = () => {
           </div>
           {isAdmin && !isMobile && (
             <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              <FaPlus className="text-primary-400" size={10} />
+              <Plus className="text-primary-400" size={10} />
             </div>
           )}
         </div>
@@ -229,13 +232,13 @@ const HolidayCalendar: React.FC = () => {
             </div>
             <div className="flex items-center bg-gray-50 rounded-xl border border-gray-200 p-1.5">
               <button onClick={prevMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
-                <FaChevronLeft size={14} />
+                <ChevronLeft size={14} />
               </button>
               <span className="px-6 py-1 text-sm font-black text-gray-800 min-w-[160px] text-center uppercase tracking-widest">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </span>
               <button onClick={nextMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
-                <FaChevronRight size={14} />
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -254,13 +257,13 @@ const HolidayCalendar: React.FC = () => {
           {isMobile && (
             <div className="flex items-center justify-between bg-white rounded-xl p-2 shadow-sm border border-gray-100 mb-2">
               <button onClick={prevMonth} className="p-2 text-primary-600 active:scale-90 transition-transform bg-primary-50 rounded-lg">
-                <FaChevronLeft size={12} />
+                <ChevronLeft size={12} />
               </button>
               <span className="text-[11px] font-black text-gray-800 uppercase tracking-widest">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </span>
               <button onClick={nextMonth} className="p-2 text-primary-600 active:scale-90 transition-transform bg-primary-50 rounded-lg">
-                <FaChevronRight size={12} />
+                <ChevronRight size={12} />
               </button>
             </div>
           )}
@@ -268,7 +271,7 @@ const HolidayCalendar: React.FC = () => {
             <div className={`bg-blue-50/50 border border-blue-100 text-blue-800 ${isMobile ? 'px-4 py-3' : 'px-6 py-4'} rounded-2xl flex flex-col gap-3 text-sm shadow-sm backdrop-blur-sm`}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                  <FaInfoCircle size={14} />
+                  <Info size={14} />
                 </div>
                 <span className={`${isMobile ? 'text-[10px]' : 'text-sm'} font-black uppercase tracking-wider`}>Action Required: Enable Holiday Calendar</span>
               </div>
@@ -354,7 +357,7 @@ const HolidayCalendar: React.FC = () => {
                         </div>
                         {isAdmin && (
                           <button onClick={() => handleDeleteEvent(e._id)} className={`w-7 h-7 rounded-lg bg-white text-red-400 hover:text-red-600 hover:shadow-sm flex items-center justify-center transition-all ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                            <FaTrash size={10} />
+                            <Trash2 size={10} />
                           </button>
                         )}
                       </div>
@@ -369,7 +372,7 @@ const HolidayCalendar: React.FC = () => {
                   }).length === 0 && (
                     <div className="py-8 text-center">
                       <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-2 border border-gray-100">
-                        <FaCalendarAlt className="text-gray-200" size={16} />
+                        <Calendar className="text-gray-200" size={16} />
                       </div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No holidays</p>
                     </div>
@@ -392,7 +395,7 @@ const HolidayCalendar: React.FC = () => {
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{formatDateLabel(selectedDate)}</p>
               </div>
               <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
-                <FaTimes />
+                <X size={18} />
               </button>
             </div>
             <form onSubmit={handleAddEvent} className="p-6 space-y-5">

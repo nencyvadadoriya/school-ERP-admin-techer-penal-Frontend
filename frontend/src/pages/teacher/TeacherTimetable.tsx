@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { timetableAPI, dashboardAPI, teacherAPI, classAPI, shiftBreakTimeAPI } from '../../services/api';
-import Spinner from '../../components/Spinner';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
+import { timetableAPI, dashboardAPI, shiftBreakTimeAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { 
+  CalendarDays, RefreshCcw, ChevronDown, Clock, 
+  BookOpen, User, Coffee, LayoutGrid
+} from 'lucide-react';
+import Spinner from '../../components/Spinner';
 
 const toTimeStr = (s: any) => (s === undefined || s === null ? '' : String(s));
 
@@ -114,8 +119,8 @@ const TeacherTimetable: React.FC = () => {
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   if (metaLoading) return (
-    <div className="flex items-center justify-center h-96">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
     </div>
   );
 
@@ -200,120 +205,180 @@ const TeacherTimetable: React.FC = () => {
   };
 
   return (
-    <div className="p-3 md:p-4 space-y-4 min-h-screen" style={{ backgroundColor: theme.background }}>
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div>
-          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>Class Timetable</h1>
-          <p className="text-[10px] font-medium text-gray-500">View timetable for your assigned classes</p>
+    <div className="min-h-screen bg-[#F0F2F5] pb-24 md:pb-8">
+      {/* Header Gradient (Mobile Only) */}
+      <div className="md:hidden bg-[#002B5B] text-white px-5 pt-8 pb-14 rounded-b-[32px] relative overflow-visible mb-4">
+        <div className="relative z-10">
+          <h1 className="text-xl font-black tracking-tight">Class Timetable</h1>
+          <p className="text-[10px] text-white/70 font-medium uppercase tracking-widest mt-0.5">Weekly Schedule Overview</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <select
-            className="w-full sm:w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none cursor-pointer"
-            value={viewClassCode}
-            onChange={(e) => {
-              const next = e.target.value;
-              setViewClassCode(next);
-              fetchViewTimetable(next);
-            }}
-          >
-            <option value="">Select Class</option>
-            {classes.map((c: any) => (
-              <option key={c.class_code} value={c.class_code}>
-                {getClassLabel(c)}
-              </option>
-            ))}
-          </select>
-          {viewClassCode && (
-            <button
-              onClick={() => fetchViewTimetable(viewClassCode)}
-              className="px-4 py-2 bg-gray-50 text-gray-600 rounded-xl border border-gray-200 text-[11px] font-black uppercase tracking-wider hover:bg-gray-100 transition-all active:scale-95"
+        <div className="absolute top-[-20%] right-[-10%] w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+
+        {/* Dropdown Integrated in Header for Mobile - Positioned to overlay the curve */}
+        <div className="absolute -bottom-4 left-0 right-0 px-5 flex justify-center z-20">
+          <div className="w-full max-w-[280px] relative">
+            <select
+              className="w-full pl-4 pr-10 py-3 bg-white border border-gray-100 shadow-xl text-gray-900 rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none appearance-none cursor-pointer"
+              value={viewClassCode}
+              onChange={(e) => {
+                setViewClassCode(e.target.value);
+                fetchViewTimetable(e.target.value);
+              }}
             >
-              Refresh
-            </button>
-          )}
+              <option value="">Select a class...</option>
+              {classes.map((cls) => (
+                <option key={cls._id} value={cls.class_code}>
+                  {cls.class_code} (Std {cls.standard}-{cls.division})
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+          </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          {viewLoading ? (
-            <div className="py-12 flex flex-col items-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" style={{ borderBottomColor: theme.primary }}></div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Loading...</p>
-            </div>
-          ) : !viewTimetable ? (
-            <div className="text-center py-12">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                {viewClassCode ? 'No timetable found' : 'Select a class to view'}
-              </p>
-            </div>
-          ) : (
-            <table className="min-w-full text-[11px] border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 text-gray-400 font-black uppercase tracking-widest">
-                  <th className="px-4 py-3 border-b border-gray-100 text-left whitespace-nowrap">Time / Period</th>
-                  {days.map(d => (
-                    <th key={d} className="px-4 py-3 border-b border-gray-100 text-left whitespace-nowrap">{d}</th>
+      <div className="px-4 md:px-8 mt-6 md:mt-8 space-y-4">
+        {/* Selection Card - Smaller for Mobile */}
+        <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <div className="space-y-4">
+            <div>
+              <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1.5 block">Select Class</label>
+              <div className="relative">
+                <select
+                  className="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none appearance-none cursor-pointer"
+                  value={viewClassCode}
+                  onChange={(e) => {
+                    setViewClassCode(e.target.value);
+                    fetchViewTimetable(e.target.value);
+                  }}
+                >
+                  <option value="">Select a class...</option>
+                  {classes.map((cls) => (
+                    <option key={cls._id} value={cls.class_code}>
+                      {cls.class_code} (Std {cls.standard}-{cls.division})
+                    </option>
                   ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {viewRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={days.length + 1} className="text-center py-10 text-gray-400 font-bold uppercase tracking-widest">No periods found</td>
-                  </tr>
-                ) : (
-                  viewRows.map((row: any) => {
-                    if (row?.type === 'break') {
-                      return (
-                        <tr key={row.key} className="bg-blue-50/50">
-                          <td className="px-4 py-3 whitespace-nowrap text-primary-700 font-black">
-                            <div className="flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary-600 animate-pulse"></span>
-                              RECESS / BREAK
-                            </div>
-                            <div className="text-[9px] text-primary-500/70 font-bold mt-0.5">{row.start_time} - {row.end_time}</div>
-                          </td>
-                          {days.map((d: any) => (
-                            <td key={d} className="px-4 py-3 text-primary-500 font-bold italic opacity-60">Break</td>
-                          ))}
-                        </tr>
-                      );
-                    }
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+              </div>
+            </div>
+          </div>
+        </div>
 
-                    const slot = row;
-                    return (
-                      <tr key={slot.key} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-4 py-3 whitespace-nowrap text-gray-700 font-black border-r border-gray-50">
-                          <div className="text-gray-900">Period {slot.period_number}</div>
-                          <div className="text-[9px] text-gray-400 font-bold mt-0.5 uppercase tracking-tighter">{slot.start_time || '—'} - {slot.end_time || '—'}</div>
-                        </td>
-                        {days.map((d) => {
-                          const cell = getCell(d, slot);
-                          const subj = cell?.subject_name || cell?.subject_code;
-                          const tname = cell?.teacher_name || cell?.teacher_code;
+        {/* Timetable Content */}
+        {!viewClassCode ? (
+          <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
+            <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-3 text-gray-300">
+              <CalendarDays size={24} />
+            </div>
+            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Select a class to view timetable</p>
+          </div>
+        ) : viewLoading ? (
+          <div className="py-20 flex justify-center">
+            <Spinner />
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                  <tr className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    <th className="px-6 py-4 border-r border-gray-100">Time Slots</th>
+                    {days.map(day => (
+                      <th key={day} className="px-6 py-4 text-center">{day}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {viewRows.map((row: any, idx: number) => (
+                    <tr key={row.key || idx} className="hover:bg-gray-50/30 transition-colors">
+                      <td className="px-6 py-4 border-r border-gray-100 bg-gray-50/10">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-gray-700 uppercase">
+                            {row.type === 'break' ? 'Break' : `Slot ${row.period_number}`}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tighter">{row.start_time} - {row.end_time}</span>
+                        </div>
+                      </td>
+                      {days.map(day => {
+                        if (row.type === 'break') {
                           return (
-                            <td key={d} className="px-4 py-3 align-top border-l border-gray-50 min-w-[140px]">
-                              {cell ? (
-                                <div className="space-y-0.5">
-                                  <div className="font-black text-gray-900 group-hover:text-primary-600 transition-colors leading-tight">{subj || '—'}</div>
-                                  <div className="text-[10px] text-gray-500 font-bold opacity-70 uppercase tracking-tighter">{tname || '—'}</div>
-                                </div>
-                              ) : (
-                                <span className="text-gray-200">—</span>
-                              )}
+                            <td key={day} className="px-4 py-4 text-center bg-gray-50/50">
+                              <span className="text-[9px] font-bold text-gray-400 uppercase">Break</span>
                             </td>
                           );
-                        })}
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
+                        }
+                        const period = getCell(day, row);
+                        return (
+                          <td key={day} className="px-2 py-3 text-center">
+                            {period ? (
+                              <div className="p-2.5 rounded-lg bg-white border border-gray-100 space-y-1 group hover:border-blue-200 hover:shadow-sm transition-all text-center">
+                                <p className="text-[11px] font-bold text-gray-700 uppercase leading-tight">{period.subject_code}</p>
+                                <div className="flex items-center justify-center gap-1 text-[8px] font-medium text-gray-400 uppercase tracking-tighter">
+                                  <span>Room {period.room_number || '—'}</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-gray-100">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden divide-y divide-gray-50">
+              {days.map(day => {
+                const dayPeriods = viewRows.map(row => ({ row, period: row.type === 'break' ? null : getCell(day, row) }))
+                  .filter(item => item.period || item.row.type === 'break');
+                
+                if (dayPeriods.length === 0) return null;
+
+                return (
+                  <div key={day} className="p-4 space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-1 h-1 rounded-full bg-[#002B5B]"></div>
+                      <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">{day}</h3>
+                    </div>
+                    <div className="space-y-2">
+                      {dayPeriods.map((item, idx) => (
+                        <div key={idx} className={`p-2 rounded-xl border flex items-center justify-between transition-all ${
+                          item.row.type === 'break' ? 'bg-blue-50/50 border-blue-100' : 'bg-white border-gray-100 shadow-sm'
+                        }`}>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-[10px] ${
+                              item.row.type === 'break' ? 'bg-blue-100 text-[#002B5B]' : 'bg-gray-50 text-[#002B5B]'
+                            }`}>
+                              {item.row.type === 'break' ? <Coffee size={12} /> : item.row.period_number}
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-medium text-gray-900 leading-tight uppercase">
+                                {item.row.type === 'break' ? 'Recess Break' : item.period?.subject_code}
+                              </p>
+                              <p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter flex items-center gap-1">
+                                <Clock size={8} /> {item.row.start_time} - {item.row.end_time}
+                              </p>
+                            </div>
+                          </div>
+                          {item.row.type !== 'break' && item.period?.room_number && (
+                            <span className="text-[7px] font-black text-[#002B5B] bg-[#002B5B]/5 px-1.5 py-0.5 rounded-lg uppercase">
+                              R-{item.period.room_number}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

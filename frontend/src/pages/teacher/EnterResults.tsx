@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import Skeleton, { ListSkeleton, CardSkeleton } from '../../components/Skeleton';
 import { examAPI, studentAPI } from '../../services/api';
-import Spinner from '../../components/Spinner';
 import { useAuth } from '../../context/AuthContext';
+import { 
+  Trophy, BookOpen, User, GraduationCap, 
+  ChevronDown, Save, RefreshCcw, AlertCircle
+} from 'lucide-react';
 
 const EnterResults: React.FC = () => {
   const { user, loading: loadingAuth } = useAuth();
@@ -154,164 +158,205 @@ const EnterResults: React.FC = () => {
   };
 
   if (metaLoading || loadingAuth) return (
-    <div className="flex items-center justify-center h-96">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <CardSkeleton />
     </div>
   );
   
   const exam = exams.find(e=>e._id===selectedExam);
 
+  const handleMarksChange = (studentId: string, value: string) => {
+    setMarks({ ...marks, [studentId]: value });
+  };
+
   return (
-    <div className="p-3 md:p-4 space-y-4 min-h-screen" style={{ backgroundColor: theme.background }}>
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div>
-          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>Enter Results</h1>
-          <p className="text-[10px] font-medium text-gray-500">Enter and manage student marks for exams</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {selectedExam && (
-            <>
-              <button 
-                onClick={() => { if(window.confirm('Discard all unsaved changes?')) loadStudents(); }} 
-                className="px-4 py-2 text-[11px] font-black uppercase tracking-wider text-gray-600 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-all active:scale-95"
-              >
-                Reset
-              </button>
+    <div className="min-h-screen bg-[#F0F2F5] pb-24 md:pb-8">
+      <div className="hidden md:block px-8 pt-8">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex justify-between items-center relative overflow-hidden">
+          <div className="max-w-[60%]">
+            <h1 className="text-2xl font-black text-[#002B5B] tracking-tight">Results Management</h1>
+            <p className="text-gray-400 text-sm font-medium mt-1">Enter and manage student examination results</p>
+          </div>
+          <div className="flex items-center gap-4 relative z-10">
+            {exam && (
               <button 
                 onClick={handleSave} 
-                disabled={saving || students.length === 0} 
-                className="px-6 py-2 text-[11px] font-black uppercase tracking-wider text-white shadow-md transition-all active:scale-95 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
-                style={{ backgroundColor: theme.primary }}
+                disabled={saving}
+                className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-[#002B5B] text-white shadow-lg rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-[#003B7B] transition-all active:scale-95 disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save Results'}
+                <Save size={14} />
+                <span>{saving ? 'Saving...' : 'Save Results'}</span>
               </button>
-            </>
-          )}
+            )}
+          </div>
+          <div className="absolute -right-20 -top-20 w-48 h-48 bg-[#002B5B]/5 rounded-full blur-3xl"></div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        {/* Exam Selection Section */}
-        <div className="p-4 border-b border-gray-50 bg-gray-50/30">
-          <div className="max-w-md space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
-              Select Examination
-            </label>
-            <select 
-              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none cursor-pointer"
-              value={selectedExam} 
-              onChange={e=>setSelectedExam(e.target.value)}
+      {/* Header Gradient (Mobile Only) */}
+      <div className="md:hidden bg-[#002B5B] text-white px-5 pt-8 pb-14 rounded-b-[32px] relative overflow-visible mb-4">
+        <div className="relative z-10">
+          <h1 className="text-xl font-black tracking-tight">Enter Results</h1>
+          <p className="text-[10px] text-white/70 font-medium uppercase tracking-widest mt-0.5">Manage Student Marks</p>
+        </div>
+        <div className="absolute top-[-20%] right-[-10%] w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+
+        {/* Dropdown Integrated in Header for Mobile */}
+        <div className="absolute -bottom-4 left-0 right-0 px-5 flex justify-center z-20">
+          <div className="w-full max-w-[280px] relative">
+            <select
+              className="w-full pl-4 pr-10 py-3 bg-white border border-gray-100 shadow-xl text-gray-900 rounded-2xl text-[11px] font-black uppercase tracking-wider outline-none appearance-none cursor-pointer"
+              value={selectedExam}
+              onChange={(e) => setSelectedExam(e.target.value)}
             >
-              <option value="">Choose an exam...</option>
-              {exams.map(ex=>(
+              <option value="">Select an exam...</option>
+              {exams.map((ex) => (
                 <option key={ex._id} value={ex._id}>
-                  {ex.exam_name} - {ex.class_code} ({ex.exam_type})
+                  {ex.exam_name} ({ex.class_code})
                 </option>
               ))}
             </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
           </div>
         </div>
-        
-        {/* Exam Info Banner */}
-        {exam && (
-          <div className="px-5 py-2.5 bg-blue-50/50 border-b border-blue-100 flex items-center justify-center">
-            <div className="flex flex-wrap gap-6 text-[10px] font-black uppercase tracking-widest text-primary-700">
-              <span className="flex items-center gap-2">
-                <span className="opacity-60">Subject:</span>
-                <span className="text-primary-900">{exam.subject_code}</span>
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="opacity-60">Total Marks:</span>
-                <span className="text-primary-900">{exam.total_marks}</span>
-              </span>
-              <span className="flex items-center gap-2">
-                <span className="opacity-60">Passing:</span>
-                <span className="text-green-600">{exam.passing_marks}</span>
-              </span>
-            </div>
-          </div>
-        )}
+      </div>
 
-        {/* Students Table */}
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="py-16 flex flex-col items-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-2" style={{ borderBottomColor: theme.primary }}></div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Loading students...</p>
-            </div>
-          ) : students.length > 0 ? (
-            <table className="min-w-full text-left">
-              <thead>
-                <tr className="bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                  <th className="px-6 py-4">Student Information</th>
-                  <th className="px-6 py-4">GR Number</th>
-                  <th className="px-6 py-4 text-center">Total</th>
-                  <th className="px-6 py-4 text-center">Cut</th>
-                  <th className="px-6 py-4 text-center w-40">Marks Obtained</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 text-[11px]">
-                {students.map(s => {
-                  const obtained = parseFloat(marks[s._id]);
-                  const revised = parseFloat(revisedMarks[s._id]);
-                  const effective = !isNaN(revised) ? revised : obtained;
-                  const cutMarks = !isNaN(effective) ? (exam?.total_marks - effective).toFixed(1) : '—';
-                  const isFailing = !isNaN(obtained) && obtained < (exam?.passing_marks || 0);
-                  
-                  return (
-                    <tr key={s._id} className="hover:bg-gray-50/50 transition-colors group">
-                      <td className="px-6 py-3">
-                        <div className="font-black text-gray-900 group-hover:text-primary-600 transition-colors leading-tight">
-                          {s.first_name} {s.last_name}
-                        </div>
-                      </td>
-                      <td className="px-6 py-3 font-bold text-gray-400 uppercase tracking-tighter">
-                        {s.gr_number}
-                      </td>
-                      <td className="px-6 py-3 text-center font-black text-gray-400">
-                        {exam?.total_marks}
-                      </td>
-                      <td className="px-6 py-3 text-center">
-                        <span className={`font-black ${!isNaN(obtained) && obtained < (exam?.total_marks || 0) ? 'text-red-500' : 'text-gray-300'}`}>
-                          {cutMarks !== '0.0' ? `-${cutMarks}` : '0'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3">
-                        <div className="flex justify-center">
-                          <input 
-                            type="number" 
-                            min="0" 
-                            max={exam?.total_marks} 
-                            step="0.5"
-                            className={`w-24 px-3 py-1.5 text-center font-black rounded-lg focus:ring-4 outline-none transition-all
-                              ${isFailing 
-                                ? 'bg-red-50 border-2 border-red-100 text-red-600 focus:ring-red-500/10' 
-                                : 'bg-gray-50 border-2 border-gray-100 text-gray-900 focus:ring-blue-500/10'
-                              }`}
-                            value={marks[s._id] || ''} 
-                            onChange={e => setMarks({...marks, [s._id]: e.target.value})} 
-                            placeholder="0.0" 
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : selectedExam && !loading ? (
-            <div className="py-20 text-center text-gray-400">
-              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                </svg>
+      <div className="px-4 md:px-8 mt-6 md:mt-6 relative z-20 space-y-4">
+        {/* Filters and Stats Row for Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+          {/* Settings Card */}
+          <div className="lg:col-span-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5 flex flex-col justify-center">
+            <div className="hidden md:block">
+              <label className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1.5 block">Select Exam</label>
+              <div className="relative">
+                <select
+                  className="w-full pl-3 pr-10 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none appearance-none cursor-pointer"
+                  value={selectedExam}
+                  onChange={(e) => setSelectedExam(e.target.value)}
+                >
+                  <option value="">Select an exam...</option>
+                  {exams.map((ex) => (
+                    <option key={ex._id} value={ex._id}>
+                      {ex.exam_name} ({ex.class_code})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
               </div>
-              <p className="text-xs font-bold uppercase tracking-widest">No students found for this class</p>
+            </div>
+
+            {exam && (
+              <div className="flex items-center justify-between gap-2 md:hidden">
+                <div className="flex gap-2">
+                  <div className="bg-blue-50/50 px-3 py-1.5 rounded-xl border border-blue-100 flex flex-col items-center justify-center">
+                    <span className="text-[7px] font-black text-blue-400 uppercase">Max</span>
+                    <span className="text-[10px] font-black text-blue-900">{exam.total_marks}</span>
+                  </div>
+                  <div className="bg-emerald-50/50 px-3 py-1.5 rounded-xl border border-emerald-100 flex flex-col items-center justify-center">
+                    <span className="text-[7px] font-black text-emerald-400 uppercase">Pass</span>
+                    <span className="text-[10px] font-black text-emerald-900">{exam.passing_marks}</span>
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={handleSave} 
+                  disabled={saving}
+                  className="flex items-center justify-center gap-2 px-6 py-2 bg-[#002B5B] text-white rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-[#002B5B]/90 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <Save size={14} />
+                  <span>{saving ? '...' : 'Save'}</span>
+                </button>
+              </div>
+            )}
+
+            {!exam && (
+              <div className="md:hidden text-center py-2">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Select an exam from header to start</p>
+              </div>
+            )}
+          </div>
+
+          {/* Stats Section */}
+          <div className="lg:col-span-6">
+            {exam ? (
+              <div className="grid grid-cols-2 gap-2 md:gap-4 h-full">
+                <div className="bg-white rounded-xl p-3 md:p-4 border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center transition-all hover:shadow-md h-full">
+                  <span className="text-[7px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Maximum Marks</span>
+                  <span className="text-sm md:text-xl font-black text-[#002B5B]">{exam.total_marks}</span>
+                </div>
+                <div className="bg-white rounded-xl p-3 md:p-4 border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center transition-all hover:shadow-md h-full">
+                  <span className="text-[7px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Passing Marks</span>
+                  <span className="text-sm md:text-xl font-black text-emerald-600">{exam.passing_marks}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="hidden lg:flex bg-white rounded-xl p-4 border border-gray-100 shadow-sm items-center justify-center h-full">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Exam stats will appear here</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Student List Content */}
+        <div className="space-y-3">
+          {!selectedExam ? (
+            <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center mx-auto mb-3 text-gray-300">
+                <BookOpen size={24} />
+              </div>
+              <p className="text-[10px] md:text-xs font-medium text-gray-400">Select an exam to enter marks.</p>
             </div>
           ) : (
-            <div className="py-20 text-center text-gray-400">
-              <p className="text-xs font-bold uppercase tracking-widest opacity-60">Please select an exam to enter marks</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-2 mb-1">
+                <span className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest">Student List ({students.length})</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2 md:gap-3">
+                {students.map((s, idx) => {
+                  const obtained = parseFloat(marks[s._id]);
+                  const isFailing = !isNaN(obtained) && obtained < (exam?.passing_marks || 0);
+                  return (
+                    <div key={s._id} className="bg-white rounded-xl p-2.5 md:p-3 border border-gray-100 shadow-sm flex items-center justify-between group transition-all hover:border-[#002B5B]/20 md:hover:shadow-md">
+                      <div className="flex items-center gap-2.5 md:gap-5">
+                        <div className="w-7 h-7 md:w-10 md:h-10 rounded-lg bg-gray-50 flex items-center justify-center text-[#002B5B] font-black text-[10px] md:text-sm border border-gray-100">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="text-[10px] md:text-sm font-black text-gray-900 leading-tight">{s.first_name} {s.last_name}</p>
+                          <p className="text-[8px] md:text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">GR: {s.gr_number}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 md:gap-6">
+                        <div className="relative">
+                          <input
+                            type="number"
+                            max={exam?.total_marks}
+                            min="0"
+                            step="0.5"
+                            value={marks[s._id] || ''}
+                            onChange={(e) => handleMarksChange(s._id, e.target.value)}
+                            placeholder="0.0"
+                            className={`w-14 md:w-20 px-2 py-1 md:py-2 rounded-lg text-[10px] md:text-sm font-black text-center outline-none border transition-all ${
+                              !isNaN(obtained) 
+                                ? isFailing 
+                                  ? 'bg-rose-50 border-rose-200 text-rose-600' 
+                                  : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                : 'bg-gray-50 border-gray-100 text-gray-400'
+                            }`}
+                          />
+                        </div>
+                        <div className="flex flex-col items-center min-w-[30px] md:min-w-[50px]">
+                          <span className={`text-[7px] md:text-[10px] font-black uppercase tracking-widest ${!isNaN(obtained) ? (isFailing ? 'text-rose-500' : 'text-emerald-500') : 'text-gray-300'}`}>
+                            {!isNaN(obtained) ? (isFailing ? 'Fail' : 'Pass') : '—'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

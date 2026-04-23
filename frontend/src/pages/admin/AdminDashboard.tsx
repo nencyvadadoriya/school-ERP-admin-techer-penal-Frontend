@@ -7,6 +7,8 @@ import {
   AlertTriangle, UserPlus, LayoutDashboard, CalendarDays, Calendar,
   ShieldCheck, Search, Home, PieChart, UserCircle2, ChevronDown, X, TrendingUp
 } from 'lucide-react';
+import Skeleton, { DashboardSkeleton, ListSkeleton, FormSkeleton } from'../../components/Skeleton';
+import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -108,7 +110,11 @@ const AdminDashboard: React.FC = () => {
     } finally { setCheckingAttendance(false); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="min-h-screen bg-[#F0F2F5] p-4">
+      <DashboardSkeleton />
+    </div>
+  );
 
   // ─── MOBILE VIEW ───────────────────────────────────────────────────────────
   if (isMobile) {
@@ -118,14 +124,13 @@ const AdminDashboard: React.FC = () => {
           .stats-sheet-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;backdrop-filter:blur(3px); }
           .stats-sheet { position:fixed;bottom:0;left:0;right:0;z-index:201;border-radius:24px 24px 0 0;max-height:85vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.4,0,0.2,1); }
           @keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
-          .stat-card-mobile { border-radius:12px; padding:12px; display:flex; align-items:center; gap:12px; transition: all 0.2s; }
-          .pending-row { display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;margin-bottom:8px; }
           .mobile-header-gradient {
             background: #002B5B;
-            border-radius: 0 0 32px 32px;
+            // border-radius: 0 0 32px 32px;
             padding: 40px 20px 80px 20px;
             margin-bottom: -60px;
           }
+          .pending-row { display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;margin-bottom:8px; }
         `}</style>
 
         <div className="relative">
@@ -133,17 +138,14 @@ const AdminDashboard: React.FC = () => {
           <div className="mobile-header-gradient text-white relative overflow-hidden">
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-black tracking-tight">SmartSchool ERP</h2>
+                <h2 className="text-2xl font-black tracking-tight">Welcome, Admin</h2>
               </div>
               <div className="flex items-center justify-between text-[11px] text-white/70">
-                <div className="flex items-center gap-1.5 font-medium uppercase tracking-widest">
-                  <ShieldCheck size={12} className="text-white/40" />
-                  <span>ADMIN PANEL</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-medium">
+                                <div className="flex items-center gap-1.5 font-medium">
                   <Calendar size={12} className="text-white/40" />
                   <span>{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                 </div>
+
               </div>
             </div>
             <div className="absolute top-[-20%] right-[-10%] w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
@@ -152,28 +154,28 @@ const AdminDashboard: React.FC = () => {
 
           <div className="p-4 space-y-5 relative z-20 pb-24">
             {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-2 items-stretch">
+            <div className="grid grid-cols-3 gap-2 px-1">
               {[
                 { Icon: GraduationCap, lbl: 'Students', val: stats.totalStudents || 250, color: '#3B82F6', bg: '#EFF6FF' },
                 { Icon: Wallet, lbl: 'Fees', val: `₹${((stats.totalFees || 0) / 1000).toFixed(0)}K`, color: '#F59E0B', bg: '#FFFBEB' },
-                { Icon: UserCircle2, lbl: 'Boys', val: 150, color: '#2563EB', bg: '#F0F9FF' },
-                { Icon: UserCircle2, lbl: 'Girls', val: 100, color: '#DB2777', bg: '#FDF2F8' },
-                { Icon: Landmark, lbl: 'Classes', val: stats.totalClasses || 0, color: '#8B5CF6', bg: '#F5F3FF' },
+                { Icon: UsersRound, lbl: 'Boys', val: 150, color: '#2563EB', bg: '#F0F9FF' },
+                { Icon: UsersRound, lbl: 'Girls', val: 100, color: '#DB2777', bg: '#FDF2F8' },
+                { Icon: Library, lbl: 'Classes', val: stats.totalClasses || 0, color: '#8B5CF6', bg: '#F5F3FF' },
                 { Icon: Users2, lbl: 'Teachers', val: stats.totalTeachers || 0, color: '#10B981', bg: '#ECFDF5' },
               ].map((s, i) => (
                 <div
                   key={i}
-                  className="bg-white px-2 py-2 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center justify-center min-h-[70px]"
+                  className="bg-white px-2 py-3 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center justify-center min-h-[85px]"
                 >
                   <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mb-1"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mb-1.5 shadow-sm border border-gray-50"
                     style={{ backgroundColor: s.bg }}
                   >
-                    <s.Icon size={14} style={{ color: s.color }} />
+                    <s.Icon size={16} style={{ color: s.color }} />
                   </div>
-                  <div className="w-full">
-                    <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tight leading-none truncate">{s.lbl}</p>
-                    <p className="text-xs font-black text-gray-900 leading-tight mt-0.5">{s.val}</p>
+                  <div className="w-full px-1">
+                    <p className="text-[7px] font-black text-gray-400 uppercase tracking-tight leading-none truncate mb-1">{s.lbl}</p>
+                    <p className="text-[11px] font-black text-gray-900 leading-none">{s.val}</p>
                   </div>
                 </div>
               ))}
@@ -416,10 +418,10 @@ const AdminDashboard: React.FC = () => {
       {/* Top Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { Icon: GraduationCap, label: 'Total Students', value: stats.totalStudents || 250, color: theme.secondary, bg: 'bg-blue-50' },
-          { Icon: Users2, label: 'Total Teachers', value: stats.totalTeachers || 32, color: '#10B981', bg: 'bg-emerald-50' },
-          { Icon: Landmark, label: 'Total Classes', value: stats.totalClasses || 12, color: '#8B5CF6', bg: 'bg-violet-50' },
-          { Icon: Percent, label: 'Attendance', value: `${stats.attendancePercentage || 100}%`, color: '#F59E0B', bg: 'bg-amber-50' },
+          { Icon: GraduationCap, label: 'Total Students', value: stats.totalStudents || 250, color: theme.primary, bg: 'bg-[#002B5B]/10' },
+          { Icon: Users2, label: 'Total Teachers', value: stats.totalTeachers || 32, color: theme.primary, bg: 'bg-[#002B5B]/10' },
+          { Icon: Library, label: 'Total Classes', value: stats.totalClasses || 12, color: theme.secondary, bg: 'bg-[#2D54A8]/10' },
+          { Icon: CalendarCheck2, label: 'Attendance', value: `${stats.attendancePercentage || 100}%`, color: theme.secondary, bg: 'bg-[#2D54A8]/10' },
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
             <div>

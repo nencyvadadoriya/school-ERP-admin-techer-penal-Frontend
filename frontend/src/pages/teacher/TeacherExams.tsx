@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
+import { Plus, Edit, Trash2, Search, Calendar, BookOpen, User, GraduationCap, ChevronDown, Clock, Info, CalendarCheck, Trophy } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { examAPI, dashboardAPI, subjectAPI } from '../../services/api';
+import Skeleton, { ListSkeleton, CardSkeleton } from '../../components/Skeleton';
+import { examAPI, classAPI, subjectAPI, dashboardAPI } from '../../services/api';
 import Modal from '../../components/Modal';
-import Spinner from '../../components/Spinner';
 import { useAuth } from '../../context/AuthContext';
 
 const EMPTY = { exam_name:'', medium: '', class_code:'', subject_code:'', exam_date:'', start_time:'', end_time:'', total_marks:100, passing_marks:35, exam_type:'Unit Test', description:'' };
@@ -20,6 +20,16 @@ const TeacherExams: React.FC = () => {
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState(EMPTY);
   const [search, setSearch] = useState<string>('');
+  const [selectedClassFilter, setSelectedClassFilter] = useState('');
+  const [selectedSubjectFilter, setSelectedSubjectFilter] = useState('');
+
+  const typeColors: any = { 
+    'Unit Test': 'bg-blue-50 text-blue-700',
+    'Mid Term': 'bg-amber-50 text-amber-700',
+    'Final': 'bg-red-50 text-red-700',
+    'Practical': 'bg-green-50 text-green-700',
+    'Assignment': 'bg-purple-50 text-purple-700' 
+  };
 
   const theme = {
     primary: '#002B5B',
@@ -56,7 +66,7 @@ const TeacherExams: React.FC = () => {
             const classIdMatch = a.class_id && c._id && String(a.class_id) === String(c._id);
             const classNameMatch = a.class_name && c.class_code && String(a.class_name).includes(String(c.class_code));
             const standardStr = `${c.standard} - ${c.division}`;
-            const formattedNameMatch = a.class_name && String(a.class_name).includes(standardStr);
+            const formattedNameMatch = a.class_name && a.class_name.includes(standardStr);
             return classIdMatch || classNameMatch || formattedNameMatch;
           });
         });
@@ -92,6 +102,24 @@ const TeacherExams: React.FC = () => {
     fetchMeta();
   }, []);
 
+  const handleEdit = (ex: any) => {
+    setEditing(ex);
+    setForm({
+      exam_name: ex.exam_name || '',
+      medium: ex.medium || '',
+      class_code: ex.class_code || '',
+      subject_code: ex.subject_code || '',
+      exam_date: ex.exam_date ? new Date(ex.exam_date).toISOString().split('T')[0] : '',
+      start_time: ex.start_time || '',
+      end_time: ex.end_time || '',
+      total_marks: ex.total_marks || 100,
+      passing_marks: ex.passing_marks || 35,
+      exam_type: ex.exam_type || 'Unit Test',
+      description: ex.description || ''
+    });
+    setModal(true);
+  };
+
   const handleClassChange = (classCode: string) => {
     const selected = classes.find(c => c.class_code === classCode);
     setForm({ 
@@ -120,11 +148,17 @@ const TeacherExams: React.FC = () => {
     }
   };
 
-  const filtered = exams.filter(e => 
-    e.exam_name?.toLowerCase().includes(search.toLowerCase()) || 
-    e.class_code?.toLowerCase().includes(search.toLowerCase()) ||
-    e.subject_code?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = exams.filter(e => {
+    const matchesSearch = !search || 
+      e.exam_name?.toLowerCase().includes(search.toLowerCase()) || 
+      e.class_code?.toLowerCase().includes(search.toLowerCase()) ||
+      e.subject_code?.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesClass = !selectedClassFilter || e.class_code === selectedClassFilter;
+    const matchesSubject = !selectedSubjectFilter || e.subject_code === selectedSubjectFilter;
+    
+    return matchesSearch && matchesClass && matchesSubject;
+  });
 
   const getFilteredSubjects = () => {
     if (!form.class_code) return [];
@@ -153,125 +187,161 @@ const TeacherExams: React.FC = () => {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: theme.primary }}></div>
-      <p className="text-sm font-bold text-gray-500 animate-pulse">Loading exam schedules...</p>
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <CardSkeleton />
     </div>
   );
 
-  const typeColors: any = { 
-    'Unit Test': 'bg-blue-50 text-blue-700',
-    'Mid Term': 'bg-amber-50 text-amber-700',
-    'Final': 'bg-red-50 text-red-700',
-    'Practical': 'bg-green-50 text-green-700',
-    'Assignment': 'bg-purple-50 text-purple-700' 
-  };
-
   return (
-    <div className="p-3 md:p-4 space-y-4 min-h-screen" style={{ backgroundColor: theme.background }}>
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div>
-          <h1 className="text-lg font-black tracking-tight" style={{ color: theme.primary }}>Exam Management</h1>
-          <p className="text-[10px] font-medium text-gray-500">Schedule and manage examinations for your classes</p>
+    <div className="min-h-screen bg-[#F0F2F5] pb-24 md:pb-8">
+      {/* Desktop Header Card */}
+      <div className="hidden md:block px-8 pt-8">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex justify-between items-center relative overflow-hidden">
+          <div className="max-w-[60%]">
+            <h1 className="text-2xl font-black text-[#002B5B] tracking-tight">Exam Management</h1>
+            <p className="text-gray-400 text-sm font-medium mt-1">Schedule and manage examinations for your classes</p>
+          </div>
+          <div className="flex items-center gap-4 relative z-10">
+            <button 
+              onClick={()=>{setEditing(null);setForm(EMPTY);setModal(true);}} 
+              className="hidden md:flex items-center gap-2 px-6 py-2.5 bg-[#002B5B] text-white shadow-lg rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-[#003B7B] transition-all active:scale-95"
+            >
+              <Plus size={14} />
+              <span>Add New Exam</span>
+            </button>
+          </div>
+          <div className="absolute -right-20 -top-20 w-48 h-48 bg-[#002B5B]/5 rounded-full blur-3xl"></div>
         </div>
-        <button 
-          onClick={() => { setEditing(null); setForm(EMPTY); setModal(true); }} 
-          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-white font-bold shadow-md transition-all active:scale-95 hover:brightness-110 text-xs"
-          style={{ backgroundColor: theme.primary }}
-        >
-          <FaPlus size={12} />
-          <span>Add New Exam</span>
-        </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-50">
-          <div className="relative group max-w-md">
-            <FaSearch className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs" />
+      {/* Header Gradient (Mobile Only) */}
+      <div className="md:hidden bg-[#002B5B] text-white px-5 pt-8 pb-12 rounded-b-[32px] relative overflow-hidden">
+        <div className="relative z-10">
+          <h1 className="text-xl font-black tracking-tight">Exam Schedules</h1>
+          <p className="text-[10px] text-white/70 font-medium uppercase tracking-widest mt-0.5">Manage Examinations</p>
+        </div>
+        <div className="absolute top-[-20%] right-[-10%] w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="px-4 md:px-8 -mt-6 md:mt-6 relative z-20 space-y-4">
+        {/* Mobile Action Button */}
+        <div className="flex justify-center -mt-2 mb-4 md:hidden">
+          <button 
+            onClick={() => { setEditing(null); setForm(EMPTY); setModal(true); }}
+            className="w-full max-w-[200px] flex items-center justify-center gap-2 py-3 bg-white text-[#002B5B] shadow-xl rounded-2xl text-[11px] font-black uppercase tracking-wider hover:bg-gray-50 transition-all active:scale-95 border border-gray-100"
+          >
+            <Plus size={16} />
+            <span>Add New Exam</span>
+          </button>
+        </div>
+
+        {/* Desktop Search & Filters */}
+        <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+              <input 
+                type="text" 
+                placeholder="Search exams..." 
+                className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="relative">
+              <select 
+                value={selectedClassFilter}
+                onChange={(e) => setSelectedClassFilter(e.target.value)}
+                className="w-full pl-3 pr-10 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none appearance-none cursor-pointer"
+              >
+                <option value="">All Classes</option>
+                {classes.map((c, idx) => (
+                  <option key={idx} value={c.class_code}>{c.class_code}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+            </div>
+            <div className="relative">
+              <select 
+                value={selectedSubjectFilter}
+                onChange={(e) => setSelectedSubjectFilter(e.target.value)}
+                className="w-full pl-3 pr-10 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none appearance-none cursor-pointer"
+              >
+                <option value="">All Subjects</option>
+                {[...new Set(exams.map(i => i.subject_code))].map((s, idx) => (
+                  <option key={idx} value={s}>{s}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+            </div>
+          </div>
+        </div>
+
+        {/* Search - Mobile Only */}
+        <div className="md:hidden bg-white rounded-xl shadow-sm border border-gray-100 p-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
             <input 
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-blue-500/10 transition-all outline-none" 
-              placeholder="Search by name, class, or subject..." 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
+              type="text" 
+              placeholder="Search exam..." 
+              className="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-[10px] font-bold focus:ring-2 focus:ring-[#002B5B]/10 transition-all outline-none"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-widest">
-                <th className="px-5 py-3">Exam Details</th>
-                <th className="px-5 py-3">Class & Medium</th>
-                <th className="px-5 py-3">Subject</th>
-                <th className="px-5 py-3">Schedule</th>
-                <th className="px-5 py-3">Type</th>
-                <th className="px-5 py-3 text-center">Marks</th>
-                <th className="px-5 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50 text-[11px]">
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
-                    <p className="text-xs font-bold uppercase tracking-widest">No exams found</p>
-                  </td>
-                </tr>
-              ) : (
-                filtered.map(ex => (
-                  <tr key={ex._id} className="hover:bg-gray-50/50 transition-colors group">
-                    <td className="px-5 py-3">
-                      <p className="font-black text-gray-900 leading-tight">{ex.exam_name}</p>
-                      <p className="text-[8px] text-gray-400 font-bold mt-0.5 uppercase tracking-tighter">ID: {ex._id.slice(-6)}</p>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-primary-600">{ex.class_code}</span>
-                        <span className="text-[9px] text-gray-500 font-medium">{ex.medium || 'N/A'}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className="font-bold text-gray-700">{ex.subject_name || ex.subject_code}</span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-gray-900">{new Date(ex.exam_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
-                        <span className="text-[9px] text-gray-500 font-medium uppercase">{ex.start_time || 'N/A'} - {ex.end_time || 'N/A'}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className={`text-[8px] px-2 py-0.5 rounded-md font-black uppercase tracking-wider ${typeColors[ex.exam_type] || 'bg-gray-100 text-gray-700'}`}>
-                        {ex.exam_type}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-center">
-                      <div className="flex flex-col items-center mx-auto w-fit">
-                        <span className="font-black text-gray-900">{ex.total_marks}</span>
-                        <span className="text-[8px] font-bold text-green-600 uppercase tracking-tighter">Pass: {ex.passing_marks}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex justify-end gap-1.5">
-                        <button 
-                          onClick={() => { setEditing(ex); setForm({ ...ex, exam_date: ex.exam_date?.split('T')[0] }); setModal(true); }} 
-                          className="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all shadow-sm"
-                        >
-                          <FaEdit size={12} />
-                        </button>
-                        <button 
-                          onClick={async () => { if (window.confirm('Delete exam?')) { await examAPI.delete(ex._id); toast.success('Deleted'); fetch(); } }} 
-                          className="p-1.5 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-all shadow-sm"
-                        >
-                          <FaTrash size={12} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {/* Exams Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {filtered.length === 0 ? (
+            <div className="col-span-full bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm">
+              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-gray-300">
+                <CalendarCheck size={32} />
+              </div>
+              <h3 className="text-sm font-black text-gray-900 mb-1">No Exams Scheduled</h3>
+              <p className="text-[10px] font-medium text-gray-400">Scheduled exams will appear here.</p>
+            </div>
+          ) : (
+            filtered.map((ex) => (
+              <div key={ex._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col group hover:shadow-md transition-all hover:border-[#002B5B]/10">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex flex-col gap-1">
+                    <span className={`text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-wider inline-block w-fit ${typeColors[ex.exam_type] || 'bg-gray-50 text-gray-600'}`}>
+                      {ex.exam_type}
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+                      {ex.class_code}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEdit(ex)} className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all"><Edit size={12} /></button>
+                    <button onClick={async () => { if (window.confirm('Delete exam?')) { try { await examAPI.delete(ex._id); toast.success('Deleted'); fetch(); } catch(e) { toast.error('Error'); } } }} className="p-2 text-rose-600 bg-rose-50 rounded-lg hover:bg-rose-100 transition-all"><Trash2 size={12} /></button>
+                  </div>
+                </div>
+
+                <h3 className="text-sm font-black text-gray-900 mb-1 leading-tight group-hover:text-[#002B5B] transition-colors">{ex.exam_name}</h3>
+                
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="bg-gray-50 rounded-xl p-2 md:p-2.5 border border-gray-100">
+                    <p className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><BookOpen size={8} /> Subject</p>
+                    <p className="text-[10px] md:text-xs font-black text-gray-800 truncate">{ex.subject_code}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2 md:p-2.5 border border-gray-100">
+                    <p className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><Calendar size={8} /> Date</p>
+                    <p className="text-[10px] md:text-xs font-black text-gray-800">{new Date(ex.exam_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2 md:p-2.5 border border-gray-100">
+                    <p className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><Clock size={8} /> Time</p>
+                    <p className="text-[10px] md:text-xs font-black text-gray-800 uppercase tracking-tight">{ex.start_time} - {ex.end_time}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2 md:p-2.5 border border-gray-100">
+                    <p className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5 flex items-center gap-1"><Trophy size={8} /> Marks</p>
+                    <p className="text-[10px] md:text-xs font-black text-[#002B5B] uppercase tracking-tight">{ex.total_marks} <span className="text-gray-400 font-medium">({ex.passing_marks})</span></p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

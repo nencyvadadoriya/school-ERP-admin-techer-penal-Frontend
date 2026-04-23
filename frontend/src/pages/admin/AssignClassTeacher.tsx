@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { teacherAPI, classAPI } from '../../services/api';
 import { toast } from 'react-toastify';
-import Spinner from '../../components/Spinner';
 import { UserCheck, CheckCircle, Circle, School, Users, GraduationCap, Layout } from 'lucide-react';
 import StatCard from '../../components/StatCard';
 
@@ -48,7 +48,11 @@ const AssignClassTeacher: React.FC = () => {
     } catch (err: any) { toast.error(err.response?.data?.message || 'Update failed'); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   const sortedClasses = [...classes].sort((a, b) => Number(a.standard) - Number(b.standard));
   const assignedCount = classes.filter(c => c.teacher_code).length;

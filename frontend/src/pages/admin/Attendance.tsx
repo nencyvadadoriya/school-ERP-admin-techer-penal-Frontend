@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FaSearch, FaChevronDown, FaChevronRight, FaFilter } from 'react-icons/fa';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { attendanceAPI, classAPI } from '../../services/api';
 import Spinner from '../../components/Spinner';
 import { format } from 'date-fns';
@@ -268,9 +269,7 @@ const Attendance: React.FC = () => {
                 <h2 className="text-lg font-extrabold text-white">Attendance</h2>
                 <p className="text-[10px] text-white/70 font-medium tracking-wider">Student Activity Records</p>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm">
-                <CalendarCheck2 size={18} />
-              </div>
+             
             </div>
           </div>
         )}
@@ -360,8 +359,8 @@ const Attendance: React.FC = () => {
         {/* Content Section */}
         <div className={`space-y-3 ${isMobile ? 'pb-10' : ''}`}>
           {loading ? (
-            <div className="flex items-center justify-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm mx-4">
-              <Spinner />
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm mx-4">
+              <ListSkeleton />
             </div>
           ) : Object.keys(groupedRecords).length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm mx-4">

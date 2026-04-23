@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import api from '../../services/api';
 import Modal from '../../components/Modal';
 import { School, BookOpen, Clock, Layers, Users, CheckCircle } from 'lucide-react';

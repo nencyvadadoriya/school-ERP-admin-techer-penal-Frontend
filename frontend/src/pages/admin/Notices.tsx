@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Skeleton, { ListSkeleton } from '../../components/Skeleton';
 import { noticeAPI } from '../../services/api';
 import Modal from '../../components/Modal';
 import Badge from '../../components/Badge';
@@ -65,7 +66,11 @@ const Notices: React.FC = () => {
     try { await noticeAPI.delete(id); toast.success('Deleted'); fetch(); } catch { toast.error('Error'); }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return (
+    <div className="bg-[#F0F2F5] min-h-screen">
+      <ListSkeleton />
+    </div>
+  );
 
   const inputCls = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all";
 
