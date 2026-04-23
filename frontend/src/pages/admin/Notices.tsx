@@ -5,6 +5,7 @@ import { noticeAPI } from '../../services/api';
 import Modal from '../../components/Modal';
 import Badge from '../../components/Badge';
 import Spinner from '../../components/Spinner';
+import StatCard from '../../components/StatCard';
 import { Bell, Megaphone, Users, BookOpen, Clock, XCircle } from 'lucide-react';
 
 const themeConfig = {
@@ -91,40 +92,52 @@ const Notices: React.FC = () => {
 
         {isMobile && (
           <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100 mb-4">
-            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}, ${themeConfig.secondary})` }}>
+            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}` }}>
               <div>
                 <h2 className="text-lg font-extrabold text-white">Notices</h2>
                 <p className="text-[10px] text-white/70 font-medium tracking-wider uppercase">Communication Hub</p>
               </div>
-              <button onClick={openAdd} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm active:scale-90 transition-transform">
-                <FaPlus size={16} />
-              </button>
             </div>
           </div>
         )}
 
-        <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${isMobile ? 'mb-4 px-4' : 'mb-6'}`}>
+      
+
+        <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-3 ${isMobile ? 'mb-3 px-4' : 'mb-5'}`}>
           {[
-            { label: 'Total', value: notices.length, color: themeConfig.primary, bg: 'bg-gray-100', icon: Bell },
-            { label: 'Urgent', value: notices.filter(n => n.priority === 'Urgent').length, color: '#7C3AED', bg: 'bg-purple-50', icon: Clock },
-            { label: 'High', value: notices.filter(n => n.priority === 'High').length, color: '#EF4444', bg: 'bg-red-50', icon: XCircle },
-            { label: 'For All', value: notices.filter(n => n.target_audience === 'All').length, color: '#10B981', bg: 'bg-emerald-50', icon: Users },
-          ].map((s, i) => {
-            const Icon = s.icon || Bell;
-            return (
-              <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center`}>
-                    <Icon size={14} style={{ color: s.color }} />
-                  </div>
-                  <span className="text-xs font-black" style={{ color: s.color }}>{s.value}</span>
-                </div>
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{s.label}</p>
-              </div>
-            )
-          })}
+            { label: 'Total', value: notices.length, color: themeConfig.primary, bg: 'rgba(0, 43, 91, 0.08)', icon: Bell, subtitle: 'Notices' },
+            { label: 'Urgent', value: notices.filter(n => n.priority === 'Urgent').length, color: themeConfig.primary, bg: 'rgba(0, 43, 91, 0.08)', icon: Clock, subtitle: 'Priority' },
+            { label: 'High', value: notices.filter(n => n.priority === 'High').length, color: themeConfig.primary, bg: 'rgba(0, 43, 91, 0.08)', icon: XCircle, subtitle: 'Attention' },
+            { label: 'For All', value: notices.filter(n => n.target_audience === 'All').length, color: themeConfig.primary, bg: 'rgba(0, 43, 91, 0.08)', icon: Users, subtitle: 'Audience' },
+          ].map((s, i) => (
+            <StatCard
+              key={i}
+              title={s.label}
+              value={s.value}
+              icon={s.icon}
+              iconColor={s.color}
+              iconBg={s.bg}
+              subtitle={s.subtitle}
+            />
+          ))}
         </div>
 
+  {/* Search Bar & Add Button */}
+        <div className={`bg-white rounded-xl shadow-sm border border-gray-100 mb-5 ${isMobile ? 'mx-4 p-3' : 'p-3'}`}>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input 
+                className="w-full pl-3 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:border-primary-400 transition-all" 
+                placeholder="Search notices..." 
+              />
+            </div>
+            {isMobile && (
+              <button onClick={openAdd} className="w-9 h-9 flex-shrink-0 rounded-xl flex items-center justify-center text-white active:scale-90 transition-transform shadow-md" style={{ background: themeConfig.primary }}>
+                <FaPlus size={14} />
+              </button>
+            )}
+          </div>
+        </div>
         <div className={`grid grid-cols-1 gap-3 ${isMobile ? 'pb-6' : ''}`}>
           {notices.length === 0 ? (
             <div className="bg-white rounded-xl p-12 text-center shadow-sm">
@@ -138,25 +151,25 @@ const Notices: React.FC = () => {
             const pc = priorityConfig[n.priority] || { color: '#6B7280', bg: '#F9FAFB' };
             const AIcon = audienceIcon[n.target_audience] || Bell;
             return (
-              <div key={n._id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-transparent hover:border-gray-100 transition-all">
-                <div className="flex items-start p-4 gap-3">
+              <div key={n._id} className={`bg-white rounded-xl shadow-sm overflow-hidden border border-transparent hover:border-gray-100 transition-all ${isMobile ? 'mx-4 mb-3' : ''}`}>
+                <div className={`flex items-start ${isMobile ? 'p-3' : 'p-4'} gap-3`}>
                   <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ backgroundColor: pc.color }}></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="text-sm font-bold text-gray-800">{n.title}</h3>
-                          <span className="text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wide" style={{ color: pc.color, backgroundColor: pc.bg }}>{n.priority}</span>
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-lg bg-gray-100 text-gray-500 flex items-center gap-1">
-                            <AIcon size={8} />{n.target_audience}
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                          <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-bold text-gray-800`}>{n.title}</h3>
+                          <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} font-black px-1.5 py-0.5 rounded-lg uppercase tracking-wide`} style={{ color: pc.color, backgroundColor: pc.bg }}>{n.priority}</span>
+                          <span className={`${isMobile ? 'text-[7px]' : 'text-[9px]'} font-bold px-1.5 py-0.5 rounded-lg bg-gray-100 text-gray-500 flex items-center gap-1`}>
+                            <AIcon size={isMobile ? 6 : 8} />{n.target_audience}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{n.content}</p>
-                        <p className="text-[10px] text-gray-300 mt-1.5">{new Date(n.createdAt).toLocaleDateString()} · {n.published_by}</p>
+                        <p className={`${isMobile ? 'text-[10px]' : 'text-xs'} text-gray-500 leading-relaxed line-clamp-2`}>{n.content}</p>
+                        <p className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} text-gray-300 mt-1`}>{new Date(n.createdAt).toLocaleDateString()} · {n.published_by}</p>
                       </div>
                       <div className="flex gap-1.5 flex-shrink-0">
-                        <button onClick={() => openEdit(n)} className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"><FaEdit size={12} /></button>
-                        <button onClick={() => handleDelete(n._id)} className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors"><FaTrash size={12} /></button>
+                        <button onClick={() => openEdit(n)} className={`${isMobile ? 'p-1.5' : 'p-2'} rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors`}><FaEdit size={isMobile ? 10 : 12} /></button>
+                        <button onClick={() => handleDelete(n._id)} className={`${isMobile ? 'p-1.5' : 'p-2'} rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors`}><FaTrash size={isMobile ? 10 : 12} /></button>
                       </div>
                     </div>
                   </div>

@@ -5,8 +5,10 @@ import {
   LayoutDashboard, Users, GraduationCap, UserSquare2,
   BookOpen, CalendarCheck2, ClipboardList, Wallet, Bell,
   CalendarDays, FileText, Clock, LogOut, User, School,
-  ChevronLeft, ChevronRight, ChevronDown, Settings,
-  ShieldCheck, BookMarked, Presentation, X
+  ShieldCheck, BookMarked, Presentation, X, ChevronLeft,
+  ChevronRight, ChevronDown, Settings, BookCopy, Users2,
+  Landmark, Library, FileSpreadsheet, BellRing, CalendarRange,
+  History, UserCircle2, UsersRound
 } from 'lucide-react';
 
 interface MenuItem {
@@ -36,23 +38,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly }) 
 
   const adminMenuItems: MenuItem[] = [
     { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard', section: 'main' },
-    { label: 'User Management', icon: Users, section: 'management', subItems: [
+    { label: 'User Management', icon: Users2, section: 'management', subItems: [
       { path: '/admin/admins', label: 'Admins' },
       { path: '/admin/students', label: 'Students' },
       { path: '/admin/teachers', label: 'Teachers' },
     ]},
-    { label: 'Academic Setup', icon: BookOpen, section: 'management', subItems: [
+    { label: 'Academic Setup', icon: Library, section: 'management', subItems: [
       { path: '/admin/classes', label: 'Classes' },
       { path: '/admin/subjects', label: 'Subjects' },
       { path: '/admin/subject-assignment', label: 'Subject Assignment' },
       { path: '/admin/assign-class-teacher', label: 'Assign Teacher' },
     ]},
     { path: '/admin/attendance', icon: CalendarCheck2, label: 'Attendance', section: 'academic' },
-    { path: '/admin/exams', icon: ClipboardList, label: 'Exams', section: 'academic' },
-    { path: '/admin/timetable', icon: Clock, label: 'Timetable', section: 'academic' },
+    { path: '/admin/exams', icon: FileSpreadsheet, label: 'Exams', section: 'academic' },
+    { path: '/admin/timetable', icon: History, label: 'Timetable', section: 'academic' },
     { path: '/admin/calendar', icon: CalendarDays, label: 'Holiday Calendar', section: 'academic' },
     { path: '/admin/fees', icon: Wallet, label: 'Fees Management', section: 'finance' },
-    { label: 'Communication', icon: Bell, section: 'communication', subItems: [
+    { label: 'Communication', icon: BellRing, section: 'communication', subItems: [
       { path: '/admin/notices', label: 'Notices' },
       { path: '/admin/events', label: 'Events' },
       { path: '/admin/leaves', label: 'Leave Management' },

@@ -54,8 +54,8 @@ const AssignClassTeacher: React.FC = () => {
   const assignedCount = classes.filter(c => c.teacher_code).length;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: themeConfig.background }}>
-      <div className={isMobile ? 'p-0' : 'p-6'}>
+    <div className="h-screen overflow-y-auto custom-scrollbar" style={{ backgroundColor: themeConfig.background }}>
+      <div className={`${isMobile ? 'p-0 pb-24' : 'p-6'}`}>
 
         {/* Desktop Header */}
         {!isMobile && (
@@ -82,95 +82,97 @@ const AssignClassTeacher: React.FC = () => {
 
         {/* Mobile Header */}
         {isMobile && (
-          <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100 mb-4">
-            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}, ${themeConfig.secondary})` }}>
+          <div className="bg-white shadow-sm border-b border-gray-100 mb-4">
+            <div className="p-4 flex items-center justify-between" style={{ background: themeConfig.primary }}>
               <div>
-                <h2 className="text-lg font-extrabold text-white">Class Teachers</h2>
-                <p className="text-[10px] text-white/70 font-medium tracking-wider">Primary Section Mapping</p>
+                <h2 className="text-base font-extrabold text-white">Class Teachers</h2>
+                <p className="text-[10px] text-white/70 font-medium tracking-wider uppercase">Section Mapping</p>
               </div>
-              <div className="flex gap-2">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm">
-                  <UserCheck size={18} />
-                </div>
-              </div>
+             
             </div>
           </div>
         )}
 
         {/* Stats Section */}
-        <div className={`grid grid-cols-2 md:grid-cols-3 gap-4 ${isMobile ? 'mb-4 px-4' : 'mb-6'}`}>
-          <StatCard
-            title="Total Classes"
-            value={classes.length}
-            icon={Layout}
-            iconColor={themeConfig.primary}
-            iconBg="rgba(0, 43, 91, 0.1)"
-            subtitle="Sections"
-          />
-          <StatCard
-            title="Assigned"
-            value={assignedCount}
-            icon={CheckCircle}
-            iconColor={themeConfig.primary}
-            iconBg="rgba(0, 43, 91, 0.1)"
-            subtitle="Class Teachers"
-          />
-          <StatCard
-            title="Unassigned"
-            value={classes.length - assignedCount}
-            icon={Circle}
-            iconColor={themeConfig.primary}
-            iconBg="rgba(0, 43, 91, 0.1)"
-            subtitle="Pending"
-          />
+        <div className={`grid grid-cols-2 md:grid-cols-3 gap-3 ${isMobile ? 'mb-4 px-3' : 'mb-6'}`}>
+          <div className={isMobile ? 'scale-90 origin-top-left -mr-4' : ''}>
+            <StatCard
+              title="Total Classes"
+              value={classes.length}
+              icon={Layout}
+              iconColor={themeConfig.primary}
+              iconBg="rgba(0, 43, 91, 0.1)"
+              subtitle="Sections"
+            />
+          </div>
+          <div className={isMobile ? 'scale-90 origin-top-left -mr-4' : ''}>
+            <StatCard
+              title="Assigned"
+              value={assignedCount}
+              icon={CheckCircle}
+              iconColor={themeConfig.primary}
+              iconBg="rgba(0, 43, 91, 0.1)"
+              subtitle="Teachers"
+            />
+          </div>
+          <div className={isMobile ? 'scale-90 origin-top-left -mr-4' : ''}>
+            <StatCard
+              title="Unassigned"
+              value={classes.length - assignedCount}
+              icon={Circle}
+              iconColor={themeConfig.primary}
+              iconBg="rgba(0, 43, 91, 0.1)"
+              subtitle="Pending"
+            />
+          </div>
         </div>
 
         {isMobile ? (
           /* Mobile: card-per-class with teacher dropdown */
-          <div className="space-y-2.5 px-4 pb-10">
+          <div className="space-y-2 px-3 pb-10">
             {sortedClasses.map(cls => {
               const assignedTeacher = teachers.find(t => t.teacher_code === cls.teacher_code);
               return (
-                <div key={cls._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-base shadow-inner" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}, ${themeConfig.secondary})` }}>
+                <div key={cls._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs shadow-inner" style={{ background: themeConfig.primary }}>
                         {cls.standard}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-gray-900">Std {cls.standard}-{cls.division}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{cls.medium} Medium</p>
+                        <p className="text-[11px] font-black text-gray-900 leading-tight">Std {cls.standard}-{cls.division}</p>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">{cls.medium}</p>
                       </div>
                     </div>
                     {assignedTeacher
-                      ? <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-primary-50 text-primary-600 uppercase tracking-wider border border-primary-100">Assigned</span>
-                      : <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-gray-50 text-gray-400 uppercase tracking-wider border border-gray-100">Pending</span>
+                      ? <span className="text-[8px] font-black px-2 py-0.5 rounded-lg bg-primary-50 text-primary-600 uppercase border border-primary-100">Assigned</span>
+                      : <span className="text-[8px] font-black px-2 py-0.5 rounded-lg bg-gray-50 text-gray-400 uppercase border border-gray-100">Pending</span>
                     }
                   </div>
                   
                   {assignedTeacher && (
-                    <div className="flex items-center gap-3 p-3 rounded-2xl mb-4 bg-gray-50 border border-gray-100">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs text-white shadow-sm" style={{ background: themeConfig.primary }}>
+                    <div className="flex items-center gap-2 p-2 rounded-xl mb-3 bg-gray-50 border border-gray-100">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-[10px] text-white shadow-sm" style={{ background: themeConfig.primary }}>
                         {assignedTeacher.first_name?.[0]}{assignedTeacher.last_name?.[0]}
                       </div>
-                      <div>
-                        <p className="text-xs font-black text-gray-800">{assignedTeacher.first_name} {assignedTeacher.last_name}</p>
-                        <p className="text-[9px] text-gray-400 font-bold font-mono uppercase">{assignedTeacher.teacher_code}</p>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-gray-800 truncate">{assignedTeacher.first_name} {assignedTeacher.last_name}</p>
+                        <p className="text-[8px] text-gray-400 font-bold font-mono uppercase">{assignedTeacher.teacher_code}</p>
                       </div>
                     </div>
                   )}
 
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                  <div className="space-y-1 max-h-40 overflow-y-auto custom-scrollbar pr-1">
                     {teachers.map(t => {
                       const isAssigned = cls.teacher_code === t.teacher_code;
                       return (
                         <button key={t._id} onClick={() => handleToggle(t.teacher_code, cls._id, cls.teacher_code)}
-                          className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all ${isAssigned ? 'bg-primary-50 border-primary-200 ring-1 ring-primary-100' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
-                          <div className="text-left">
-                            <span className={`text-xs font-bold ${isAssigned ? 'text-primary-700' : 'text-gray-700'}`}>{t.first_name} {t.last_name}</span>
-                            <p className="text-[9px] text-gray-400 font-mono">{t.teacher_code}</p>
+                          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg border transition-all ${isAssigned ? 'bg-primary-50 border-primary-200 shadow-sm' : 'bg-white border-gray-100'}`}>
+                          <div className="text-left min-w-0">
+                            <p className={`text-[10px] font-bold truncate ${isAssigned ? 'text-primary-700' : 'text-gray-700'}`}>{t.first_name} {t.last_name}</p>
+                            <p className="text-[8px] text-gray-400 font-mono leading-none">{t.teacher_code}</p>
                           </div>
-                          {isAssigned ? <CheckCircle size={16} className="text-primary-600" /> : <Circle size={16} className="text-gray-200" />}
+                          {isAssigned ? <CheckCircle size={12} className="text-primary-600" /> : <Circle size={12} className="text-gray-200" />}
                         </button>
                       );
                     })}

@@ -1,4 +1,4 @@
-const StatCard = ({ title, value, icon: Icon, color = 'blue', subtitle = '', iconColor, iconBg }: { title: string, value: string | number, icon: any, color?: string, subtitle?: string, iconColor?: string, iconBg?: string }) => {
+const StatCard = ({ title, value, icon: Icon, color = 'blue', subtitle = '', iconColor, iconBg, className = "" }: { title: string, value: string | number, icon: any, color?: string, subtitle?: string, iconColor?: string, iconBg?: string, className?: string }) => {
   const colors: Record<string, string> = {
     blue: 'bg-blue-50 text-blue-600 border-blue-200',
     green: 'bg-green-50 text-green-600 border-green-200',
@@ -16,19 +16,19 @@ const StatCard = ({ title, value, icon: Icon, color = 'blue', subtitle = '', ico
   } : {};
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 md:p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between gap-2">
+    <div className={`bg-white rounded-xl shadow-sm border border-gray-100 p-2 md:p-5 hover:shadow-md transition-shadow ${className}`}>
+      <div className="flex items-center justify-between gap-1.5 md:gap-2">
         <div className="min-w-0 flex-1 text-left">
-          <p className="text-[8px] md:text-[11px] text-gray-500 font-bold truncate tracking-wider uppercase">{title}</p>
-          <p className="text-sm md:text-2xl font-black text-gray-900 mt-0.5">{value}</p>
-          {subtitle && <p className="text-[7px] md:text-xs text-gray-400 mt-0.5 truncate leading-none">{subtitle}</p>}
+          <p className="text-[7px] md:text-[11px] text-gray-500 font-bold truncate tracking-wider uppercase leading-none">{title}</p>
+          <p className="text-xs md:text-2xl font-black text-gray-900 mt-0.5 leading-none">{value}</p>
+          {subtitle && <p className="text-[6px] md:text-xs text-gray-400 mt-0.5 truncate leading-none">{subtitle}</p>}
         </div>
         {Icon && (
           <div 
-            className={`w-8 h-8 md:w-[38px] md:h-[38px] flex-shrink-0 rounded-lg md:rounded-[10px] flex items-center justify-center border ${!iconColor ? colors[color] : ''}`}
+            className={`w-7 h-7 md:w-[38px] md:h-[38px] flex-shrink-0 rounded-lg md:rounded-[10px] flex items-center justify-center border ${!iconColor ? colors[color] : ''}`}
             style={iconStyle}
           >
-            <Icon size={isMobileDevice() ? 14 : 20} className={!iconColor ? "text-sm md:text-xl" : ""} />
+            <Icon size={isMobileDevice() ? 12 : 20} className={!iconColor ? "text-[10px] md:text-xl" : ""} />
           </div>
         )}
       </div>

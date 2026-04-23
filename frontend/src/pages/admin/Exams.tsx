@@ -97,14 +97,11 @@ const Exams: React.FC = () => {
         {/* Mobile Header */}
         {isMobile && (
           <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100 mb-4">
-            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}, ${themeConfig.secondary})` }}>
+            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}` }}>
               <div>
                 <h2 className="text-lg font-extrabold text-white">Exams</h2>
                 <p className="text-[10px] text-white/70 font-medium tracking-wider">Academic Assessment</p>
               </div>
-              <button onClick={() => { setEditing(null); setForm(EMPTY); setModal(true); }} className="w-10 h-10 rounded-xl bg-[#FFC107] flex items-center justify-center text-[#002B5B] active:scale-90 transition-transform shadow-lg">
-                <FaPlus size={16} />
-              </button>
             </div>
           </div>
         )}
@@ -126,9 +123,16 @@ const Exams: React.FC = () => {
 
         {/* Search Bar */}
         <div className={`bg-white rounded-xl shadow-sm border border-gray-100 mb-5 ${isMobile ? 'mx-4 p-3' : 'p-3'}`}>
-          <div className="relative">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
-            <input className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:border-primary-400 transition-all" placeholder="Search by exam name or class..." value={search} onChange={e => setSearch(e.target.value)} />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
+              <input className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:border-primary-400 transition-all" placeholder="Search by exam name or class..." value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            {isMobile && (
+              <button onClick={() => { setEditing(null); setForm(EMPTY); setModal(true); }} className="w-9 h-9 flex-shrink-0 rounded-xl flex items-center justify-center text-white active:scale-90 transition-transform shadow-md" style={{ background: themeConfig.primary }}>
+                <FaPlus size={14} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -146,23 +150,23 @@ const Exams: React.FC = () => {
                 return (
                   <div key={ex._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                     <div className="flex">
-                      <div className="w-1.5 flex-shrink-0" style={{ backgroundColor: cfg.color }}></div>
-                      <div className="flex-1 p-4">
+                      <div className="w-1 flex-shrink-0" style={{ backgroundColor: cfg.color }}></div>
+                      <div className="flex-1 p-3">
                         <div className="flex justify-between items-start">
                           <div className="flex-1 min-w-0 pr-2">
-                            <p className="text-sm font-black text-gray-900 truncate">{ex.exam_name}</p>
-                            <div className="flex flex-wrap gap-2 mt-1.5">
-                              <span className="text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider border" style={{ color: cfg.color, backgroundColor: `${cfg.color}10`, borderColor: `${cfg.color}20` }}>{ex.exam_type}</span>
-                              <span className="text-[9px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-lg border border-primary-100 uppercase tracking-tighter">{ex.class_code}</span>
+                            <p className="text-xs font-black text-gray-900 truncate">{ex.exam_name}</p>
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                              <span className="text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider border" style={{ color: cfg.color, backgroundColor: `${cfg.color}10`, borderColor: `${cfg.color}20` }}>{ex.exam_type}</span>
+                              <span className="text-[8px] font-bold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded-md border border-primary-100 uppercase tracking-tighter">{ex.class_code}</span>
                             </div>
-                            <div className="flex gap-4 mt-3">
-                              <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400"><Calendar size={12} className="text-gray-300" />{new Date(ex.exam_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                              <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400"><CheckCircle size={12} className="text-emerald-400" />{ex.total_marks} Marks</span>
+                            <div className="flex gap-3 mt-2">
+                              <span className="flex items-center gap-1 text-[9px] font-bold text-gray-400"><Calendar size={10} className="text-gray-300" />{new Date(ex.exam_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                              <span className="flex items-center gap-1 text-[9px] font-bold text-gray-400"><CheckCircle size={10} className="text-emerald-400" />{ex.total_marks} Marks</span>
                             </div>
                           </div>
-                          <div className="flex flex-col gap-2">
-                            <button onClick={() => { setEditing(ex); setForm({ ...ex, exam_date: ex.exam_date?.split('T')[0] }); setModal(true); }} className="w-8 h-8 rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white transition-all flex items-center justify-center shadow-sm"><Edit3 size={14} /></button>
-                            <button onClick={async () => { if (window.confirm('Delete this exam?')) { await examAPI.delete(ex._id); toast.success('Deleted'); fetchData(); } }} className="w-8 h-8 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center shadow-sm"><Trash2 size={14} /></button>
+                          <div className="flex flex-col gap-1.5">
+                            <button onClick={() => { setEditing(ex); setForm({ ...ex, exam_date: ex.exam_date?.split('T')[0] }); setModal(true); }} className="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white transition-all flex items-center justify-center shadow-sm"><Edit3 size={12} /></button>
+                            <button onClick={async () => { if (window.confirm('Delete this exam?')) { await examAPI.delete(ex._id); toast.success('Deleted'); fetchData(); } }} className="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center shadow-sm"><Trash2 size={12} /></button>
                           </div>
                         </div>
                       </div>
@@ -245,7 +249,7 @@ const Exams: React.FC = () => {
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Exam Title *</label>
             <input className={inputCls} required value={form.exam_name} onChange={e => setForm({ ...form, exam_name: e.target.value })} placeholder="e.g. Unit Test 1" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Medium *</label>
               <select className={inputCls} required value={form.medium} onChange={e => setForm({ ...form, medium: e.target.value, class_code: '', subject_code: '' })} disabled={metaLoading}>

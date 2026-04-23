@@ -97,20 +97,17 @@ const Classes: React.FC = () => {
 
         {isMobile && (
           <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100 mb-4">
-            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
+            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${theme.primary}` }}>
               <div>
                 <h2 className="text-lg font-extrabold text-white">Classrooms</h2>
                 <p className="text-[10px] text-white/70 font-medium tracking-wider">{classes.length} Total Classes</p>
               </div>
-              <button onClick={openAdd} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white active:scale-90 transition-transform shadow-lg backdrop-blur-sm">
-                <FaPlus size={16} />
-              </button>
             </div>
           </div>
         )}
 
         {/* Stats */}
-        <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${isMobile ? 'mb-4 px-4' : 'mb-6'}`}>
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 ${isMobile ? 'mb-4 px-4 mt-2' : 'mb-6'}`}>
           <StatCard
             title="Total Classes"
             value={classes.length}
@@ -145,9 +142,9 @@ const Classes: React.FC = () => {
           />
         </div>
 
-        {/* Search */}
-        <div className={`flex flex-col md:flex-row gap-4 items-center mb-6 ${isMobile ? 'px-4' : ''}`}>
-          <div className="relative flex-1 w-full">
+        {/* Search & Add */}
+        <div className={`flex items-center gap-2 mb-6 ${isMobile ? 'px-4' : ''}`}>
+          <div className="relative flex-1">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
             <input 
               className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm" 
@@ -156,7 +153,15 @@ const Classes: React.FC = () => {
               onChange={e => setSearch(e.target.value)} 
             />
           </div>
-          {!isMobile && (
+          {isMobile ? (
+            <button 
+              onClick={openAdd} 
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white active:scale-90 transition-transform shadow-lg"
+              style={{ background: theme.primary }}
+            >
+              <FaPlus size={16} />
+            </button>
+          ) : (
             <div className="flex items-center gap-2 text-xs font-medium text-gray-500 bg-white px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
               <CheckCircle size={14} className="text-emerald-500" />
               <span>{filtered.length} Results</span>
@@ -165,7 +170,7 @@ const Classes: React.FC = () => {
         </div>
 
         {/* Grouped list */}
-        <div className={`space-y-2.5 ${isMobile ? 'pb-6' : ''}`}>
+        <div className={`space-y-2.5 px-4 ${isMobile ? 'pb-6' : ''}`}>
           {standards.length === 0 ? (
             <div className="bg-white rounded-xl p-12 text-center shadow-sm">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: `${theme.primary}10` }}>
@@ -179,14 +184,14 @@ const Classes: React.FC = () => {
             const stdClasses = grouped[std];
             return (
               <div key={std} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                <button onClick={() => setExpandedStandard(isExp ? null : std)} className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/50 transition-colors">
+                <button onClick={() => setExpandedStandard(isExp ? null : std)} className={`w-full flex items-center justify-between ${isMobile ? 'px-4 py-3' : 'px-5 py-4'} hover:bg-gray-50/50 transition-colors`}>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-lg shadow-inner" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
+                    <div className={`${isMobile ? 'w-10 h-10 text-base' : 'w-12 h-12 text-lg'} rounded-2xl flex items-center justify-center font-black text-white shadow-inner`} style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
                       {std}
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-bold text-gray-800">Standard {std}</p>
-                      <p className="text-[11px] text-gray-500 font-medium flex items-center gap-1">
+                      <p className={`${isMobile ? 'text-xs' : 'text-sm'} font-bold text-gray-800`}>Standard {std}</p>
+                      <p className={`${isMobile ? 'text-[10px]' : 'text-[11px]'} text-gray-500 font-medium flex items-center gap-1`}>
                         <Layers size={10} /> {stdClasses.length} {stdClasses.length === 1 ? 'Section' : 'Sections'}
                       </p>
                     </div>
@@ -207,36 +212,36 @@ const Classes: React.FC = () => {
                 </button>
 
                 {isExp && (
-                  <div className="border-t border-gray-50 p-4 bg-gray-50/30 grid gap-3" style={{ gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+                  <div className={`border-t border-gray-50 ${isMobile ? 'p-3' : 'p-4'} bg-gray-50/30 grid gap-3`} style={{ gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))' }}>
                     {stdClasses.map((cls: any) => {
                       const mc = mediumColor(cls.medium);
                       const sc = shiftColor(cls.shift);
                       return (
-                        <div key={cls._id} className="group bg-white rounded-xl border border-gray-200 p-4 hover:border-blue-300 hover:shadow-sm transition-all relative overflow-hidden">
+                        <div key={cls._id} className={`group bg-white rounded-xl border border-gray-200 ${isMobile ? 'p-3' : 'p-4'} hover:border-blue-300 hover:shadow-sm transition-all relative overflow-hidden`}>
                           <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rounded-bl-[40px] -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                          <div className="flex items-center justify-between mb-4 relative z-10">
+                          <div className={`flex items-center justify-between ${isMobile ? 'mb-3' : 'mb-4'} relative z-10`}>
                             <div className="flex items-center gap-2">
-                              <span className="text-lg font-black" style={{ color: theme.primary }}>Div {cls.division}</span>
+                              <span className={`${isMobile ? 'text-base' : 'text-lg'} font-black`} style={{ color: theme.primary }}>Div {cls.division}</span>
                               {cls.stream && (
-                                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 tracking-tighter">
+                                <span className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 tracking-tighter`}>
                                   {cls.stream}
                                 </span>
                               )}
                             </div>
                             <div className="flex gap-1">
-                              <button onClick={() => openEdit(cls)} className="p-2 rounded-lg bg-gray-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all"><FaEdit size={11} /></button>
-                              <button onClick={() => handleDelete(cls._id)} className="p-2 rounded-lg bg-gray-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"><FaTrash size={11} /></button>
+                              <button onClick={() => openEdit(cls)} className="p-1.5 rounded-lg bg-gray-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all"><FaEdit size={10} /></button>
+                              <button onClick={() => handleDelete(cls._id)} className="p-1.5 rounded-lg bg-gray-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"><FaTrash size={10} /></button>
                             </div>
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-3 relative z-10">
-                            <div className="p-2 rounded-lg bg-gray-50/80 border border-gray-100">
-                              <p className="text-[9px] font-bold text-gray-400 mb-1 flex items-center gap-1"><BookOpen size={8} /> Medium</p>
-                              <p className="text-[11px] font-bold" style={{ color: mc.color }}>{cls.medium}</p>
+                          <div className="grid grid-cols-2 gap-2 relative z-10">
+                            <div className="p-1.5 rounded-lg bg-gray-50/80 border border-gray-100">
+                              <p className="text-[8px] font-bold text-gray-400 mb-0.5 flex items-center gap-1"><BookOpen size={8} /> Medium</p>
+                              <p className="text-[10px] font-bold" style={{ color: mc.color }}>{cls.medium}</p>
                             </div>
-                            <div className="p-2 rounded-lg bg-gray-50/80 border border-gray-100">
-                              <p className="text-[9px] font-bold text-gray-400 mb-1 flex items-center gap-1"><Clock size={8} /> Shift</p>
-                              <p className="text-[11px] font-bold" style={{ color: sc.color }}>{cls.shift}</p>
+                            <div className="p-1.5 rounded-lg bg-gray-50/80 border border-gray-100">
+                              <p className="text-[8px] font-bold text-gray-400 mb-0.5 flex items-center gap-1"><Clock size={8} /> Shift</p>
+                              <p className="text-[10px] font-bold" style={{ color: sc.color }}>{cls.shift}</p>
                             </div>
                           </div>
                         </div>
@@ -251,34 +256,44 @@ const Classes: React.FC = () => {
       </div>
 
       <Modal isOpen={modal} onClose={() => setModal(false)} title={editing ? 'Edit Class' : 'Add Class'}>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Standard *</label>
+        <form onSubmit={handleSubmit} className={`${isMobile ? 'space-y-5' : 'space-y-3'}`}>
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4 mb-4`}>
+            <div>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-xs'} font-semibold text-gray-600 mb-1.5`}>Standard *</label>
               <select className={inputCls} required value={form.standard} onChange={e => setForm({ ...form, standard: e.target.value })}>
                 <option value="">Select</option>
-                {[1,2,3,4,5,6,7,8,9,10,11,12].map(s => <option key={s} value={s}>Class {s}</option>)}
-              </select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Division</label>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(s => <option key={s} value={s}>Class {s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-xs'} font-semibold text-gray-600 mb-1.5`}>Division</label>
               <select className={inputCls} value={form.division} onChange={e => setForm({ ...form, division: e.target.value })}>
-                {['A','B','C','D'].map(d => <option key={d}>{d}</option>)}
-              </select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Medium</label>
-              <select className={inputCls} value={form.medium} onChange={e => setForm({ ...form, medium: e.target.value })}>
-                <option>English</option><option>Gujarati</option>
-              </select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Shift</label>
-              <select className={inputCls} value={form.shift} onChange={e => setForm({ ...form, shift: e.target.value })}>
-                <option>Morning</option><option>Afternoon</option>
-              </select></div>
-            <div className="col-span-2"><label className="block text-xs font-semibold text-gray-600 mb-1">Stream</label>
+                {['A', 'B', 'C', 'D'].map(d => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+            <div className={`${isMobile ? 'col-span-1' : 'col-span-2'}`}>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-xs'} font-semibold text-gray-600 mb-1.5`}>Stream</label>
               <select className={inputCls} value={form.stream} onChange={e => setForm({ ...form, stream: e.target.value })}>
                 <option value="">None</option>
-                {['Science-Maths','Science-Bio','Commerce','Foundation','Primary','Upper Primary','Secondary','Higher Secondary'].map(s => <option key={s}>{s}</option>)}
-              </select></div>
+                {['Science-Maths', 'Science-Bio', 'Commerce', 'Foundation', 'Primary', 'Upper Primary', 'Secondary', 'Higher Secondary'].map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-xs'} font-semibold text-gray-600 mb-1.5`}>Medium</label>
+              <select className={inputCls} value={form.medium} onChange={e => setForm({ ...form, medium: e.target.value })}>
+                <option>English</option><option>Gujarati</option>
+              </select>
+            </div>
+            <div>
+              <label className={`block ${isMobile ? 'text-xs' : 'text-xs'} font-semibold text-gray-600 mb-1.5`}>Shift</label>
+              <select className={inputCls} value={form.shift} onChange={e => setForm({ ...form, shift: e.target.value })}>
+                <option>Morning</option><option>Afternoon</option>
+              </select>
+            </div>
           </div>
-          <div className="flex gap-3 pt-2">
-            <button type="submit" className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold active:scale-95" style={{ background: theme.primary }} disabled={loading}>{loading ? 'Saving...' : editing ? 'Update' : 'Create'}</button>
-            <button type="button" onClick={() => setModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-500 border border-gray-200 hover:bg-gray-50">Cancel</button>
+          <div className={`flex gap-3 ${isMobile ? 'pt-4 pb-8' : 'pt-2'}`}>
+            <button type="submit" className={`flex-1 ${isMobile ? 'py-3.5 text-sm' : 'py-2.5 text-sm'} rounded-xl text-white font-bold active:scale-95 transition-all shadow-md`} style={{ background: theme.primary }} disabled={loading}>{loading ? 'Saving...' : editing ? 'Update' : 'Create'}</button>
+            <button type="button" onClick={() => setModal(false)} className={`flex-1 ${isMobile ? 'py-3.5 text-sm' : 'py-2.5 text-sm'} rounded-xl font-bold text-gray-500 border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all`} >Cancel</button>
           </div>
         </form>
       </Modal>

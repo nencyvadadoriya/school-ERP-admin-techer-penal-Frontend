@@ -258,10 +258,10 @@ const SubjectAssignment: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: themeConfig.background }}>
+    <div className="h-screen overflow-y-auto custom-scrollbar" style={{ backgroundColor: themeConfig.background }}>
       <SubjectAssignmentStyleSheet />
       
-      <div className={isMobile ? 'p-0' : 'p-6'}>
+      <div className={`${isMobile ? 'p-0 pb-24' : 'p-6'}`}>
         {/* Desktop Header */}
         {!isMobile && (
           <div className="mb-6 flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
@@ -286,73 +286,87 @@ const SubjectAssignment: React.FC = () => {
 
         {/* Mobile Header */}
         {isMobile && (
-          <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100 mb-4">
-            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}, ${themeConfig.secondary})` }}>
+          <div className="bg-white shadow-sm border-b border-gray-100 mb-4">
+            <div className="p-4 flex items-center justify-between" style={{ background: themeConfig.primary }}>
               <div>
-                <h2 className="text-lg font-extrabold text-white">Assignments</h2>
-                <p className="text-[10px] text-white/70 font-medium tracking-wider">Teacher Subject Mapping</p>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={handleSave} disabled={submitting || !selectedTeacherId} className="w-10 h-10 rounded-xl bg-[#FFC107] flex items-center justify-center text-[#002B5B] active:scale-90 transition-transform shadow-lg disabled:opacity-50">
-                  <FaSave size={16} />
-                </button>
+                <h2 className="text-base font-extrabold text-white">Assignments</h2>
+                <p className="text-[10px] text-white/70 font-medium tracking-wider uppercase">Teacher Subject Mapping</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Stats Section */}
-        <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${isMobile ? 'mb-4 px-4' : 'mb-6'}`}>
-          <StatCard
-            title="Total Teachers"
-            value={teachers.length}
-            icon={Users}
-            iconColor={themeConfig.primary}
-            iconBg="rgba(0, 43, 91, 0.1)"
-            subtitle="Faculty"
-          />
-          <StatCard
-            title="Total Subjects"
-            value={subjects.length}
-            icon={BookOpen}
-            iconColor={themeConfig.primary}
-            iconBg="rgba(0, 43, 91, 0.1)"
-            subtitle="Academic"
-          />
-          <StatCard
-            title="Assigned"
-            value={allAssignments.length}
-            icon={GraduationCap}
-            iconColor={themeConfig.primary}
-            iconBg="rgba(0, 43, 91, 0.1)"
-            subtitle="Mappings"
-          />
-          <StatCard
-            title="Classes"
-            value={classes.length}
-            icon={FaLayerGroup}
-            iconColor={themeConfig.primary}
-            iconBg="rgba(0, 43, 91, 0.1)"
-            subtitle="Sections"
-          />
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${isMobile ? 'mb-4 px-3' : 'mb-6'}`}>
+          <div className={isMobile ? 'scale-90 origin-top-left -mr-4' : ''}>
+            <StatCard
+              title="Total Teachers"
+              value={teachers.length}
+              icon={Users}
+              iconColor={themeConfig.primary}
+              iconBg="rgba(0, 43, 91, 0.1)"
+              subtitle="Faculty"
+            />
+          </div>
+          <div className={isMobile ? 'scale-90 origin-top-left -mr-4' : ''}>
+            <StatCard
+              title="Total Subjects"
+              value={subjects.length}
+              icon={BookOpen}
+              iconColor={themeConfig.primary}
+              iconBg="rgba(0, 43, 91, 0.1)"
+              subtitle="Academic"
+            />
+          </div>
+          <div className={isMobile ? 'scale-90 origin-top-left -mr-4' : ''}>
+            <StatCard
+              title="Assigned"
+              value={allAssignments.length}
+              icon={GraduationCap}
+              iconColor={themeConfig.primary}
+              iconBg="rgba(0, 43, 91, 0.1)"
+              subtitle="Mappings"
+            />
+          </div>
+          <div className={isMobile ? 'scale-90 origin-top-left -mr-4' : ''}>
+            <StatCard
+              title="Classes"
+              value={classes.length}
+              icon={FaLayerGroup}
+              iconColor={themeConfig.primary}
+              iconBg="rgba(0, 43, 91, 0.1)"
+              subtitle="Sections"
+            />
+          </div>
         </div>
 
-        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 ${isMobile ? 'px-4 pb-10' : ''}`}>
+        <div className={`grid grid-cols-1 lg:grid-cols-12 gap-4 ${isMobile ? 'px-3 pb-6' : ''}`}>
           {/* Left Column: Config */}
-          <div className="lg:col-span-4 space-y-6">
-            <div className="card-base p-5 space-y-5">
-              <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
-                Assignment Config
-              </h3>
+          <div className="lg:col-span-4 space-y-4">
+            <div className={`card-base ${isMobile ? 'p-4' : 'p-5'} space-y-4`}>
+              <div className="flex items-center justify-between">
+                <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-black text-gray-800 uppercase tracking-widest flex items-center gap-2`}>
+                  Assignment Config
+                </h3>
+                {isMobile && (
+                  <button 
+                    onClick={handleSave} 
+                    disabled={submitting || !selectedTeacherId} 
+                    className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-white text-[10px] font-bold shadow-md active:scale-95 transition-all disabled:opacity-50"
+                    style={{ background: themeConfig.primary }}
+                  >
+                    <FaSave size={10} /> {submitting ? '...' : 'Save'}
+                  </button>
+                )}
+              </div>
               
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">1. Select Teacher</label>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">1. Select Teacher</label>
                   <div className="select-wrapper">
                     <select
                       value={selectedTeacherId}
                       onChange={(e) => setSelectedTeacherId(e.target.value)}
-                      className="input-field"
+                      className={`input-field ${isMobile ? '!py-1.5 !text-[11px]' : ''}`}
                     >
                       <option value="">Select Teacher</option>
                       {teachers.map(t => (
@@ -364,8 +378,8 @@ const SubjectAssignment: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">2. Select Medium</label>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">2. Select Medium</label>
                   <div className="select-wrapper">
                     <select
                       value={selectedMedium}
@@ -373,7 +387,7 @@ const SubjectAssignment: React.FC = () => {
                         setSelectedMedium(e.target.value);
                         setSelectedClassIds([]);
                       }}
-                      className="input-field"
+                      className={`input-field ${isMobile ? '!py-1.5 !text-[11px]' : ''}`}
                     >
                       <option value="">Select Medium</option>
                       <option value="English">English</option>
@@ -382,22 +396,22 @@ const SubjectAssignment: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">3. Select Classes</label>
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">3. Select Classes</label>
                     {selectedClassIds.length > 0 && (
-                      <button onClick={() => setSelectedClassIds([])} className="text-[10px] text-red-500 font-bold hover:underline">Clear</button>
+                      <button onClick={() => setSelectedClassIds([])} className="text-[9px] text-red-500 font-bold hover:underline">Clear</button>
                     )}
                   </div>
-                  <div className="max-h-60 overflow-y-auto border border-gray-100 rounded-xl p-2 space-y-1 bg-gray-50/50 custom-scrollbar">
+                  <div className={`${isMobile ? 'max-h-48' : 'max-h-60'} overflow-y-auto border border-gray-100 rounded-xl p-1.5 space-y-1 bg-gray-50/50 custom-scrollbar`}>
                     {filteredClasses.length === 0 ? (
-                      <div className="text-center py-8">
-                        <FaLayerGroup className="mx-auto text-gray-200 text-3xl mb-2" />
-                        <p className="text-[10px] text-gray-400 font-medium">Select medium first</p>
+                      <div className="text-center py-6">
+                        <FaLayerGroup className="mx-auto text-gray-200 text-2xl mb-1" />
+                        <p className="text-[9px] text-gray-400 font-medium">Select medium first</p>
                       </div>
                     ) : (
                       filteredClasses.map(c => (
-                        <label key={c._id} className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all ${selectedClassIds.includes(c._id) ? 'bg-primary-50 border-primary-100 ring-1 ring-primary-200 shadow-sm' : 'bg-white border-transparent hover:border-gray-200'}`}>
+                        <label key={c._id} className={`flex items-center gap-2 ${isMobile ? 'p-2' : 'p-2.5'} rounded-xl cursor-pointer transition-all ${selectedClassIds.includes(c._id) ? 'bg-primary-50 border-primary-100 ring-1 ring-primary-200 shadow-sm' : 'bg-white border-transparent hover:border-gray-200'}`}>
                           <input
                             type="checkbox"
                             checked={selectedClassIds.includes(c._id)}
@@ -408,11 +422,11 @@ const SubjectAssignment: React.FC = () => {
                                 setSelectedClassIds(selectedClassIds.filter(id => id !== c._id));
                               }
                             }}
-                            className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                            className="w-3.5 h-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                           />
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-gray-900">Class {c.standard} - {c.division}</p>
-                            <p className="text-[10px] text-gray-500 font-medium">{c.shift}</p>
+                            <p className={`${isMobile ? 'text-[11px]' : 'text-xs'} font-bold text-gray-900`}>Class {c.standard} - {c.division}</p>
+                            <p className="text-[9px] text-gray-500 font-medium">{c.shift}</p>
                           </div>
                         </label>
                       ))
@@ -422,9 +436,9 @@ const SubjectAssignment: React.FC = () => {
               </div>
 
               {isMobile && selectedTeacherId && (
-                <div className="pt-2 grid grid-cols-2 gap-3">
-                  <button onClick={handleClearForm} className="btn-base btn-secondary">Cancel</button>
-                  <button onClick={handleSave} disabled={submitting} className="btn-base btn-primary">
+                <div className="pt-2 grid grid-cols-2 gap-2">
+                  <button onClick={handleClearForm} className="btn-base btn-secondary !py-2 !text-[11px]">Cancel</button>
+                  <button onClick={handleSave} disabled={submitting} className="btn-base btn-primary !py-2 !text-[11px]">
                     {submitting ? 'Saving...' : 'Save'}
                   </button>
                 </div>
@@ -433,44 +447,44 @@ const SubjectAssignment: React.FC = () => {
           </div>
 
           {/* Right Column: Subjects & Assignments */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 space-y-4">
             {/* Subject Picker */}
-            <div className="card-base p-5">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
+            <div className={`card-base ${isMobile ? 'p-4' : 'p-5'}`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-black text-gray-800 uppercase tracking-widest flex items-center gap-2`}>
                   Available Subjects
                 </h3>
                 {selectedClassIds.length > 0 && (
-                  <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold border border-green-100 uppercase tracking-wider">
-                    {selectedClassIds.length} Classes Selected
+                  <span className={`px-2 py-0.5 bg-green-50 text-green-600 rounded-full ${isMobile ? 'text-[8px]' : 'text-[10px]'} font-bold border border-green-100 uppercase tracking-wider`}>
+                    {selectedClassIds.length} Selected
                   </span>
                 )}
               </div>
 
               {selectedClassIds.length === 0 ? (
-                <div className="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                  <FaBook className="mx-auto text-gray-200 text-5xl mb-4" />
-                  <p className="text-sm font-bold text-gray-400">Select teacher and classes to see subjects</p>
+                <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                  <FaBook className="mx-auto text-gray-200 text-3xl mb-2" />
+                  <p className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-bold text-gray-400`}>Select classes to see subjects</p>
                 </div>
               ) : filteredSubjects.length === 0 ? (
-                <div className="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                  <FaBook className="mx-auto text-gray-200 text-5xl mb-4" />
-                  <p className="text-sm font-bold text-gray-400">No subjects found for this criteria</p>
+                <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                  <FaBook className="mx-auto text-gray-200 text-3xl mb-2" />
+                  <p className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-bold text-gray-400`}>No subjects found</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'sm:grid-cols-2 xl:grid-cols-3 gap-4'}`}>
                   {filteredSubjects.map(subject => (
                     <button
                       key={subject._id}
                       onClick={() => handleAddAssignment(subject)}
-                      className="p-4 text-left bg-white border border-gray-100 rounded-2xl hover:border-primary-400 hover:shadow-md transition-all group flex justify-between items-center ring-1 ring-transparent hover:ring-primary-100"
+                      className={`${isMobile ? 'p-3' : 'p-4'} text-left bg-white border border-gray-100 rounded-2xl hover:border-primary-400 hover:shadow-md transition-all group flex justify-between items-center ring-1 ring-transparent hover:ring-primary-100`}
                     >
                       <div className="min-w-0 pr-2">
-                        <p className="text-sm font-bold text-gray-900 truncate">{subject.subject_name}</p>
-                        <p className="text-[10px] text-gray-500 font-mono font-bold mt-1 bg-gray-50 inline-block px-1.5 py-0.5 rounded">{subject.subject_code || 'N/A'}</p>
+                        <p className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-bold text-gray-900 truncate`}>{subject.subject_name}</p>
+                        <p className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} text-gray-500 font-mono font-bold mt-1 bg-gray-50 inline-block px-1.5 py-0.5 rounded`}>{subject.subject_code || 'N/A'}</p>
                       </div>
-                      <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-primary-500 group-hover:text-white transition-colors flex-shrink-0">
-                        <FaPlus size={12} />
+                      <div className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-primary-500 group-hover:text-white transition-colors flex-shrink-0`}>
+                        <FaPlus size={isMobile ? 10 : 12} />
                       </div>
                     </button>
                   ))}
@@ -480,12 +494,12 @@ const SubjectAssignment: React.FC = () => {
 
             {/* Current Draft Table */}
             <div className="card-base overflow-hidden">
-              <div className="bg-gray-50 px-5 py-4 border-b flex justify-between items-center">
-                <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
-                  Current Assignments
+              <div className={`bg-gray-50 ${isMobile ? 'px-4 py-3' : 'px-5 py-4'} border-b flex justify-between items-center`}>
+                <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-black text-gray-800 uppercase tracking-widest flex items-center gap-2`}>
+                  Drafts
                 </h3>
                 {selectedTeacherId && (
-                  <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-[10px] font-bold">
+                  <span className={`px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full ${isMobile ? 'text-[8px]' : 'text-[10px]'} font-bold`}>
                     {assignments.length} Total
                   </span>
                 )}
@@ -494,41 +508,43 @@ const SubjectAssignment: React.FC = () => {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-white border-b border-gray-100">
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Subject</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Class</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Medium</th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Action</th>
+                      <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider`}>Subject</th>
+                      <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider`}>Class</th>
+                      {!isMobile && <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Medium</th>}
+                      <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider text-right`}>Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {assignments.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-6 py-12 text-center">
-                          <p className="text-sm text-gray-400 font-medium italic">
-                            {selectedTeacherId ? 'No subjects assigned yet' : 'Select a teacher to view assignments'}
+                        <td colSpan={isMobile ? 3 : 4} className="px-6 py-8 text-center">
+                          <p className={`${isMobile ? 'text-[11px]' : 'text-sm'} text-gray-400 font-medium italic`}>
+                            {selectedTeacherId ? 'No drafts' : 'Select a teacher'}
                           </p>
                         </td>
                       </tr>
                     ) : (
                       assignments.map((assignment, index) => (
                         <tr key={index} className="hover:bg-gray-50/50 transition-colors">
-                          <td className="px-6 py-4">
-                            <p className="text-sm font-bold text-gray-900">{assignment.subject_name}</p>
+                          <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'}`}>
+                            <p className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-bold text-gray-900`}>{assignment.subject_name}</p>
                           </td>
-                          <td className="px-6 py-4">
-                            <p className="text-sm text-gray-600 font-medium">{assignment.class_name}</p>
+                          <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'}`}>
+                            <p className={`${isMobile ? 'text-[10px]' : 'text-sm'} text-gray-600 font-medium`}>{assignment.class_name}</p>
                           </td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${assignment.medium === 'English' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
-                              {assignment.medium}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
+                          {!isMobile && (
+                            <td className="px-6 py-4">
+                              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${assignment.medium === 'English' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                                {assignment.medium}
+                              </span>
+                            </td>
+                          )}
+                          <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} text-right`}>
                             <button
                               onClick={() => handleRemoveAssignment(index)}
-                              className="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center mx-auto mr-0"
+                              className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center mx-auto mr-0`}
                             >
-                              <FaTrash size={12} />
+                              <FaTrash size={isMobile ? 10 : 12} />
                             </button>
                           </td>
                         </tr>
@@ -542,21 +558,21 @@ const SubjectAssignment: React.FC = () => {
         </div>
 
         {/* History Section */}
-        <div className={`mt-10 ${isMobile ? 'px-4 pb-10' : ''}`}>
+        <div className={`mt-6 ${isMobile ? 'px-3 pb-10' : ''}`}>
           <div className="card-base overflow-hidden">
-            <div className="bg-white px-6 py-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
-                <div className="w-1.5 h-6 bg-orange-500 rounded-full"></div>
-                All Teacher Assignments
+            <div className={`bg-white ${isMobile ? 'px-4 py-4' : 'px-6 py-5'} border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
+              <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-black text-gray-800 uppercase tracking-widest flex items-center gap-2`}>
+                <div className={`w-1.5 ${isMobile ? 'h-4' : 'h-6'} bg-orange-500 rounded-full`}></div>
+                All Assignments
               </h3>
               <div className="relative w-full sm:w-80">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={isMobile ? 10 : 12} />
                 <input
                   type="text"
-                  placeholder="Search by teacher, subject, class..."
+                  placeholder="Search..."
                   value={historySearch}
                   onChange={(e) => setHistorySearch(e.target.value)}
-                  className="input-field pl-11 !py-2 text-xs"
+                  className={`input-field pl-11 !py-1.5 ${isMobile ? 'text-[11px]' : 'text-xs'}`}
                 />
               </div>
             </div>
@@ -564,64 +580,61 @@ const SubjectAssignment: React.FC = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-100">
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Teacher</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Subject</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Assigned Classes</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Medium</th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                    <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider`}>Teacher</th>
+                    {!isMobile && <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Subject</th>}
+                    <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider`}>Details</th>
+                    <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider text-right`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 bg-white">
                   {filteredHistory.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-16 text-center">
-                        <FaHistory className="mx-auto text-gray-200 text-4xl mb-3" />
-                        <p className="text-sm text-gray-400 font-medium">No assignment history found</p>
+                      <td colSpan={isMobile ? 3 : 5} className="px-6 py-10 text-center">
+                        <FaHistory className="mx-auto text-gray-200 text-3xl mb-2" />
+                        <p className={`${isMobile ? 'text-[11px]' : 'text-sm'} text-gray-400 font-medium`}>No history</p>
                       </td>
                     </tr>
                   ) : (
                     filteredHistory.map((assignment, index) => (
                       <tr key={`${assignment.teacher_id}-${index}`} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-black text-gray-900">{assignment.teacher_name}</div>
-                          <div className="text-[10px] text-gray-400 font-bold font-mono mt-0.5">{assignment.teacher_code}</div>
+                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'}`}>
+                          <div className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-black text-gray-900`}>{assignment.teacher_name}</div>
+                          <div className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} text-gray-400 font-bold font-mono mt-0.5`}>{assignment.teacher_code}</div>
                         </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-bold text-gray-700 bg-gray-50 px-3 py-1 rounded-lg inline-block">{assignment.subject_name}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-wrap gap-1.5">
+                        {!isMobile && (
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-bold text-gray-700 bg-gray-50 px-3 py-1 rounded-lg inline-block">{assignment.subject_name}</p>
+                          </td>
+                        )}
+                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'}`}>
+                          {isMobile && <p className="text-[10px] font-bold text-gray-700 mb-1">{assignment.subject_name}</p>}
+                          <div className={`grid ${isMobile ? 'grid-cols-2' : 'flex flex-wrap'} gap-1`}>
                             {assignment.classes.map((cls: string, i: number) => (
-                              <span key={i} className="bg-white px-2 py-0.5 rounded-lg text-[10px] font-black border border-gray-200 text-gray-500 shadow-sm">
+                              <span key={i} className={`bg-white px-1.5 py-0.5 rounded-lg ${isMobile ? 'text-[8px]' : 'text-[10px]'} font-black border border-gray-200 text-gray-500 shadow-sm text-center`}>
                                 {cls}
                               </span>
                             ))}
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${assignment.medium === 'English' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
-                            {assignment.medium}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
+                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} text-right`}>
+                          <div className="flex justify-end gap-1.5">
                             <button
                               onClick={() => {
                                 setSelectedTeacherId(assignment.teacher_id);
                                 setSelectedMedium(assignment.medium);
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                               }}
-                              className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center"
-                              title="Edit teacher assignments"
+                              className={`${isMobile ? 'w-7 h-7' : 'w-9 h-9'} rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center`}
+                              title="Edit"
                             >
-                              <FaEdit size={14} />
+                              <FaEdit size={isMobile ? 12 : 14} />
                             </button>
                             <button
                               onClick={() => handleDeleteGroup(assignment.teacher_id, assignment.subject_id, assignment.medium)}
-                              className="w-9 h-9 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
-                              title="Delete all classes for this subject"
+                              className={`${isMobile ? 'w-7 h-7' : 'w-9 h-9'} rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center`}
+                              title="Delete"
                             >
-                              <FaTrash size={14} />
+                              <FaTrash size={isMobile ? 12 : 14} />
                             </button>
                           </div>
                         </td>

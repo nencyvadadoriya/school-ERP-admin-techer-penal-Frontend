@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Users, CalendarCheck2, Wallet,
-  GraduationCap, BookOpen, ClipboardList, Grid3X3
+  GraduationCap, BookOpen, ClipboardList, Menu
 } from 'lucide-react';
 import MobileMenuSheet from './MobileMenuSheet';
 
@@ -108,7 +108,7 @@ const MobileBottomNav: React.FC = () => {
           onClick={() => setMenuOpen(true)}
         >
           <div className="tab-icon-bg">
-            <Grid3X3 size={18} className={menuOpen ? 'text-white' : 'text-gray-400'} />
+            <Menu size={18} className={menuOpen ? 'text-white' : 'text-gray-400'} />
           </div>
           <span className="tab-label">Menu</span>
         </button>

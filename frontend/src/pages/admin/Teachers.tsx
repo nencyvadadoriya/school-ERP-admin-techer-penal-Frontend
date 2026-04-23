@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { teacherAPI, classAPI, subjectAPI } from '../../services/api';
 import { toast } from 'react-toastify';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaHistory } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaHistory, FaChevronRight, FaArrowLeft as IconBack, FaUsers } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const Teachers: React.FC = () => {
@@ -32,11 +32,11 @@ const Teachers: React.FC = () => {
     const medium = cls?.medium ?? '';
     const stream = cls?.stream ?? '';
     const shift = cls?.shift ?? '';
-    return `STD-${standard}-${division}-${medium}-${stream || 'NA'}-${shift || 'NA'}`;
+    return `${standard} - ${division} (${medium})`;
   };
 
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [activeMobileTab, setActiveMobileTab] = useState<string>('list');
+  const [mobileView, setMobileView] = useState<{ type: 'classes' | 'teachers', data: any }>({ type: 'classes', data: null });
 
   const theme = {
     primary: '#002B5B',
@@ -50,7 +50,7 @@ const Teachers: React.FC = () => {
     danger: '#EF4444'
   };
 
- 
+
 
   useEffect(() => {
     fetchTeachers();
@@ -210,7 +210,7 @@ const Teachers: React.FC = () => {
       assigned_class: assignedClassValue,
       about: t.about || '',
     });
-    
+
     // Edit mode me bhi subjects fetch karo agar class assigned hai
     if (assignedClassValue) {
       fetchSubjectsForClass(assignedClassValue);
@@ -227,7 +227,7 @@ const Teachers: React.FC = () => {
         assigned_class: formData.assigned_class,
         experience: formData.experience ? Number(formData.experience) : 0,
       };
-      
+
       if (selectedTeacher) {
         await teacherAPI.update(selectedTeacher._id || selectedTeacher.id, payload);
         toast.success('Teacher updated');
@@ -274,6 +274,16 @@ const Teachers: React.FC = () => {
     (t.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const groupedTeachers = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    filtered.forEach(t => {
+      const classKey = t.assigned_class || 'Not Assigned';
+      if (!groups[classKey]) groups[classKey] = [];
+      groups[classKey].push(t);
+    });
+    return groups;
+  }, [filtered]);
+
   const classOptions = formData.medium
     ? classes.filter((c) => c?.medium === formData.medium)
     : classes;
@@ -288,94 +298,126 @@ const Teachers: React.FC = () => {
 
   if (isMobile) {
     const renderMobileContent = () => {
-      return (
-        <div className="p-2 space-y-3">
-          <div className="rounded-xl p-4 text-white overflow-hidden relative shadow-md"
-            style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
-            <div className="relative z-10">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-[8px] opacity-80 uppercase tracking-widest font-bold">Admin Panel</p>
-                  <h2 className="text-lg font-extrabold mt-0.5">Teachers</h2>
-                  <div className="flex items-center mt-2 text-[9px] opacity-70">
-                    <FaPlus size={10} className="mr-1.5" />
-                    <span>{teachers.length} Active Staff</span>
+      if (mobileView.type === 'classes') {
+        return (
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <div className="bg-[#002B5B] p-4 flex items-center justify-between sticky top-0 z-40">
+              <div>
+                <h2 className="text-lg font-bold text-white leading-tight">Teachers Management</h2>
+                <p className="text-[10px] text-white/70 font-medium uppercase tracking-widest">Manage Staff & Classes</p>
+              </div>
+            </div>
+
+            <div className="px-4 py-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-white rounded-lg shadow-sm">
+                  <div className="relative group">
+                    <FaSearch className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-[10px]" />
+                    <input
+                      type="text"
+                      placeholder="Search teachers..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-8 pr-2 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-[10px] focus:outline-none transition-all"
+                    />
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={openAddForm}
-                  className="bg-white/20 hover:bg-white/30 p-2 rounded-lg backdrop-blur-md transition-all active:scale-95 flex items-center gap-2"
+                  className="w-8 h-8 rounded-lg bg-[#002B5B] flex items-center justify-center text-white active:scale-95 transition-all shadow-md shrink-0"
                 >
-                  <FaPlus size={12} className="text-white" />
-                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">Add</span>
+                  <FaPlus size={12} />
                 </button>
               </div>
-            </div>
-            <div className="absolute right-[-10px] top-[-10px] opacity-10">
-              <FaPlus size={80} />
-            </div>
-          </div>
 
-          <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-            <div className="relative group">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs" />
-              <input
-                type="text"
-                placeholder="Search teachers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-[10px] focus:outline-none focus:ring-1 transition-all"
-                style={{ '--tw-ring-color': `${theme.primary}20` } as any}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2 pb-20">
-            {filtered.map((t) => (
-              <div key={t._id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center font-bold text-primary-600 text-sm"
-                      style={{ backgroundColor: `${theme.primary}10`, color: theme.primary }}>
-                      {(t.first_name?.charAt(0) || '') + (t.last_name?.charAt(0) || '')}
+              <div className="space-y-2 pb-20">
+                {Object.keys(groupedTeachers).sort().map(classKey => {
+                  const staff = groupedTeachers[classKey];
+                  return (
+                    <div key={classKey} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center justify-between active:scale-[0.98] transition-all"
+                      onClick={() => setMobileView({ type: 'teachers', data: { classKey, staff } })}>
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
+                          <FaUsers size={14} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-gray-900 leading-tight">{classKey}</p>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{staff.length} Teachers</p>
+                        </div>
+                      </div>
+                      <div className="w-6 h-6 rounded-md bg-gray-50 flex items-center justify-center text-gray-400">
+                        <FaChevronRight size={10} />
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-900 leading-tight">{t.first_name} {t.last_name}</h4>
-                      <p className="text-[9px] text-gray-400 font-medium mt-0.5">{t.email}</p>
-                    </div>
-                  </div>
-                  <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider ${t.is_active ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                    {t.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <div className="bg-gray-50 p-1.5 rounded-lg text-center">
-                    <p className="text-[7px] text-gray-400 font-bold uppercase">Class</p>
-                    <p className="text-[9px] font-bold text-gray-700 truncate">{t.assigned_class || 'None'}</p>
-                  </div>
-                  <div className="bg-gray-50 p-1.5 rounded-lg text-center">
-                    <p className="text-[7px] text-gray-400 font-bold uppercase">Exp.</p>
-                    <p className="text-[9px] font-bold text-gray-700">{t.experience} Yrs</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                   <button onClick={() => navigate(`/admin/teacher-history/${t._id}`)} className="flex-1 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-bold flex items-center justify-center gap-1.5">
-                    <FaHistory size={10}/> History
-                  </button>
-                  <button onClick={() => openEditForm(t)} className="flex-1 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-bold flex items-center justify-center gap-1.5">
-                    <FaEdit size={10}/> Edit
-                  </button>
-                  <button onClick={() => handleDelete(t._id)} className="p-1.5 bg-red-50 text-red-600 rounded-lg">
-                    <FaTrash size={10}/>
-                  </button>
-                </div>
+                  );
+                })}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      );
+        );
+      }
+
+      if (mobileView.type === 'teachers') {
+        const { classKey, staff } = mobileView.data;
+        return (
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <div className="bg-[#002B5B] p-3 flex items-center gap-3 sticky top-0 z-40">
+              <button onClick={() => setMobileView({ type: 'classes', data: null })} className="text-white p-1">
+                <IconBack size={16} />
+              </button>
+              <div>
+                <h2 className="text-base font-bold text-white leading-tight">{classKey}</h2>
+                <p className="text-[9px] text-white/70 font-medium uppercase tracking-widest">{staff.length} Staff Members</p>
+              </div>
+            </div>
+
+            <div className="flex-1 p-3 space-y-3 overflow-y-auto pb-24">
+              {staff.map((t: any) => (
+                <div key={t._id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-9 w-9 rounded-lg flex items-center justify-center font-bold text-xs text-white shadow-sm"
+                        style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
+                        {(t.first_name?.charAt(0) || '') + (t.last_name?.charAt(0) || '')}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-gray-900 leading-tight">{t.first_name} {t.last_name}</h4>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{t.email}</p>
+                      </div>
+                    </div>
+                    <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider ${t.is_active ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                      {t.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-gray-50 p-1.5 rounded-lg text-center border border-gray-100">
+                      <p className="text-[7px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Experience</p>
+                      <p className="text-[10px] font-bold text-gray-900">{t.experience} Yrs</p>
+                    </div>
+                    <div className="bg-gray-50 p-1.5 rounded-lg text-center border border-gray-100">
+                      <p className="text-[7px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Phone</p>
+                      <p className="text-[10px] font-bold text-gray-900">{t.phone || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2 border-t border-gray-50">
+                    <button onClick={() => navigate(`/admin/teacher-history/${t._id}`)} className="flex-1 py-2 bg-gray-50 text-gray-700 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-gray-200 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                      <FaHistory size={10} /> History
+                    </button>
+                    <button onClick={() => openEditForm(t)} className="flex-1 py-2 bg-gray-50 text-gray-700 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-gray-200 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                      <FaEdit size={10} /> Edit
+                    </button>
+                    <button onClick={() => handleDelete(t._id)} className="w-9 py-2 bg-red-50 text-red-600 rounded-lg border border-red-100 flex items-center justify-center active:scale-95 transition-all">
+                      <FaTrash size={10} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
     };
 
     return (
@@ -385,59 +427,76 @@ const Teachers: React.FC = () => {
         </div>
 
         {showForm && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-2 sm:p-4">
-            <div className="bg-white rounded-2xl w-[95%] sm:w-full max-w-lg p-4 sm:p-6 shadow-2xl overflow-y-auto max-h-[90vh] border border-gray-100">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-lg sm:text-xl font-bold" style={{ color: theme.primary }}>
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-3">
+            <div className="bg-white rounded-t-3xl sm:rounded-xl w-full max-w-md p-4 sm:p-6 shadow-2xl overflow-y-auto max-h-[90vh] border border-gray-100 animate-in slide-in-from-bottom duration-300">
+              <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 sm:hidden" />
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base sm:text-lg font-bold" style={{ color: theme.primary }}>
                   {selectedTeacher ? 'Edit Teacher' : 'Add Teacher'}
                 </h2>
-                <button onClick={() => setShowForm(false)} className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors text-xl">
+                <button 
+                  type="button"
+                  onClick={() => setShowForm(false)} 
+                  className="h-7 w-7 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors text-lg"
+                >
                   &times;
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 ml-1">First Name</label>
-                    <input name="first_name" value={formData.first_name} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">First Name</label>
+                    <input name="first_name" value={formData.first_name} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:ring-1 focus:ring-primary-500 transition-all outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 ml-1">Last Name</label>
-                    <input name="last_name" value={formData.last_name} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Last Name</label>
+                    <input name="last_name" value={formData.last_name} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:ring-1 focus:ring-primary-500 transition-all outline-none" />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-500 ml-1">Email</label>
-                  <input name="email" type="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Email</label>
+                  <input name="email" type="email" value={formData.email} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:ring-1 focus:ring-primary-500 transition-all outline-none" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 ml-1">Phone</label>
-                    <input name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Phone</label>
+                    <input name="phone" value={formData.phone} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:ring-1 focus:ring-primary-500 transition-all outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 ml-1">Experience (Yrs)</label>
-                    <input name="experience" type="number" value={formData.experience} onChange={handleChange} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Experience (Yrs)</label>
+                    <input name="experience" type="number" value={formData.experience} onChange={handleChange} className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:ring-1 focus:ring-primary-500 transition-all outline-none" />
                   </div>
                 </div>
                 {!selectedTeacher && (
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 ml-1">Password</label>
-                    <input name="password" type="password" value={formData.password} onChange={handleChange} required className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" />
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Password</label>
+                    <input name="password" type="password" value={formData.password} onChange={handleChange} required className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:ring-1 focus:ring-primary-500 transition-all outline-none" />
                   </div>
                 )}
-                 <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-500 ml-1">Assigned Class</label>
-                    <select value={formData.assigned_class} onChange={handleClassChange} name="assigned_class" className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm" required>
-                      <option value="">Select class</option>
-                      {classOptions.map((cls) => (
-                        <option key={cls._id} value={buildClassCode(cls)}>{cls.standard}{cls.division} - {cls.medium}</option>
-                      ))}
-                    </select>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Assigned Class</label>
+                  <select value={formData.assigned_class} onChange={handleClassChange} name="assigned_class" className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs focus:ring-1 focus:ring-primary-500 transition-all outline-none appearance-none" required>
+                    <option value="">Select class</option>
+                    {classOptions.map((cls) => (
+                      <option key={cls._id} value={buildClassCode(cls)}>{cls.standard}{cls.division} - {cls.medium}</option>
+                    ))}
+                  </select>
                 </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl text-sm font-bold text-gray-500 border border-gray-200">Cancel</button>
-                  <button type="submit" className="flex-1 py-3 rounded-xl text-sm font-bold text-white" style={{ backgroundColor: theme.primary }}>Save</button>
+                <div className="flex gap-3 pt-4 pb-2">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowForm(false)} 
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-500 border border-gray-100 active:bg-gray-50 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-all" 
+                    style={{ backgroundColor: theme.primary }}
+                  >
+                    Save Teacher
+                  </button>
                 </div>
               </form>
             </div>
@@ -454,8 +513,8 @@ const Teachers: React.FC = () => {
           <h1 className="text-lg sm:text-xl font-black tracking-tight" style={{ color: theme.primary }}>Teachers Management</h1>
           <p className="text-[10px] sm:text-xs font-medium text-gray-500">Manage all staff and teaching assignments</p>
         </div>
-        <button 
-          onClick={openAddForm} 
+        <button
+          onClick={openAddForm}
           className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white text-xs font-bold shadow-md transition-all active:scale-95 hover:brightness-110"
           style={{ backgroundColor: theme.primary }}
         >
@@ -505,7 +564,7 @@ const Teachers: React.FC = () => {
                       <span className="text-xs font-bold text-gray-900">{t.first_name} {t.last_name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{t.email}<br/><span className="text-[9px] text-gray-400">{t.phone}</span></td>
+                  <td className="px-4 py-3 text-xs text-gray-500">{t.email}<br /><span className="text-[9px] text-gray-400">{t.phone}</span></td>
                   <td className="px-4 py-3 text-xs font-bold text-gray-700">{t.experience} Yrs</td>
                   <td className="px-4 py-3 text-xs font-medium text-gray-600">{t.assigned_class || 'None'}</td>
                   <td className="px-4 py-3">
@@ -515,7 +574,7 @@ const Teachers: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-1.5">
-                       <button onClick={() => navigate(`/admin/teacher-history/${t._id}`)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"><FaHistory size={12} /></button>
+                      <button onClick={() => navigate(`/admin/teacher-history/${t._id}`)} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"><FaHistory size={12} /></button>
                       <button onClick={() => openEditForm(t)} className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all"><FaEdit size={12} /></button>
                       <button onClick={() => handleDelete(t._id)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"><FaTrash size={12} /></button>
                     </div>

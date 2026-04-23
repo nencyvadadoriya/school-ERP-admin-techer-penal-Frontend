@@ -9,7 +9,9 @@ import {
   GraduationCap as GradCap, UserCog, BookCopy, Tag,
   BarChart3, CreditCard, Megaphone, PartyPopper, UserCheck,
   BookOpenCheck, PenLine, CheckSquare, Calendar, AlignLeft,
-  Home, Settings
+  Home, Settings, Users2, Landmark, GraduationCap as StudentIcon,
+  Library, FileSpreadsheet, BellRing, CalendarRange, History,
+  UserCircle2, UsersRound
 } from 'lucide-react';
 import { FaUser } from 'react-icons/fa';
 
@@ -43,30 +45,22 @@ const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({ isOpen, onClose }) =>
   const location = useLocation();
 
   const adminMenuItems = [
-    { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/admin/students', icon: GraduationCap, label: 'Students' },
-    { path: '/admin/teachers', icon: UserSquare2, label: 'Teachers' },
+    { path: '/admin/teachers', icon: Users2, label: 'Teachers' },
     { path: '/admin/admins', icon: ShieldCheck, label: 'Admins' },
-    { path: '/admin/attendance', icon: CalendarCheck2, label: 'Attendance' },
-    { path: '/admin/classes', icon: School, label: 'Classes' },
-    { path: '/admin/subjects', icon: BookOpen, label: 'Subjects' },
-    { path: '/admin/exams', icon: ClipboardList, label: 'Exams' },
-    { path: '/admin/fees', icon: Wallet, label: 'Fees' },
-    { path: '/admin/notices', icon: Bell, label: 'Notices' },
+    { path: '/admin/classes', icon: Landmark, label: 'Classes' },
+    { path: '/admin/subjects', icon: Library, label: 'Subjects' },
+    { path: '/admin/exams', icon: FileSpreadsheet, label: 'Exams' },
+    { path: '/admin/notices', icon: BellRing, label: 'Notices' },
     { path: '/admin/events', icon: PartyPopper, label: 'Events' },
-    { path: '/admin/leaves', icon: FileText, label: 'Leaves' },
-    { path: '/admin/timetable', icon: Clock, label: 'Timetable' },
+    { path: '/admin/leaves', icon: CalendarRange, label: 'Leaves' },
+    { path: '/admin/timetable', icon: History, label: 'Timetable' },
     { path: '/admin/calendar', icon: CalendarDays, label: 'Calendar' },
     { path: '/admin/subject-assignment', icon: BookCopy, label: 'Subject Assign' },
-    { path: '/admin/assign-class-teacher', icon: UserCheck, label: 'Class Teacher' },
-    { path: '/admin/profile', icon: User, label: 'Profile' },
+    { path: '/admin/assign-class-teacher', icon: UsersRound, label: 'Class Teacher' },
+    { path: '/admin/profile', icon: UserCircle2, label: 'Profile' },
   ];
 
   const teacherMenuItems = [
-    { path: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/teacher/attendance', icon: CalendarCheck2, label: 'Attendance' },
-    { path: '/teacher/homework', icon: BookOpen, label: 'Homework' },
-    { path: '/teacher/exams', icon: ClipboardList, label: 'Exams' },
     { path: '/teacher/results', icon: BarChart3, label: 'Results' },
     { path: '/teacher/timetable', icon: Clock, label: 'Timetable' },
     { path: '/teacher/notices', icon: Bell, label: 'Notices' },
@@ -78,10 +72,6 @@ const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({ isOpen, onClose }) =>
   ];
 
   const studentMenuItems = [
-    { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/student/timetable', icon: Clock, label: 'Timetable' },
-    { path: '/student/leave', icon: FileText, label: 'Leave' },
-    { path: '/student/calendar', icon: CalendarDays, label: 'Calendar' },
     { path: '/student/profile', icon: User, label: 'Profile' },
   ];
 
@@ -135,23 +125,25 @@ const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({ isOpen, onClose }) =>
         }
         .menu-icon-btn {
           display: flex; flex-direction: column; align-items: center;
-          gap: 7px; padding: 12px 6px; border-radius: 18px;
+          gap: 4px; padding: 8px 4px; border-radius: 14px;
           transition: all 0.15s ease; cursor: pointer;
           -webkit-tap-highlight-color: transparent;
           background: transparent;
         }
         .menu-icon-btn:active { transform: scale(0.92); }
         .menu-icon-btn.active-item {
-          background: rgba(0, 43, 91, 0.06);
+          background: rgba(0, 43, 91, 0.04);
         }
         .menu-icon-circle {
-          width: 54px; height: 54px; border-radius: 16px;
+          width: 44px; height: 44px; border-radius: 14px;
           display: flex; align-items: center; justify-content: center;
-          transition: transform 0.15s ease;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.05), inset 0 2px 4px rgba(255,255,255,0.8);
+          border: 1px solid rgba(0, 43, 91, 0.05);
         }
         .menu-icon-btn:active .menu-icon-circle {
-          transform: scale(0.9);
+          transform: scale(0.9) translateY(2px);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .menu-sheet::-webkit-scrollbar { width: 0; }
       `}</style>
@@ -193,44 +185,56 @@ const MobileMenuSheet: React.FC<MobileMenuSheetProps> = ({ isOpen, onClose }) =>
 
             {/* Grid of Icons */}
             <div className="px-3 pb-4">
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-5 gap-1">
                 {items.map((item, i) => {
-                  const colorSet = iconColors[i % iconColors.length];
                   const isActive = location.pathname === item.path;
                   return (
-                    <button
+                    <div
                       key={item.path}
-                      className={`menu-icon-btn ${isActive ? 'active-item' : ''}`}
-                      onClick={() => handleNav(item.path)}
+                      className="menu-icon-btn"
                     >
-                      <div className="menu-icon-circle" style={{ background: isActive ? theme.primary : colorSet.bg }}>
+                      <div 
+                        className={`menu-icon-circle ${isActive ? 'active-circle' : ''}`}
+                        onClick={() => handleNav(item.path)}
+                        style={{ 
+                          background: isActive 
+                            ? `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` 
+                            : `linear-gradient(135deg, #ffffff, #f8fafc)`,
+                          border: isActive ? 'none' : '1px solid rgba(0, 43, 91, 0.08)',
+                          boxShadow: isActive 
+                            ? `0 8px 20px ${theme.primary}40` 
+                            : '0 4px 12px rgba(0,0,0,0.04)'
+                        }}
+                      >
                         <item.icon
-                          size={22}
-                          style={{ color: isActive ? '#fff' : colorSet.color }}
+                          size={20}
+                          strokeWidth={isActive ? 2.5 : 2}
+                          style={{ color: isActive ? '#fff' : theme.primary }}
                         />
                       </div>
                       <span
-                        className="text-[10px] font-semibold text-center leading-tight"
-                        style={{ color: isActive ? theme.primary : '#374151' }}
+                        className={`text-[10px] text-center leading-tight mt-1 ${isActive ? 'font-bold' : 'font-semibold'}`}
+                        style={{ color: isActive ? theme.primary : '#4b5563' }}
                       >
                         {item.label}
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
 
                 {/* Logout tile */}
-                <button
-                  className="menu-icon-btn"
-                  onClick={handleLogout}
-                >
-                  <div className="menu-icon-circle" style={{ background: '#FFF1F2' }}>
-                    <LogOut size={22} style={{ color: '#E11D48' }} />
+                <div className="menu-icon-btn">
+                  <div 
+                    className="menu-icon-circle" 
+                    onClick={handleLogout}
+                    style={{ background: '#FFF1F2' }}
+                  >
+                    <LogOut size={18} style={{ color: '#E11D48' }} />
                   </div>
                   <span className="text-[10px] font-semibold text-center leading-tight" style={{ color: '#E11D48' }}>
                     Logout
                   </span>
-                </button>
+                </div>
               </div>
             </div>
 

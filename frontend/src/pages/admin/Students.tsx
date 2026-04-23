@@ -6,6 +6,8 @@ import {
   FaChevronDown, FaEye, FaEyeSlash, FaUserGraduate, FaFilter,
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import StatCard from '../../components/StatCard';
+import { Users, UserCheck, User } from 'lucide-react';
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
 const T = {
@@ -150,21 +152,21 @@ const GlobalStyles = () => (
     .empty-state { background: #fff; border-radius: 14px; border: 1px solid ${T.border}; padding: 56px 32px; text-align: center; }
 
     /* Mobile header */
-    .m-header { background: #002B5B; padding: 44px 18px 28px; }
-    .m-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .m-stat-cell { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; }
-    .m-stat-icon { width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+    .m-header { background: #002B5B; padding: 30px 14px 20px; }
+    .m-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .m-stat-cell { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 10px; display: flex; align-items: center; gap: 8px; }
+    .m-stat-icon { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
 
     /* Mobile group card */
-    .m-group-card { background: #fff; border-radius: 16px; border: 1px solid ${T.border}; padding: 16px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: box-shadow 0.15s; }
+    .m-group-card { background: #fff; border-radius: 12px; border: 1px solid ${T.border}; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: box-shadow 0.15s; }
     .m-group-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
-    .m-arrow-box { width: 34px; height: 34px; border-radius: 10px; background: rgba(0,43,91,0.07); display: flex; align-items: center; justify-content: center; color: ${T.primary}; flex-shrink: 0; }
+    .m-arrow-box { width: 28px; height: 28px; border-radius: 8px; background: rgba(0,43,91,0.07); display: flex; align-items: center; justify-content: center; color: ${T.primary}; flex-shrink: 0; }
 
     /* Fullscreen overlay for mobile class view */
     .m-fullscreen { position: fixed; inset: 0; background: #F0F2F5; z-index: 300; display: flex; flex-direction: column; }
-    .m-fs-header { background: #002B5B; padding: 52px 18px 18px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-    .m-fs-body { flex: 1; overflow-y: auto; padding: 16px; }
-    .m-student-card { background: #fff; border-radius: 13px; border: 1px solid ${T.border}; padding: 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .m-fs-header { background: #002B5B; padding: 34px 14px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .m-fs-body { flex: 1; overflow-y: auto; padding: 12px 14px; }
+    .m-student-card { background: #fff; border-radius: 10px; border: 1px solid ${T.border}; padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
 
     /* Password toggle */
     .pwd-wrap { position: relative; }
@@ -1099,80 +1101,62 @@ const Students: React.FC = () => {
     <div style={{ background: T.bg, minHeight: '100vh', paddingBottom: 80 }}>
       {/* Header */}
       <div className="m-header">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <div>
-            <h1 style={{ color: '#fff', fontSize: 24, fontWeight: 800, margin: 0 }}>Students</h1>
-            <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, margin: '2px 0 0', fontWeight: 500 }}>SmartSchool ERP</p>
+            <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0 }}>Students</h1>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={openBulk} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, color: '#fff', fontSize: 13, fontWeight: 700, padding: '9px 14px', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button onClick={openBulk} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 11, fontWeight: 700, padding: '6px 12px', cursor: 'pointer' }}>
               + Bulk
             </button>
-            <button onClick={openAdd} style={{ background: '#fff', border: 'none', borderRadius: 10, color: '#002B5B', fontSize: 13, fontWeight: 800, padding: '9px 16px', cursor: 'pointer' }}>
+            <button onClick={openAdd} style={{ background: '#fff', border: 'none', borderRadius: 8, color: '#002B5B', fontSize: 11, fontWeight: 800, padding: '6px 14px', cursor: 'pointer' }}>
               + Add
             </button>
           </div>
         </div>
-
-        <div className="m-stat-grid" style={{ marginTop: 16 }}>
-          {[
-            { label: 'Total', value: students.length, icon: <IconUsers size={14} color="#fff" /> },
-            { label: 'Active', value: students.filter(s => s.is_active).length, icon: <IconGraduate size={14} /> },
-            { label: 'Male', value: students.filter(s => s.gender === 'Male').length, icon: <IconMale size={14} /> },
-            { label: 'Female', value: students.filter(s => s.gender === 'Female').length, icon: <IconFemale size={14} /> },
-          ].map(({ label, value, icon }) => (
-            <div key={label} className="m-stat-cell">
-              <div className="m-stat-icon">{icon}</div>
-              <div>
-                <p style={{ color: '#fff', fontSize: 18, fontWeight: 800, margin: 0, lineHeight: 1 }}>{value}</p>
-                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, fontWeight: 600, margin: '2px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Search & Filters */}
-      <div style={{ padding: '16px 16px 0' }}>
-        <div style={{ background: '#fff', borderRadius: 13, border: `1px solid ${T.border}`, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" placeholder="Search by name or GR…" value={search} onChange={e => setSearch(e.target.value)} style={{ border: 'none', outline: 'none', fontSize: 14, color: T.text, flex: 1, background: 'transparent' }} />
-          {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.muted, padding: 0 }}><IconClose size={13} /></button>}
+      <div style={{ padding: '12px 14px 0' }}>
+        <div style={{ background: '#fff', borderRadius: 10, border: `1px solid ${T.border}`, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search by name or GR…" value={search} onChange={e => setSearch(e.target.value)} style={{ border: 'none', outline: 'none', fontSize: 12, color: T.text, flex: 1, background: 'transparent' }} />
+          {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: T.muted, padding: 0 }}><IconClose size={11} /></button>}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 12 }}>
           {[
             { value: filterStd, set: setFilterStd, placeholder: 'All standards', opts: uniqueOf('std').map(s => ({ v: s, l: `Std ${s}` })) },
             { value: filterClass, set: setFilterClass, placeholder: 'All sections', opts: uniqueOf('class_name').map(c => ({ v: c, l: `Sec ${c}` })) },
           ].map(({ value, set, placeholder, opts }, i) => (
             <div key={i} style={{ position: 'relative' }}>
-              <select value={value} onChange={e => set(e.target.value)} style={{ width: '100%', padding: '10px 30px 10px 12px', borderRadius: 10, border: `1px solid ${T.border}`, background: '#fff', fontSize: 13, fontWeight: 600, color: T.text, appearance: 'none' }}>
+              <select value={value} onChange={e => set(e.target.value)} style={{ width: '100%', padding: '8px 24px 8px 10px', borderRadius: 8, border: `1px solid ${T.border}`, background: '#fff', fontSize: 11, fontWeight: 600, color: T.text, appearance: 'none' }}>
                 <option value="">{placeholder}</option>
                 {opts.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
               </select>
-              <FaChevronDown style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 10, color: T.muted }} />
+              <FaChevronDown style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 9, color: T.muted }} />
             </div>
           ))}
         </div>
 
-        <p style={{ fontSize: 11, fontWeight: 800, color: T.primary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>
+        <p style={{ fontSize: 10, fontWeight: 800, color: T.primary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
           {Object.keys(grouped).length} Class Group{Object.keys(grouped).length !== 1 ? 's' : ''}
         </p>
       </div>
 
       {/* Class group cards */}
-      <div style={{ padding: '0 16px' }}>
+      <div style={{ padding: '0 14px' }}>
         {Object.entries(grouped).map(([key, group]: [string, any]) => (
           <div key={key} className="m-group-card" onClick={() => { setActiveGroup(group); setMobileClassView(true); }}>
             <div>
-              <p style={{ fontWeight: 800, fontSize: 15, color: T.text, margin: 0 }}>
+              <p style={{ fontWeight: 800, fontSize: 13, color: T.text, margin: 0 }}>
                 Std {group.std} — Section {group.class_name}
               </p>
-              <p style={{ fontSize: 12, color: T.muted, fontWeight: 500, margin: '3px 0 0' }}>
+              <p style={{ fontSize: 11, color: T.muted, fontWeight: 500, margin: '2px 0 0' }}>
                 {group.shift} · {group.medium} · {group.students.length} students
               </p>
             </div>
             <div className="m-arrow-box">
-              <FaChevronDown style={{ transform: 'rotate(-90deg)', fontSize: 12 }} />
+              <FaChevronDown style={{ transform: 'rotate(-90deg)', fontSize: 10 }} />
             </div>
           </div>
         ))}
@@ -1192,10 +1176,10 @@ const Students: React.FC = () => {
               <IconBack />
             </button>
             <div style={{ marginLeft: 4 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: '#fff' }}>
+              <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#fff' }}>
                 Class {activeGroup.std} — {activeGroup.class_name}
               </h2>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
                 {activeGroup.students.length} students · {activeGroup.shift} · {activeGroup.medium}
               </p>
             </div>
@@ -1203,26 +1187,26 @@ const Students: React.FC = () => {
           <div className="m-fs-body">
             {activeGroup.students.map((s: any) => (
               <div key={s._id || s.id} className="m-student-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: avatarColor(s.first_name || 'A'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{initials(s.first_name, s.last_name)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: avatarColor(s.first_name || 'A'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>{initials(s.first_name, s.last_name)}</span>
                   </div>
                   <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: 0 }}>{s.first_name} {s.last_name}</p>
-                    <p style={{ fontSize: 11, color: T.muted, margin: '1px 0 0' }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: T.text, margin: 0 }}>{s.first_name} {s.last_name}</p>
+                    <p style={{ fontSize: 10, color: T.muted, margin: '1px 0 0' }}>
                       Roll {s.roll_no} · <span style={{ color: genderColor(s.gender) }}>{s.gender}</span>
                     </p>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => navigate(`/admin/student-history/${s._id || s.id}`)} style={{ width: 32, height: 32, borderRadius: 8, background: `${T.primary}12`, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.primary }}>
-                    <FaHistory size={12} />
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button onClick={() => navigate(`/admin/student-history/${s._id || s.id}`)} style={{ width: 26, height: 26, borderRadius: 6, background: `${T.primary}12`, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.primary }}>
+                    <FaHistory size={10} />
                   </button>
-                  <button onClick={() => { setMobileClassView(false); openEdit(s); }} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(59,130,246,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.info }}>
-                    <FaEdit size={12} />
+                  <button onClick={() => { setMobileClassView(false); openEdit(s); }} style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(59,130,246,0.1)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.info }}>
+                    <FaEdit size={10} />
                   </button>
-                  <button onClick={() => handleDelete(s._id || s.id)} style={{ width: 32, height: 32, borderRadius: 8, background: T.dangerBg, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.danger }}>
-                    <FaTrash size={12} />
+                  <button onClick={() => handleDelete(s._id || s.id)} style={{ width: 26, height: 26, borderRadius: 6, background: T.dangerBg, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: T.danger }}>
+                    <FaTrash size={10} />
                   </button>
                 </div>
               </div>
@@ -1262,22 +1246,39 @@ const Students: React.FC = () => {
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '22px 24px 40px' }}>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
-          {[
-            { label: 'Total students', value: students.length, sub: 'All enrolled', iconBg: `${T.primary}12`, icon: <IconUsers size={18} color={T.primary} /> },
-            { label: 'Active', value: students.filter(s => s.is_active).length, sub: 'Currently active', iconBg: `${T.success}18`, icon: <IconGraduate size={18} /> },
-            { label: 'Male', value: students.filter(s => s.gender === 'Male').length, sub: 'Students', iconBg: '#1d4ed815', icon: <IconMale size={18} /> },
-            { label: 'Female', value: students.filter(s => s.gender === 'Female').length, sub: 'Students', iconBg: '#be185d15', icon: <IconFemale size={18} /> },
-          ].map(({ label, value, sub, iconBg, icon }) => (
-            <div key={label} className="stat-card">
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>{label}</p>
-                <p style={{ fontSize: 26, fontWeight: 800, color: T.primary, margin: '4px 0 2px' }}>{value}</p>
-                <p style={{ fontSize: 11, color: T.muted, margin: 0 }}>{sub}</p>
-              </div>
-              <div className="stat-icon" style={{ background: iconBg }}>{icon}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <StatCard
+            title="Total Students"
+            value={students.length}
+            icon={Users}
+            iconColor={T.primary}
+            iconBg="rgba(0, 43, 91, 0.08)"
+            subtitle="All enrolled"
+          />
+          <StatCard
+            title="Active"
+            value={students.filter(s => s.is_active).length}
+            icon={UserCheck}
+            iconColor={T.primary}
+            iconBg="rgba(0, 43, 91, 0.08)"
+            subtitle="Currently active"
+          />
+          <StatCard
+            title="Male"
+            value={students.filter(s => s.gender === 'Male').length}
+            icon={User}
+            iconColor={T.primary}
+            iconBg="rgba(0, 43, 91, 0.08)"
+            subtitle="Students"
+          />
+          <StatCard
+            title="Female"
+            value={students.filter(s => s.gender === 'Female').length}
+            icon={User}
+            iconColor={T.primary}
+            iconBg="rgba(0, 43, 91, 0.08)"
+            subtitle="Students"
+          />
         </div>
 
         {/* Filter bar */}

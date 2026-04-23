@@ -14,9 +14,21 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.hash = '#/login';
+      const originalRequestUrl = error.config?.url || '';
+      
+      // Do not log out if the 401 is from the fees page security (which uses 401 for wrong gate password)
+      if (originalRequestUrl.includes('/fees-page-security')) {
+        return Promise.reject(error);
+      }
+      
+      const isLoginPage = window.location.hash.includes('/login');
+      const hasToken = !!localStorage.getItem('token');
+      
+      if (!isLoginPage && hasToken) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.hash = '#/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaRupeeSign, FaEye, FaCog, FaUnlock, FaHistory, FaChevronDown, FaDownload } from 'react-icons/fa';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaCog, FaUnlock, FaHistory, FaChevronDown, FaChevronRight, FaDownload, FaArrowLeft } from 'react-icons/fa';
+import { LuIndianRupee } from "react-icons/lu";
 import { toast } from 'react-toastify';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -8,7 +10,7 @@ import Modal from '../../components/Modal';
 import Badge from '../../components/Badge';
 import Spinner from '../../components/Spinner';
 import StatCard from '../../components/StatCard';
-import { Wallet, Lock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Wallet, Lock, TrendingUp, AlertCircle, Users } from 'lucide-react';
 
 const theme = { primary: '#002B5B', secondary: '#2D54A8', accent: '#FFC107', background: '#F0F2F5' };
 const EMPTY = { student_id: '', gr_number: '', std: '', division: '', class_code: '', shift: '', medium: '', stream: '', fee_type: 'Tuition', total_amount: '', amount_paid: '0', due_date: '', payment_mode: 'Cash', academic_year: '2024-25', installment_number: 1, status: 'Pending', remarks: '' };
@@ -25,7 +27,7 @@ const Fees: React.FC = () => {
   const [gateToken, setGateToken] = useState<string>(sessionStorage.getItem('fees_gate_token') || '');
   const [isPasswordSet, setIsPasswordSet] = useState<boolean>(false);
   const [gatePassword, setGatePassword] = useState<string>('');
-  const [setPassword, setSetPassword] = useState<string>('');
+  const [newGatePassword, setNewGatePassword] = useState<string>('');
   const [changeCurrentPassword, setChangeCurrentPassword] = useState<string>('');
   const [changeNewPassword, setChangeNewPassword] = useState<string>('');
   const [resetEmail, setResetEmail] = useState<string>('');
@@ -45,6 +47,8 @@ const Fees: React.FC = () => {
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState(EMPTY);
   const [search, setSearch] = useState<string>('');
+  const [filterStd, setFilterStd] = useState<string>('');
+  const [mobileView, setMobileView] = useState<{ type: 'classes' | 'records', data: any }>({ type: 'classes', data: null });
   const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState<boolean>(false);
   const [showHistory, setShowHistory] = useState<boolean>(false);
@@ -52,12 +56,45 @@ const Fees: React.FC = () => {
   const [studentHistoryModal, setStudentHistoryModal] = useState<boolean>(false);
   const [studentHistoryLoading, setStudentHistoryLoading] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+
+  const filtered = fees.filter(f => {
+    const srch = search.toLowerCase();
+    const sMatch = !search || f.gr_number?.toLowerCase().includes(srch) || getFullName(f.student_id)?.toLowerCase().includes(srch);
+    const cMatch = !filterStd || f.std === filterStd || (f.student_id && f.student_id.std === filterStd);
+    return sMatch && cMatch;
+  });
+
+  const groupedFees = useMemo(() => {
+    const groups: Record<string, { std: string; division: string; medium: string; fees: any[] }> = {};
+    filtered.forEach(f => {
+      const std = f.student_id?.std || f.std || 'N/A';
+      const div = f.student_id?.division || f.division || 'N/A';
+      const med = f.student_id?.medium || f.medium || 'N/A';
+      const cc = `${std}-${div}-${med}`;
+      if (!groups[cc]) {
+        groups[cc] = { std, division: div, medium: med, fees: [] };
+      }
+      groups[cc].fees.push(f);
+    });
+    return groups;
+  }, [filtered]);
+
+  useEffect(() => {
+    const classCode = searchParams.get('class');
+    if (isMobile && classCode && groupedFees[classCode]) {
+      setMobileView({ type: 'records', data: { classCode, group: groupedFees[classCode] } });
+    } else if (isMobile && !classCode) {
+      setMobileView({ type: 'classes', data: null });
+    }
+  }, [searchParams, isMobile, groupedFees]);
 
   const fetchAll = async () => {
     try {
@@ -145,7 +182,7 @@ const Fees: React.FC = () => {
   };
   const handleSetPassword = async (e: any) => {
     e.preventDefault();
-    try { await feesPageSecurityAPI.setPassword({ password: setPassword }); toast.success('Password set'); setActiveGateTabLocal('verify'); setSettingsModal(false); }
+    try { await feesPageSecurityAPI.setPassword({ password: newGatePassword }); toast.success('Password set'); setActiveGateTabLocal('verify'); setSettingsModal(false); }
     catch (err: any) { toast.error(err.response?.data?.message || 'Failed'); }
   };
   const handleChangePassword = async (e: any) => {
@@ -183,7 +220,6 @@ const Fees: React.FC = () => {
     try { await feesAPI.delete(id); toast.success('Deleted'); fetchAll(); } catch { toast.error('Error'); }
   };
 
-  const filtered = fees.filter(f => f.gr_number?.toLowerCase().includes(search.toLowerCase()) || getFullName(f.student_id)?.toLowerCase().includes(search.toLowerCase()));
 
   const inputCls = "w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all";
 
@@ -191,34 +227,34 @@ const Fees: React.FC = () => {
 
   if (!gateToken) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: theme.background }}>
-        <div className="w-full max-w-sm mx-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: theme.background }}>
+        <div className="w-full max-w-[320px]">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-8 text-white text-center" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Lock size={28} className="text-white" />
+            <div className="p-6 text-white text-center" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <Lock size={22} className="text-white" />
               </div>
-              <h1 className="text-xl font-black">Fees Management</h1>
-              <p className="text-sm opacity-70 mt-1">Protected page — enter password to access</p>
+              <h1 className="text-lg font-black">Fees Management</h1>
+              <p className="text-[10px] opacity-70 mt-0.5 uppercase tracking-wider">Protected page</p>
             </div>
-            <div className="p-6">
-              <div className="flex bg-gray-50 p-1 rounded-xl mb-5">
-                <button className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeGateTabLocal === 'verify' ? 'bg-white shadow-sm' : 'text-gray-500'}`} style={{ color: activeGateTabLocal === 'verify' ? theme.primary : undefined }} onClick={() => setActiveGateTabLocal('verify')}>Enter Password</button>
-                {!isPasswordSet && <button className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeGateTabLocal === 'set' ? 'bg-white shadow-sm' : 'text-gray-500'}`} style={{ color: activeGateTabLocal === 'set' ? theme.primary : undefined }} onClick={() => setActiveGateTabLocal('set')}>Set Password</button>}
+            <div className="p-5">
+              <div className="flex bg-gray-50 p-1 rounded-xl mb-4">
+                <button className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all ${activeGateTabLocal === 'verify' ? 'bg-white shadow-sm' : 'text-gray-500'}`} style={{ color: activeGateTabLocal === 'verify' ? theme.primary : undefined }} onClick={() => setActiveGateTabLocal('verify')}>Enter Password</button>
+                {!isPasswordSet && <button className={`flex-1 py-1.5 text-[11px] font-bold rounded-lg transition-all ${activeGateTabLocal === 'set' ? 'bg-white shadow-sm' : 'text-gray-500'}`} style={{ color: activeGateTabLocal === 'set' ? theme.primary : undefined }} onClick={() => setActiveGateTabLocal('set')}>Set Password</button>}
               </div>
               {activeGateTabLocal === 'verify' && (
-                <form onSubmit={handleVerifyGate} className="space-y-4">
-                  {!isPasswordSet && <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-700">⚠️ Password not set yet. Go to "Set Password" tab.</div>}
-                  <input type="password" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-center text-xl tracking-widest outline-none focus:border-blue-400 transition-all" placeholder="••••••••" value={gatePassword} onChange={e => setGatePassword(e.target.value)} disabled={!isPasswordSet} required={isPasswordSet} autoComplete="new-password" />
-                  <button type="submit" className="w-full py-3 rounded-xl text-white font-bold text-sm active:scale-95 transition-all" style={{ background: theme.primary }} disabled={!isPasswordSet}>Unlock Page</button>
+                <form onSubmit={handleVerifyGate} className="space-y-3">
+                  {!isPasswordSet && <div className="p-2 bg-amber-50 border border-amber-100 rounded-lg text-[10px] text-amber-700">⚠️ Password not set yet.</div>}
+                  <input type="password" className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-center text-lg tracking-widest outline-none focus:border-blue-400 transition-all" placeholder="••••••••" value={gatePassword} onChange={e => setGatePassword(e.target.value)} disabled={!isPasswordSet} required={isPasswordSet} autoComplete="new-password" />
+                  <button type="submit" className="w-full py-2.5 rounded-xl text-white font-bold text-xs active:scale-95 transition-all" style={{ background: theme.primary }} disabled={!isPasswordSet}>Unlock Page</button>
                 </form>
               )}
               {activeGateTabLocal === 'set' && (
-                <form onSubmit={handleSetPassword} className="space-y-4">
-                  {isPasswordSet ? <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs text-emerald-700">✅ Password is already set.</div> : (
+                <form onSubmit={handleSetPassword} className="space-y-3">
+                  {isPasswordSet ? <div className="p-2 bg-emerald-50 border border-emerald-100 rounded-lg text-[10px] text-emerald-700">✅ Password is already set.</div> : (
                     <>
-                      <input type="password" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-center text-lg tracking-widest outline-none focus:border-blue-400 transition-all" placeholder="Set new password" value={setPassword} onChange={e => setSetPassword(e.target.value)} required />
-                      <button type="submit" className="w-full py-3 rounded-xl text-white font-bold text-sm" style={{ background: theme.primary }}>Set Password</button>
+                      <input type="password" className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-center text-lg tracking-widest outline-none focus:border-blue-400 transition-all" placeholder="Set new password" value={newGatePassword} onChange={e => setNewGatePassword(e.target.value)} required />
+                      <button type="submit" className="w-full py-2.5 rounded-xl text-white font-bold text-xs" style={{ background: theme.primary }}>Set Password</button>
                     </>
                   )}
                 </form>
@@ -234,7 +270,7 @@ const Fees: React.FC = () => {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme.background }}>
-      <div className={isMobile ? 'p-0' : 'p-6'}>
+      <div className={isMobile ? 'pb-24' : 'p-6'}>
 
         {!isMobile && (
           <div className="mb-6 flex items-center justify-between">
@@ -272,37 +308,36 @@ const Fees: React.FC = () => {
         )}
 
         {isMobile && (
-          <>
-            <div className="p-5 text-white mb-3" style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})` }}>
-              <p className="text-[10px] opacity-80 uppercase tracking-widest font-bold">Admin Panel</p>
-              <h2 className="text-xl font-extrabold mt-0.5">Fees Management</h2>
+          <div style={{ background: theme.primary, padding: '30px 14px 20px', marginBottom: '12px' }}>
+            <div className="flex items-center justify-between mb-1.5">
+              {mobileView.type === 'records' && mobileView.data ? (
+                <div className="flex items-center gap-2">
+                  <button onClick={() => navigate('/admin/fees')} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}>
+                    <FaArrowLeft size={14} />
+                  </button>
+                  <div>
+                    <h1 style={{ color: '#fff', fontSize: 18, fontWeight: 800, margin: 0 }}>Std {mobileView.data.group.std} — {mobileView.data.group.division}</h1>
+                    <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, margin: '2px 0 0', fontWeight: 500 }}>{mobileView.data.group.fees.length} fee records</p>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0 }}>Fees</h1>
+                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, margin: '2px 0 0', fontWeight: 500 }}>SmartSchool ERP</p>
+                </div>
+              )}
             </div>
-            <div className="mb-3">
-              <button onClick={() => { setEditing(null); setForm(EMPTY); setModal(true); }} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white font-bold shadow-lg active:scale-95" style={{ background: theme.primary }}>
-                <FaPlus size={13} /> Add Fee Record
-              </button>
-            </div>
-          </>
+          </div>
         )}
 
+        <div className={isMobile ? 'px-[14px]' : ''}>
+
         {/* Stats */}
-        <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${isMobile ? 'mb-3' : 'mb-6'}`}>
-          {[
-            { label: 'Total Billed', value: `₹${(summary.totalAmount || 0).toLocaleString()}`, color: theme.primary, bg: `${theme.primary}12`, Icon: FaRupeeSign },
-            { label: 'Collected', value: `₹${(summary.totalCollected || 0).toLocaleString()}`, color: '#10B981', bg: '#ECFDF5', Icon: TrendingUp },
-            { label: 'Pending Amount', value: `₹${(summary.pendingAmount || 0).toLocaleString()}`, color: '#F59E0B', bg: '#FFFBEB', Icon: FaRupeeSign },
-            { label: 'Pending Records', value: String(summary.pendingCount || 0), color: '#EF4444', bg: '#FEF2F2', Icon: AlertCircle },
-          ].map((s, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm p-3.5">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: s.bg }}>
-                  {typeof s.Icon === 'function' && React.isValidElement(<s.Icon />) ? <s.Icon size={14} style={{ color: s.color }} /> : <s.Icon style={{ color: s.color, fontSize: '14px' }} />}
-                </div>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{s.label}</p>
-              </div>
-              <p className="text-lg font-black" style={{ color: s.color }}>{s.value}</p>
-            </div>
-          ))}
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${isMobile ? 'mb-3' : 'mb-5'}`}>
+          <StatCard title="Total Billed" value={`₹${(summary.totalAmount || 0).toLocaleString()}`} icon={LuIndianRupee} iconColor={theme.primary} iconBg={`${theme.primary}12`} subtitle="Academic" />
+          <StatCard title="Collected" value={`₹${(summary.totalCollected || 0).toLocaleString()}`} icon={TrendingUp} iconColor={theme.primary} iconBg={`${theme.primary}12`}  subtitle="Success" />
+          <StatCard title="Pending Amount" value={`₹${(summary.pendingAmount || 0).toLocaleString()}`} icon={LuIndianRupee} iconColor={theme.primary} iconBg={`${theme.primary}12`}  subtitle="Requires Review" />
+          <StatCard title="Pending Records" value={String(summary.pendingCount || 0)} icon={AlertCircle} iconColor={theme.primary} iconBg={`${theme.primary}12`}  subtitle="Count" />
         </div>
 
         {/* History */}
@@ -341,44 +376,102 @@ const Fees: React.FC = () => {
         )}
 
         {/* Search */}
-        <div className={`bg-white rounded-xl shadow-sm p-3 ${isMobile ? 'mb-3' : 'mb-4'}`}>
-          <div className="relative">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
+        {isMobile && mobileView.type === 'classes' ? (
+          <>
+            <div className="flex items-center gap-2 mb-3">
+              <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #E5E7EB', padding: '0 10px', display: 'flex', alignItems: 'center', gap: 6, flex: 1, height: '36px' }}>
+                <FaSearch size={12} color="#6B7280" className="shrink-0" />
+                <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} style={{ border: 'none', outline: 'none', fontSize: '11px', color: '#1F2937', flex: 1, width: '100%', background: 'transparent' }} />
+              </div>
+              <button 
+                onClick={() => { setEditing(null); setForm(EMPTY); setModal(true); }} 
+                className="w-12 h-9 rounded-lg flex items-center justify-center text-white active:scale-95 transition-all shadow-sm shrink-0 gap-1 px-2"
+                style={{ background: theme.primary }}
+              >
+                <span className="text-[10px] font-bold">Add</span>
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6, marginBottom: 12 }}>
+              <div style={{ position: 'relative' }}>
+                <select value={filterStd} onChange={e => setFilterStd(e.target.value)} style={{ width: '100%', padding: '8px 24px 8px 10px', borderRadius: 8, border: '1px solid #E5E7EB', background: '#fff', fontSize: 11, fontWeight: 600, color: '#1F2937', appearance: 'none' }}>
+                  <option value="">All standards</option>
+                  {stdOptions.map((s: any) => <option key={s} value={s}>Std {s}</option>)}
+                </select>
+                <FaChevronDown style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: 9, color: '#6B7280' }} />
+              </div>
+            </div>
+            <p style={{ fontSize: 10, fontWeight: 800, color: theme.primary, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
+              {Object.keys(groupedFees).length} CLASS GROUPS
+            </p>
+          </>
+        ) : !isMobile && (
+          <div className={`bg-white rounded-xl shadow-sm p-3 mb-4 relative`}>
+            <FaSearch className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
             <input className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-400 transition-all" placeholder="Search by GR number or student name..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-        </div>
+        )}
 
         {/* Table */}
         {isMobile ? (
-          <div className="space-y-2.5 pb-6">
-            {filtered.length === 0 ? (
-              <div className="bg-white rounded-xl p-10 text-center"><p className="text-sm text-gray-400">No fee records found</p></div>
-            ) : filtered.map(f => {
-              const sc = statusConfig[f.status] || statusConfig.Pending;
-              return (
-                <div key={f._id} className="bg-white rounded-xl shadow-sm p-3.5">
-                  <div className="flex items-start justify-between mb-2">
+          <div className="space-y-3 pb-6">
+            {Object.keys(groupedFees).length === 0 ? (
+              <div className="bg-white rounded-xl p-10 text-center shadow-sm"><p className="text-sm font-bold text-gray-400">No fee records found</p></div>
+            ) : mobileView.type === 'classes' ? (
+              Object.keys(groupedFees).sort().map(classCode => {
+                const group = groupedFees[classCode];
+                return (
+                  <div key={classCode} onClick={() => navigate(`/admin/fees?class=${encodeURIComponent(classCode)}`)} style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: '12px 14px', marginBottom: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                      <p className="text-sm font-bold" style={{ color: theme.primary }}>{f.gr_number}</p>
-                      <p className="text-xs text-gray-600">{getFullName(f.student_id)}</p>
+                      <p style={{ fontWeight: 800, fontSize: 13, color: '#1F2937', margin: 0 }}>
+                        Std {group.std} — Section {group.division}
+                      </p>
+                      <p style={{ fontSize: 11, color: '#6B7280', fontWeight: 500, margin: '2px 0 0' }}>
+                        Morning · {group.medium} · {group.fees.length} fee records
+                      </p>
                     </div>
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-lg uppercase" style={{ color: sc.color, backgroundColor: sc.bg }}>{f.status}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] text-gray-400">{f.fee_type} · {new Date(f.due_date).toLocaleDateString()}</p>
-                      <p className="text-sm font-black mt-0.5" style={{ color: theme.primary }}>₹{f.total_amount?.toLocaleString()} <span className="text-[10px] text-emerald-600 font-normal">paid ₹{f.amount_paid?.toLocaleString()}</span></p>
-                    </div>
-                    <div className="flex gap-1.5">
-                      <button onClick={() => downloadReceipt(f)} className="p-2 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100"><FaDownload size={11} /></button>
-                      <button onClick={() => fetchStudentHistory(f.student_id?._id)} className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100"><FaEye size={11} /></button>
-                      <button onClick={() => { setEditing(f); setForm({ ...f, due_date: f.due_date?.split('T')[0] }); setModal(true); }} className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100"><FaEdit size={11} /></button>
-                      <button onClick={() => handleDelete(f._id)} className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100"><FaTrash size={11} /></button>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(0,43,91,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.primary, flexShrink: 0 }}>
+                      <FaChevronRight style={{ fontSize: 10 }} />
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="space-y-3">
+                {mobileView.data.group.fees.length === 0 ? (
+                  <div className="bg-white rounded-[14px] p-6 text-center shadow-sm">
+                    <p className="text-sm text-gray-400 font-bold">No records here</p>
+                  </div>
+                ) : mobileView.data.group.fees.map((f: any) => {
+                  const sc = statusConfig[f.status] || statusConfig.Pending;
+                  return (
+                    <div key={f._id} className="bg-white rounded-[14px] border border-gray-100 p-3 shadow-sm transition-all">
+                      <div className="flex items-start justify-between mb-1.5">
+                        <div>
+                          <p className="text-[11px] font-black tracking-wide" style={{ color: theme.primary }}>{f.gr_number}</p>
+                          <p className="text-[10px] text-gray-600 font-bold uppercase">{getFullName(f.student_id)}</p>
+                        </div>
+                        <span className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-md uppercase" style={{ color: sc.color, backgroundColor: sc.bg }}>{f.status}</span>
+                      </div>
+                      <div className="flex items-end justify-between mt-2">
+                        <div>
+                          <p className="text-[9px] text-gray-400 font-bold uppercase">{f.fee_type} · {new Date(f.due_date).toLocaleDateString()}</p>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <p className="text-xs font-black tracking-widest" style={{ color: theme.primary }}>₹{f.total_amount?.toLocaleString()}</p>
+                            <span className="text-[8px] opacity-80 font-black text-emerald-600 tracking-wider">PAID ₹{f.amount_paid?.toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <button onClick={() => downloadReceipt(f)} className="p-1.5 rounded-lg bg-purple-50 text-purple-600 active:scale-95 transition-transform"><FaDownload size={10} /></button>
+                          <button onClick={() => fetchStudentHistory(f.student_id?._id)} className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 active:scale-95 transition-transform"><FaEye size={10} /></button>
+                          <button onClick={() => { setEditing(f); setForm({ ...f, due_date: f.due_date?.split('T')[0] }); setModal(true); }} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 active:scale-95 transition-transform"><FaEdit size={10} /></button>
+                          <button onClick={() => handleDelete(f._id)} className="p-1.5 rounded-lg bg-red-50 text-red-500 active:scale-95 transition-transform"><FaTrash size={10} /></button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -393,24 +486,29 @@ const Fees: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={9} className="text-center py-12 text-gray-400">No fee records found</td></tr>
+                    <tr><td colSpan={9} className="text-center py-10 text-gray-400 font-medium tracking-wide">No fee records found</td></tr>
                   ) : filtered.map(f => {
-                    const sc = statusConfig[f.status] || statusConfig.Pending;
+                    const statusColors = statusConfig[f.status] || statusConfig.Pending;
                     return (
                       <tr key={f._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3.5 font-bold" style={{ color: theme.secondary }}>{f.gr_number}</td>
-                        <td className="px-4 py-3.5 text-gray-700 font-medium">{getFullName(f.student_id)}</td>
-                        <td className="px-4 py-3.5 text-gray-500">{f.fee_type}</td>
-                        <td className="px-4 py-3.5 font-bold text-gray-800">₹{f.total_amount?.toLocaleString()}</td>
-                        <td className="px-4 py-3.5 text-emerald-600 font-medium">₹{f.amount_paid?.toLocaleString()}</td>
-                        <td className="px-4 py-3.5 text-gray-500">{new Date(f.due_date).toLocaleDateString()}</td>
-                        <td className="px-4 py-3.5"><span className="text-[10px] font-black px-2 py-1 rounded-lg" style={{ color: sc.color, backgroundColor: sc.bg }}>{f.status}</span></td>
-                        <td className="px-4 py-3.5"><button onClick={() => downloadReceipt(f)} className="p-2 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"><FaDownload size={12} /></button></td>
-                        <td className="px-4 py-3.5">
-                          <div className="flex gap-1.5">
-                            <button onClick={() => fetchStudentHistory(f.student_id?._id)} className="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"><FaEye size={12} /></button>
-                            <button onClick={() => { setEditing(f); setForm({ ...f, due_date: f.due_date?.split('T')[0] }); setModal(true); }} className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"><FaEdit size={12} /></button>
-                            <button onClick={() => handleDelete(f._id)} className="p-2 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors"><FaTrash size={12} /></button>
+                        <td className="px-4 py-3 text-xs font-bold" style={{ color: theme.primary }}>{f.gr_number}</td>
+                        <td className="px-4 py-3">
+                          <p className="text-xs font-bold text-gray-800">{getFullName(f.student_id)}</p>
+                          <p className="text-[10px] text-gray-500">{f.std && f.division ? `Class ${f.std}-${f.division}` : 'No Class'}</p>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-600">{f.fee_type}</td>
+                        <td className="px-4 py-3 text-xs font-black">₹{(f.total_amount || 0).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-xs font-bold text-emerald-600">₹{(f.amount_paid || 0).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-xs text-gray-600">{new Date(f.due_date).toLocaleDateString()}</td>
+                        <td className="px-4 py-3"><Badge status={f.status} /></td>
+                        <td className="px-4 py-3">
+                          <button onClick={() => downloadReceipt(f)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 transition-colors"><FaDownload /> PDF</button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2">
+                            <button onClick={() => fetchStudentHistory(f.student_id?._id)} className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors" title="View History"><FaEye size={12} /></button>
+                            <button onClick={() => { setEditing(f); setForm({ ...f, due_date: f.due_date?.split('T')[0] }); setModal(true); }} className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"><FaEdit size={12} /></button>
+                            <button onClick={() => handleDelete(f._id)} className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"><FaTrash size={12} /></button>
                           </div>
                         </td>
                       </tr>
@@ -421,6 +519,8 @@ const Fees: React.FC = () => {
             </div>
           </div>
         )}
+
+        </div>
       </div>
 
       {/* Student History Modal */}
@@ -478,30 +578,125 @@ const Fees: React.FC = () => {
       </Modal>
 
       {/* Add/Edit Fee Modal */}
-      <Modal isOpen={modal} onClose={() => setModal(false)} title={editing ? 'Edit Fee Record' : 'Add Fee Record'} size="lg">
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Std</label><select className={inputCls} value={form.std} onChange={handleStdChange}><option value="">Select</option>{stdOptions.map((s: any) => <option key={s} value={s}>{s}</option>)}</select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Division</label><select className={inputCls} value={form.division} onChange={handleDivisionChange}><option value="">Select</option>{divisionOptions.map((d: any) => <option key={d} value={d}>{d}</option>)}</select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Shift</label><select className={inputCls} value={form.shift} onChange={e => setForm({ ...form, shift: e.target.value })}><option value="">Select</option>{['Morning','Afternoon'].map(s => <option key={s}>{s}</option>)}</select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Medium</label><select className={inputCls} value={form.medium} onChange={e => setForm({ ...form, medium: e.target.value })}><option value="">Select</option>{['English','Gujarati','Hindi'].map(m => <option key={m}>{m}</option>)}</select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Class Code</label><select className={inputCls} value={form.class_code} onChange={handleClassCodeChange}><option value="">Select</option>{classCodeOptions.map((c: any) => <option key={c} value={c}>{c}</option>)}</select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Fee Type</label><select className={inputCls} value={form.fee_type} onChange={e => setForm({ ...form, fee_type: e.target.value })}>{['Tuition','Transport','Library','Lab','Sports','Other'].map(t => <option key={t}>{t}</option>)}</select></div>
-            {!editing && <div className="col-span-2"><label className="block text-xs font-semibold text-gray-600 mb-1">Student *</label><select className={inputCls} required value={form.student_id} onChange={handleStudentChange}><option value="">Select student</option>{filteredStudents.map(s => <option key={s._id} value={s._id}>{getFullName(s)} ({s.gr_number})</option>)}</select></div>}
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Total Amount *</label><input type="number" className={inputCls} required value={form.total_amount} onChange={e => setForm({ ...form, total_amount: e.target.value })} /></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Amount Paid</label><input type="number" className={inputCls} value={form.amount_paid} onChange={e => setForm({ ...form, amount_paid: e.target.value })} /></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Due Date *</label><input type="date" className={inputCls} required value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} /></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Payment Mode</label><select className={inputCls} value={form.payment_mode} onChange={e => setForm({ ...form, payment_mode: e.target.value })}>{['Cash','Online','Cheque','DD'].map(m => <option key={m}>{m}</option>)}</select></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Academic Year</label><input className={inputCls} value={form.academic_year} onChange={e => setForm({ ...form, academic_year: e.target.value })} /></div>
-            <div><label className="block text-xs font-semibold text-gray-600 mb-1">Status</label><select className={inputCls} value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>{['Pending','Partial','Paid','Overdue'].map(s => <option key={s}>{s}</option>)}</select></div>
+      <div className={`fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-3 transition-opacity duration-300 ${modal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`bg-white rounded-t-3xl sm:rounded-xl w-full max-w-lg p-4 sm:p-6 shadow-2xl overflow-y-auto max-h-[90vh] border border-gray-100 transform transition-transform duration-300 ${modal ? 'translate-y-0' : 'translate-y-full sm:translate-y-0'}`}>
+          <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-4 sm:hidden" />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base sm:text-lg font-bold" style={{ color: theme.primary }}>
+              {editing ? 'Edit Fee Record' : 'Add Fee Record'}
+            </h2>
+            <button 
+              type="button"
+              onClick={() => setModal(false)} 
+              className="h-7 w-7 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors text-lg"
+            >
+              &times;
+            </button>
           </div>
-          <div><label className="block text-xs font-semibold text-gray-600 mb-1">Remarks</label><input className={inputCls} value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} /></div>
-          <div className="flex gap-3 pt-2">
-            <button type="submit" className="flex-1 py-2.5 rounded-xl text-white text-sm font-bold active:scale-95" style={{ background: theme.primary }}>{editing ? 'Update' : 'Create'}</button>
-            <button type="button" onClick={() => setModal(false)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-500 border border-gray-200 hover:bg-gray-50">Cancel</button>
-          </div>
-        </form>
-      </Modal>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Std</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.std} onChange={handleStdChange}>
+                  <option value="">Select</option>
+                  {stdOptions.map((s: any) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Division</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.division} onChange={handleDivisionChange}>
+                  <option value="">Select</option>
+                  {divisionOptions.map((d: any) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Shift</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.shift} onChange={e => setForm({ ...form, shift: e.target.value })}>
+                  <option value="">Select</option>
+                  {['Morning','Afternoon'].map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Medium</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.medium} onChange={e => setForm({ ...form, medium: e.target.value })}>
+                  <option value="">Select</option>
+                  {['English','Gujarati','Hindi'].map(m => <option key={m}>{m}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Class Code</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.class_code} onChange={handleClassCodeChange}>
+                  <option value="">Select</option>
+                  {classCodeOptions.map((c: any) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Fee Type</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.fee_type} onChange={e => setForm({ ...form, fee_type: e.target.value })}>
+                  {['Tuition','Transport','Library','Lab','Sports','Other'].map(t => <option key={t}>{t}</option>)}
+                </select>
+              </div>
+              {!editing && (
+                <div className="col-span-2 space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Student *</label>
+                  <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" required value={form.student_id} onChange={handleStudentChange}>
+                    <option value="">Select student</option>
+                    {filteredStudents.map(s => <option key={s._id} value={s._id}>{getFullName(s)} ({s.gr_number})</option>)}
+                  </select>
+                </div>
+              )}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Total Amount *</label>
+                <input type="number" className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none" required value={form.total_amount} onChange={e => setForm({ ...form, total_amount: e.target.value })} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Amount Paid</label>
+                <input type="number" className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none" value={form.amount_paid} onChange={e => setForm({ ...form, amount_paid: e.target.value })} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Due Date *</label>
+                <input type="date" className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none" required value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Payment Mode</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.payment_mode} onChange={e => setForm({ ...form, payment_mode: e.target.value })}>
+                  {['Cash','Online','Cheque','DD'].map(m => <option key={m}>{m}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Academic Year</label>
+                <input className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none" value={form.academic_year} onChange={e => setForm({ ...form, academic_year: e.target.value })} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Status</label>
+                <select className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none appearance-none" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
+                  {['Pending','Partial','Paid','Overdue'].map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Remarks</label>
+              <input className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-xs outline-none" value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} />
+            </div>
+            <div className="flex gap-3 pt-4 pb-2">
+              <button 
+                type="button" 
+                onClick={() => setModal(false)} 
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-gray-500 border border-gray-100 active:bg-gray-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-all" 
+                style={{ backgroundColor: theme.primary }}
+              >
+                {editing ? 'Update Record' : 'Create Record'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

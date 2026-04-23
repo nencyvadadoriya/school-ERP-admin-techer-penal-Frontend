@@ -27,7 +27,7 @@ const SubjectStyleSheet = () => (
   <style>{`
     .subject-container { background: ${themeConfig.background}; min-height: 100vh; }
     .btn-base { padding: 0.625rem 1.25rem; border: none; border-radius: 0.625rem; font-weight: 600; font-size: 0.8125rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.2s; }
-    .btn-primary { background: linear-gradient(135deg, ${themeConfig.primary} 0%, ${themeConfig.secondary} 100%); color: white; }
+    .btn-primary { background: ${themeConfig.accent}; color: ${themeConfig.primary}; }
     .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
     .btn-secondary { background: rgba(0,43,91,0.08); color: ${themeConfig.primary}; border: 1.5px solid ${themeConfig.primary}; }
     .btn-secondary:hover { background: rgba(0,43,91,0.15); }
@@ -42,6 +42,17 @@ const SubjectStyleSheet = () => (
     .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
     .card-base { background: white; border-radius: 1rem; border: 1px solid #e5e7eb; overflow: hidden; transition: all 0.2s; }
     .card-base:hover { border-color: ${themeConfig.primary}40; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    @media (max-width: 768px) {
+      .card-base { padding: 0.75rem !important; border-radius: 0.75rem; }
+      .card-base h3 { font-size: 0.75rem !important; }
+      .card-base .text-[10px] { font-size: 0.55rem !important; }
+      .card-base .text-[9px] { font-size: 0.5rem !important; }
+      .card-base .btn-base { padding: 0.4rem !important; }
+      .mobile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.5rem !important; }
+      .mobile-text-xs { font-size: 0.65rem !important; }
+      .mobile-text-sm { font-size: 0.75rem !important; }
+    }
+
     .view-mode-btn { padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; }
     .view-mode-btn.active { background: ${themeConfig.primary}; color: white; }
     .view-mode-btn:not(.active) { color: ${themeConfig.textSecondary}; }
@@ -277,18 +288,10 @@ const Subjects = () => {
         {/* Mobile Header */}
         {isMobile && (
           <div className="bg-white sticky top-0 z-30 shadow-sm border-b border-gray-100 mb-4">
-            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}, ${themeConfig.secondary})` }}>
+            <div className="p-4 flex items-center justify-between" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}` }}>
               <div>
-                <h2 className="text-lg font-extrabold text-white">Subjects</h2>
+                <h2 className="text-base font-extrabold text-white">Subjects</h2>
                 <p className="text-[10px] text-white/70 font-medium tracking-wider">{subjects.length} Total Subjects</p>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={openBulkAdd} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white active:scale-90 transition-transform shadow-lg backdrop-blur-sm">
-                  <FaLayerGroup size={16} />
-                </button>
-                <button onClick={openAdd} className="w-10 h-10 rounded-xl bg-[#FFC107] flex items-center justify-center text-[#002B5B] active:scale-90 transition-transform shadow-lg">
-                  <FaPlus size={16} />
-                </button>
               </div>
             </div>
           </div>
@@ -332,44 +335,57 @@ const Subjects = () => {
 
         {/* Controls Section */}
         <div className={`bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-6 ${isMobile ? 'mx-4' : ''}`}>
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="relative flex-1">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by subject name or code..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="input-field pl-12"
-              />
-            </div>
-
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
+              <div className="relative flex-1 max-w-[70%] sm:max-w-none">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="input-field pl-9 !py-1.5 !text-xs"
+                />
+              </div>
+
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`btn-base ${showFilters ? 'btn-primary' : 'btn-secondary'} !px-4 !py-2 !text-xs`}
+                className={`btn-base ${showFilters ? 'btn-secondary' : 'btn-secondary'} !px-3 !py-1.5 !text-[10px]`}
               >
-                <FaFilter />
+                <FaFilter size={10} />
                 <span>Filters</span>
               </button>
+            </div>
 
-              <div className="flex bg-gray-100 p-1 rounded-xl">
+            <div className="flex items-center justify-between border-t border-gray-50 pt-3">
+               {isMobile && (
+                <div className="flex gap-2">
+                  <button onClick={openBulkAdd} className="btn-base btn-secondary !px-3 !py-1.5 !text-[10px]">
+                    <FaLayerGroup size={10} /> Bulk
+                  </button>
+                  <button onClick={openAdd} className="btn-base text-white !px-3 !py-1.5 !text-[10px] shadow-sm" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}` }}>
+                    <FaPlus size={10} /> Add
+                  </button>
+                </div>
+              )}
+              <div className="flex bg-gray-100 p-1 rounded-lg">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                  className={`view-mode-btn !p-1.5 ${viewMode === 'grid' ? 'active' : ''}`}
                   title="Grid View"
-                ><FaTh size={14} /></button>
+                ><FaTh size={12} /></button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`view-mode-btn ${viewMode === 'list' ? 'active' : ''}`}
+                  className={`view-mode-btn !p-1.5 ${viewMode === 'list' ? 'active' : ''}`}
                   title="List View"
-                ><FaList size={14} /></button>
+                ><FaList size={12} /></button>
                 <button
                   onClick={() => setViewMode('stdwise')}
-                  className={`view-mode-btn ${viewMode === 'stdwise' ? 'active' : ''}`}
+                  className={`view-mode-btn !p-1.5 ${viewMode === 'stdwise' ? 'active' : ''}`}
                   title="Standard-wise"
-                ><FaLayerGroup size={14} /></button>
+                ><FaLayerGroup size={12} /></button>
               </div>
+
+             
             </div>
           </div>
 
@@ -420,45 +436,45 @@ const Subjects = () => {
                       <div key={medium}>
                         <div className="flex items-center gap-3 mb-6">
                         
-                          <h2 className="text-xl font-black text-gray-800">{medium} Medium</h2>
+                          <h2 className="text-lg font-bold text-gray-800">{medium} Medium</h2>
                           <span className="px-3 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-bold">{items.length} Subjects</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 ${isMobile ? 'mobile-grid' : ''}`}>
                           {items.map((s: any) => (
-                            <div key={s._id} className="card-base p-5 group">
-                              <div className="flex justify-between items-start mb-4">
+                            <div key={s._id} className="card-base p-3 group">
+                              <div className="flex justify-between items-start mb-2">
                                 <div className="min-w-0">
                                   {s.subject_code && (
-                                    <span className="text-[10px] font-mono font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded mb-1 inline-block">
+                                    <span className="text-[9px] font-mono font-bold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded mb-1 inline-block">
                                       {s.subject_code}
                                     </span>
                                   )}
-                                  <h3 className="text-base font-bold text-gray-900 truncate pr-2" title={s.subject_name}>
+                                  <h3 className="text-sm font-bold text-gray-900 truncate pr-2" title={s.subject_name}>
                                     {s.subject_name}
                                   </h3>
                                 </div>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button onClick={() => openEdit(s)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <FaEdit className="text-sm" />
+                                  <button onClick={() => openEdit(s)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <FaEdit className="text-[10px]" />
                                   </button>
-                                  <button onClick={() => handleDelete(s._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                    <FaTrash className="text-sm" />
+                                  <button onClick={() => handleDelete(s._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                    <FaTrash className="text-[10px]" />
                                   </button>
                                 </div>
                               </div>
 
-                              <div className="space-y-2.5">
-                                <div className="flex justify-between text-xs">
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between text-[10px]">
                                   <span className="text-gray-500 font-medium">Standard</span>
                                   <span className="text-gray-900 font-bold">Class {s.std || '—'}</span>
                                 </div>
                                 {s.stream && (
-                                  <div className="flex justify-between text-xs">
+                                  <div className="flex justify-between text-[10px]">
                                     <span className="text-gray-500 font-medium">Stream</span>
-                                    <span className="text-gray-700 font-semibold truncate max-w-[100px]">{s.stream}</span>
+                                    <span className="text-gray-700 font-semibold truncate max-w-[80px]">{s.stream}</span>
                                   </div>
                                 )}
-                                <div className="pt-2 border-t border-gray-50 mt-2 flex justify-end">
+                                <div className="pt-1.5 border-t border-gray-50 mt-1.5 flex justify-end">
                                   {getLevelBadge(s.subject_level)}
                                 </div>
                               </div>
@@ -472,106 +488,139 @@ const Subjects = () => {
               )}
 
               {viewMode === 'list' && (
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead className="bg-[#002B5B] text-white">
-                      <tr>
-                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Code</th>
-                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Subject Name</th>
-                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Standard</th>
-                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Medium</th>
-                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider">Level</th>
-                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {filtered.map((s: any) => (
-                        <tr key={s._id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4">
-                            <span className="font-mono text-xs font-bold text-primary-600">{s.subject_code || '—'}</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <p className="font-bold text-gray-900 text-sm">{s.subject_name}</p>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-gray-600">Class {s.std || '—'}</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase ${s.medium === 'English' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                <div className={`${isMobile ? 'space-y-3' : 'bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto'}`}>
+                  {!isMobile ? (
+                    <table className="w-full text-left min-w-[500px] sm:min-w-full">
+                      <thead className="bg-[#002B5B] text-white">
+                        <tr>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Code</th>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Subject Name</th>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Standard</th>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Medium</th>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Level</th>
+                          <th className="px-3 sm:px-6 py-3 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {filtered.map((s: any) => (
+                          <tr key={s._id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-3 sm:px-6 py-3 sm:py-4">
+                              <span className="font-mono text-[10px] sm:text-xs font-bold text-primary-600">{s.subject_code || '—'}</span>
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4">
+                              <p className="font-bold text-gray-900 text-[11px] sm:text-sm">{s.subject_name}</p>
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-sm font-medium text-gray-600">Class {s.std || '—'}</td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4">
+                              <span className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-lg text-[9px] sm:text-[10px] font-black uppercase ${s.medium === 'English' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                                {s.medium}
+                              </span>
+                            </td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4">{getLevelBadge(s.subject_level)}</td>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
+                              <div className="flex justify-end gap-1 sm:gap-2">
+                                <button onClick={() => openEdit(s)} className="p-1.5 sm:p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
+                                  <FaEdit size={isMobile ? 12 : 14} />
+                                </button>
+                                <button onClick={() => handleDelete(s._id)} className="p-1.5 sm:p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors">
+                                  <FaTrash size={isMobile ? 12 : 14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    filtered.map((s: any) => (
+                      <div key={s._id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            {s.subject_code && (
+                              <span className="text-[9px] font-mono font-bold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded">
+                                {s.subject_code}
+                              </span>
+                            )}
+                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${s.medium === 'English' ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
                               {s.medium}
                             </span>
-                          </td>
-                          <td className="px-6 py-4">{getLevelBadge(s.subject_level)}</td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              <button onClick={() => openEdit(s)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
-                                <FaEdit />
-                              </button>
-                              <button onClick={() => handleDelete(s._id)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors">
-                                <FaTrash />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </div>
+                          <h3 className="text-sm font-bold text-gray-900 truncate mb-1">{s.subject_name}</h3>
+                          <div className="flex items-center gap-2 text-[10px] text-gray-500 font-medium">
+                            <span>Class {s.std || '—'}</span>
+                            <span>•</span>
+                            <span className="text-primary-600">{s.subject_level}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <button onClick={() => openEdit(s)} className="p-2 text-blue-600 bg-blue-50/50 rounded-lg active:bg-blue-100 transition-colors">
+                            <FaEdit size={14} />
+                          </button>
+                          <button onClick={() => handleDelete(s._id)} className="p-2 text-red-600 bg-red-50/50 rounded-lg active:bg-red-100 transition-colors">
+                            <FaTrash size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
 
               {viewMode === 'stdwise' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 ${isMobile ? 'gap-3' : 'gap-6'}`}>
                   {Object.entries(groupedData).map(([standard, mediumGroups]: [string, any]) => (
                     <div key={standard} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-                      <div className="bg-gradient-to-r from-[#002B5B] to-[#2D54A8] p-5">
+                      <div className={`bg-gradient-to-r from-[#002B5B] to-[#2D54A8] ${isMobile ? 'p-3' : 'p-5'}`}>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                              <span className="text-white font-black text-xl">{standard === 'Unassigned' ? '?' : standard}</span>
+                          <div className="flex items-center gap-3">
+                            <div className={`${isMobile ? 'w-8 h-8 rounded-lg' : 'w-12 h-12 rounded-xl'} bg-white/20 flex items-center justify-center backdrop-blur-sm border border-white/30`}>
+                              <span className={`text-white font-black ${isMobile ? 'text-sm' : 'text-xl'}`}>{standard === 'Unassigned' ? '?' : standard}</span>
                             </div>
                             <div>
-                              <h3 className="text-white font-bold text-lg leading-tight">
+                              <h3 className={`text-white font-bold leading-tight ${isMobile ? 'text-sm' : 'text-lg'}`}>
                                 {standard === 'Unassigned' ? 'Unassigned' : `Class ${standard}`}
                               </h3>
-                              <p className="text-blue-100 text-xs font-medium">
+                              <p className={`text-blue-100 font-medium ${isMobile ? 'text-[9px]' : 'text-xs'}`}>
                                 {Object.values(mediumGroups).flat().length} Total Subjects
                               </p>
                             </div>
                           </div>
                           <button
                             onClick={() => toggleStd(standard)}
-                            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+                            className={`${isMobile ? 'w-7 h-7' : 'w-10 h-10'} rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white`}
                           >
-                            <FaChevronDown className={`transition-transform duration-300 ${expandedStd === standard ? 'rotate-180' : ''}`} />
+                            <FaChevronDown size={isMobile ? 12 : 16} className={`transition-transform duration-300 ${expandedStd === standard ? 'rotate-180' : ''}`} />
                           </button>
                         </div>
                       </div>
 
                       {expandedStd === standard && (
-                        <div className="p-5 flex-1 divide-y divide-gray-50 overflow-y-auto max-h-[500px] custom-scrollbar">
+                        <div className={`${isMobile ? 'p-3' : 'p-5'} flex-1 divide-y divide-gray-50 overflow-y-auto max-h-[500px] custom-scrollbar`}>
                           {Object.entries(mediumGroups).map(([medium, subjects]: [string, any]) => (
-                            <div key={medium} className="py-4 first:pt-0 last:pb-0">
-                              <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 flex items-center gap-2">
+                            <div key={medium} className="py-3 first:pt-0 last:pb-0">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className={`font-black uppercase tracking-widest text-gray-400 flex items-center gap-2 ${isMobile ? 'text-[9px]' : 'text-xs'}`}>
                                   <div className={`w-1.5 h-1.5 rounded-full ${medium === 'English' ? 'bg-indigo-500' : 'bg-orange-500'}`}></div>
                                   {medium} Medium
                                 </h4>
-                                <span className="text-[10px] font-bold text-gray-400">{subjects.length} Subjects</span>
+                                <span className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} font-bold text-gray-400`}>{subjects.length} Subjects</span>
                               </div>
-                              <div className="space-y-2">
+                              <div className="space-y-1.5">
                                 {subjects.map((s: any) => (
-                                  <div key={s._id} className="bg-gray-50 rounded-xl p-3 flex items-center justify-between group hover:bg-white hover:shadow-md hover:ring-1 hover:ring-[#002B5B10] transition-all">
-                                    <div className="min-w-0 pr-4">
-                                      <p className="text-sm font-bold text-gray-900 truncate">{s.subject_name}</p>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        {s.subject_code && <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">{s.subject_code}</span>}
-                                        {s.stream && <span className="text-[10px] text-gray-500 font-medium">· {s.stream}</span>}
+                                  <div key={s._id} className={`${isMobile ? 'p-2' : 'p-3'} bg-gray-50 rounded-xl flex items-center justify-between group hover:bg-white hover:shadow-md hover:ring-1 hover:ring-[#002B5B10] transition-all`}>
+                                    <div className="min-w-0 pr-2">
+                                      <p className={`font-bold text-gray-900 truncate ${isMobile ? 'text-xs' : 'text-sm'}`}>{s.subject_name}</p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        {s.subject_code && <span className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded`}>{s.subject_code}</span>}
+                                        {s.stream && <span className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} text-gray-500 font-medium`}>· {s.stream}</span>}
                                       </div>
                                     </div>
-                                    <div className="flex gap-1">
-                                      <button onClick={() => openEdit(s)} className="p-2 text-blue-600 hover:bg-white rounded-lg transition-colors">
-                                        <FaEdit className="text-xs" />
+                                    <div className="flex gap-0.5">
+                                      <button onClick={() => openEdit(s)} className="p-1.5 text-blue-600 hover:bg-white rounded-lg transition-colors">
+                                        <FaEdit className={isMobile ? 'text-[10px]' : 'text-xs'} />
                                       </button>
-                                      <button onClick={() => handleDelete(s._id)} className="p-2 text-red-600 hover:bg-white rounded-lg transition-colors">
-                                        <FaTrash className="text-xs" />
+                                      <button onClick={() => handleDelete(s._id)} className="p-1.5 text-red-600 hover:bg-white rounded-lg transition-colors">
+                                        <FaTrash className={isMobile ? 'text-[10px]' : 'text-xs'} />
                                       </button>
                                     </div>
                                   </div>
@@ -663,7 +712,7 @@ const Subjects = () => {
               <button type="button" onClick={() => setModal(false)} className="btn-base btn-secondary">
                 Cancel
               </button>
-              <button type="submit" className="btn-base btn-primary !px-8">
+              <button type="submit" className="btn-base text-white !px-8" style={{ background: `linear-gradient(135deg, ${themeConfig.primary}` }}>
                 {editing ? 'Update Subject' : 'Create Subject'}
               </button>
             </div>

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AutoNotificationManager from '../../components/AutoNotificationManager';
 import {
-  Users, GraduationCap, School, Wallet, CalendarCheck2, FileText,
-  BarChart3, Trophy, Users2, BookOpen, Percent, Bell, ArrowUpRight,
-  ArrowDownRight, Eye, Download, MoreHorizontal, CheckCircle2, Clock,
-  AlertTriangle, UserPlus, LayoutDashboard, Calendar,
-  ShieldCheck, Search, Home, PieChart, User, ChevronDown, X, TrendingUp
+  Users2, GraduationCap, Landmark, Wallet, CalendarCheck2, FileSpreadsheet,
+  BarChart3, Trophy, UsersRound, Library, Percent, BellRing, ArrowUpRight,
+  ArrowDownRight, Eye, Download, MoreHorizontal, CheckCircle2, History, Clock,
+  AlertTriangle, UserPlus, LayoutDashboard, CalendarDays, Calendar,
+  ShieldCheck, Search, Home, PieChart, UserCircle2, ChevronDown, X, TrendingUp
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import {
@@ -152,26 +152,28 @@ const AdminDashboard: React.FC = () => {
 
           <div className="p-4 space-y-5 relative z-20 pb-24">
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3 items-stretch">
+            <div className="grid grid-cols-3 gap-2 items-stretch">
               {[
-                { Icon: Users, lbl: 'Total Students', val: stats.totalStudents || 250, color: '#3B82F6', bg: '#EFF6FF' },
-                { Icon: Wallet, lbl: 'Total Fees', val: `₹${((stats.totalFees || 0) / 1000).toFixed(0)}K`, color: '#F59E0B', bg: '#FFFBEB' },
-                { Icon: User, lbl: 'Male Students', val: 150, color: '#2563EB', bg: '#F0F9FF' },
-                { Icon: User, lbl: 'Female Students', val: 100, color: '#DB2777', bg: '#FDF2F8' },
+                { Icon: GraduationCap, lbl: 'Students', val: stats.totalStudents || 250, color: '#3B82F6', bg: '#EFF6FF' },
+                { Icon: Wallet, lbl: 'Fees', val: `₹${((stats.totalFees || 0) / 1000).toFixed(0)}K`, color: '#F59E0B', bg: '#FFFBEB' },
+                { Icon: UserCircle2, lbl: 'Boys', val: 150, color: '#2563EB', bg: '#F0F9FF' },
+                { Icon: UserCircle2, lbl: 'Girls', val: 100, color: '#DB2777', bg: '#FDF2F8' },
+                { Icon: Landmark, lbl: 'Classes', val: stats.totalClasses || 0, color: '#8B5CF6', bg: '#F5F3FF' },
+                { Icon: Users2, lbl: 'Teachers', val: stats.totalTeachers || 0, color: '#10B981', bg: '#ECFDF5' },
               ].map((s, i) => (
                 <div
                   key={i}
-                  className="bg-white px-3 py-2.5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-2.5 min-h-[64px]"
+                  className="bg-white px-2 py-2 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center justify-center min-h-[70px]"
                 >
                   <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mb-1"
                     style={{ backgroundColor: s.bg }}
                   >
-                    <s.Icon size={15} style={{ color: s.color }} />
+                    <s.Icon size={14} style={{ color: s.color }} />
                   </div>
-                  <div>
-                   <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide leading-tight whitespace-nowrap">{s.lbl}</p>
-                    <p className="text-sm font-black text-gray-900 leading-tight mt-1">{s.val}</p>
+                  <div className="w-full">
+                    <p className="text-[7px] font-bold text-gray-400 uppercase tracking-tight leading-none truncate">{s.lbl}</p>
+                    <p className="text-xs font-black text-gray-900 leading-tight mt-0.5">{s.val}</p>
                   </div>
                 </div>
               ))}
@@ -208,7 +210,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="pending-row" style={{ background: '#FFFBEB', border: '1px solid #FDE68A' }}>
                   <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-amber-600" />
+                    <History size={14} className="text-amber-600" />
                     <span className="text-[11px] font-bold text-amber-700">Student Leaves</span>
                   </div>
                   <span className="text-base font-black text-amber-700">{stats.pendingStudentLeaves ?? 0}</span>
@@ -415,8 +417,8 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
           { Icon: GraduationCap, label: 'Total Students', value: stats.totalStudents || 250, color: theme.secondary, bg: 'bg-blue-50' },
-          { Icon: Users, label: 'Total Teachers', value: stats.totalTeachers || 32, color: '#10B981', bg: 'bg-emerald-50' },
-          { Icon: School, label: 'Total Classes', value: stats.totalClasses || 12, color: '#8B5CF6', bg: 'bg-violet-50' },
+          { Icon: Users2, label: 'Total Teachers', value: stats.totalTeachers || 32, color: '#10B981', bg: 'bg-emerald-50' },
+          { Icon: Landmark, label: 'Total Classes', value: stats.totalClasses || 12, color: '#8B5CF6', bg: 'bg-violet-50' },
           { Icon: Percent, label: 'Attendance', value: `${stats.attendancePercentage || 100}%`, color: '#F59E0B', bg: 'bg-amber-50' },
         ].map((stat, i) => (
           <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
@@ -503,12 +505,12 @@ const AdminDashboard: React.FC = () => {
           {/* Pending Tasks */}
           <div className="p-6 rounded-2xl bg-white border border-transparent shadow-sm">
             <h3 className="text-lg font-extrabold text-gray-900 mb-6 flex items-center gap-2">
-              <Clock size={20} style={{ color: theme.primary }} /> Pending Tasks
+              <History size={20} style={{ color: theme.primary }} /> Pending Tasks
             </h3>
             <div className="space-y-4">
               {[
                 { bg: '#F0F9FF', border: theme.primary + '20', iconBg: theme.primary + '10', Icon: AlertTriangle, iconColor: theme.primary, label: 'Teacher Leaves', val: stats.pendingTeacherLeaves ?? 0, valColor: theme.primary },
-                { bg: '#FFF7ED', border: '#F59E0B20', iconBg: '#FEF3C7', Icon: Clock, iconColor: '#D97706', label: 'Student Leaves', val: stats.pendingStudentLeaves ?? 0, valColor: '#B45309' },
+                { bg: '#FFF7ED', border: '#F59E0B20', iconBg: '#FEF3C7', Icon: History, iconColor: '#D97706', label: 'Student Leaves', val: stats.pendingStudentLeaves ?? 0, valColor: '#B45309' },
                 { bg: '#ECFDF5', border: '#10B98120', iconBg: '#D1FAE5', Icon: Wallet, iconColor: '#059669', label: 'Pending Fees', val: `₹${((stats.feesPending ?? 213000) / 1000).toFixed(0)}K`, valColor: '#047857' },
               ].map((row, i) => (
                 <div key={i} className="flex items-center justify-between p-4 rounded-xl transition-all hover:shadow-md" style={{ background: row.bg, border: `1px solid ${row.border}` }}>
