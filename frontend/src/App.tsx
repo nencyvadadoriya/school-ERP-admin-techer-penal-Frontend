@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -73,13 +73,21 @@ const DashboardLayout: React.FC<any> = ({ children }) => {
   const location = useLocation();
 
   const isDashboard = location.pathname.includes('/dashboard');
+  const [visualLoading, setVisualLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading) {
+      const timer = setTimeout(() => setVisualLoading(false), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading]);
 
   return (
     <div className="flex h-screen w-full max-w-full overflow-x-hidden bg-gray-100">
       {/* Desktop sidebar only */}
       <div className="hidden lg:flex h-screen bg-gray-50 overflow-hidden flex-shrink-0">
         <PushNotificationManager />
-        {authLoading ? (
+        {authLoading || (isDashboard && visualLoading) ? (
           <SidebarSkeleton />
         ) : (
           <Sidebar isOpen={isDesktopOpen} toggleSidebar={toggleDesktop} />
@@ -171,7 +179,7 @@ function App() {
             position="top-right" 
             autoClose={3000} 
             toastClassName={() => 
-              "relative flex p-1 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer bg-white text-gray-800 shadow-lg mb-2 ml-auto mr-2 md:mr-4 md:mb-4 w-[280px] sm:w-auto"
+              "relative flex p-1 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer bg-white text-gray-800 shadow-lg mb-2 ml-auto mr-2 md:mr-4 md:mb-4 w-[220px] md:w-[350px]"
             }
             bodyClassName={() => "flex text-sm font-white font-med block p-2"}
           />

@@ -1101,7 +1101,15 @@ const Students: React.FC = () => {
       <div className="m-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <div>
-            <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0 }}>Students</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: 0 }}>Students</h1>
+              <span style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6 }}>
+                {students.length} Total
+              </span>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 500, margin: '4px 0 0', letterSpacing: '0.01em' }}>
+              View and manage all student information
+            </p>
           </div>
         </div>
       </div>
@@ -1224,7 +1232,7 @@ const Students: React.FC = () => {
       <div style={{ background: '#fff', borderBottom: `1px solid ${T.border}`, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: T.primary, margin: 0 }}>Students</h1>
-          <p style={{ fontSize: 12, color: T.muted, margin: '3px 0 0' }}>Manage and organise all students in your school</p>
+          <p style={{ fontSize: 12, color: T.muted, margin: '3px 0 0', fontWeight: 500 }}>Manage, organize, and track all student records in your school</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           {selected.size > 0 && (

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaGraduationCap, FaShieldAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaEnvelope } from 'react-icons/fa';
 
 const VerifyOTP: React.FC = () => {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
@@ -63,33 +63,31 @@ const VerifyOTP: React.FC = () => {
   if (!email) return null;
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center p-4">
-      <div className="w-full max-w-[380px] bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-2xl shadow-slate-200/50 animate-fade-in border border-white relative">
+    <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-[480px] bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-2xl shadow-slate-200/50 animate-fade-in border border-white relative">
         {/* Top-Left Back Button */}
         <div className="absolute top-6 left-6">
           <Link 
             to="/auth/forgot-password" 
-            className="inline-flex items-center text-[10px] font-black text-[#6B7280] uppercase tracking-wider hover:text-primary-600 transition-colors group"
+            className="inline-flex items-center text-xs font-black text-[#6B7280] uppercase tracking-wider hover:text-[#002B5B] transition-colors group"
           >
-            <FaArrowLeft className="mr-1.5 transition-transform group-hover:-translate-x-0.5" size={10} /> 
+            <FaArrowLeft className="mr-1.5 transition-transform group-hover:-translate-x-0.5" size={12} /> 
             Back
           </Link>
         </div>
 
         {/* Header */}
-        <div className="mb-4 pt-6 text-center text-center">
-          <div className="inline-flex items-center justify-center p-2.5 bg-primary-50 rounded-2xl mb-2">
-            <FaShieldAlt className="text-3xl text-primary-600" />
+        <div className="mb-8 pt-4 text-center">
+          <div className="w-16 h-16 bg-[#F0F2F5] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FaEnvelope className="text-[#002B5B] text-2xl" />
           </div>
-          <h2 className="text-xl font-black text-[#1F2937] mb-0.5 tracking-tight">Verify Account</h2>
-          <p className="text-[11px] text-[#6B7280] font-bold uppercase tracking-widest opacity-60 hidden sm:block">
-            Enter the 6-digit code sent to
-          </p>
-          <p className="text-[10px] font-black text-[#1F2937] break-all px-4 sm:px-0">{email}</p>
+          <h2 className="text-2xl font-black text-[#1F2937] mb-2 tracking-tight">Verify Account</h2>
+         
+          <p className="text-sm font-bold text-[#002B5B] mt-0.5">{email || 'your email address'}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex justify-between gap-1.5 sm:gap-2">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="flex justify-between gap-2 sm:gap-3">
             {otp.map((data, index) => (
               <input
                 key={index}
@@ -100,22 +98,22 @@ const VerifyOTP: React.FC = () => {
                 onChange={(e) => handleChange(e.target, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 onPaste={index === 0 ? handlePaste : undefined}
-                className="w-full h-11 text-center text-lg font-black bg-slate-50 border border-slate-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-500/5 outline-none transition-all text-[#1F2937]"
+                className="w-full h-14 text-center text-xl font-black bg-slate-50 border border-slate-200 rounded-xl focus:border-[#002B5B] focus:ring-4 focus:ring-[#002B5B]/10 outline-none transition-all text-[#1F2937]"
               />
             ))}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-[#002B5B] hover:bg-[#00224a] text-white text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary-500/20 transition-all active:scale-[0.98]"
+              className="w-full h-12 bg-[#002B5B] hover:bg-[#00224a] text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#002B5B]/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? 'Verifying...' : 'Verify Code'}
             </button>
             
-            <p className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest text-center">
-              Didn't receive? <Link to="/auth/forgot-password" className="text-primary-600 font-black">Resend</Link>
+            <p className="text-xs font-black text-[#6B7280] uppercase tracking-widest text-center">
+              Didn't receive? <Link to="/auth/forgot-password" className="text-[#002B5B] hover:text-[#00224a] font-black transition-colors">Resend</Link>
             </p>
           </div>
         </form>

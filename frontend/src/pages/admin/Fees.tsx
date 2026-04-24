@@ -23,6 +23,11 @@ const statusConfig: Record<string, { color: string; bg: string }> = {
   Overdue: { color: '#7C3AED', bg: '#F5F3FF' },
 };
 
+const getFullName = (student: any) => {
+  const fn = student?.first_name || '', mn = student?.middle_name ? ` ${student.middle_name}` : '', ln = student?.last_name ? ` ${student.last_name}` : '';
+  return `${fn}${mn}${ln}`.trim();
+};
+
 const Fees: React.FC = () => {
   const [gateLoading, setGateLoading] = useState<boolean>(true);
   const [gateToken, setGateToken] = useState<string>(sessionStorage.getItem('fees_gate_token') || '');
@@ -66,12 +71,14 @@ const Fees: React.FC = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  const filtered = fees.filter(f => {
-    const srch = search.toLowerCase();
-    const sMatch = !search || f.gr_number?.toLowerCase().includes(srch) || getFullName(f.student_id)?.toLowerCase().includes(srch);
-    const cMatch = !filterStd || f.std === filterStd || (f.student_id && f.student_id.std === filterStd);
-    return sMatch && cMatch;
-  });
+  const filtered = useMemo(() => {
+    return fees.filter(f => {
+      const srch = search.toLowerCase();
+      const sMatch = !search || f.gr_number?.toLowerCase().includes(srch) || getFullName(f.student_id)?.toLowerCase().includes(srch);
+      const cMatch = !filterStd || f.std === filterStd || (f.student_id && f.student_id.std === filterStd);
+      return sMatch && cMatch;
+    });
+  }, [fees, search, filterStd]);
 
   const groupedFees = useMemo(() => {
     const groups: Record<string, { std: string; division: string; medium: string; fees: any[] }> = {};
@@ -91,11 +98,15 @@ const Fees: React.FC = () => {
   useEffect(() => {
     const classCode = searchParams.get('class');
     if (isMobile && classCode && groupedFees[classCode]) {
-      setMobileView({ type: 'records', data: { classCode, group: groupedFees[classCode] } });
+      if (mobileView.type !== 'records' || mobileView.data?.classCode !== classCode) {
+        setMobileView({ type: 'records', data: { classCode, group: groupedFees[classCode] } });
+      }
     } else if (isMobile && !classCode) {
-      setMobileView({ type: 'classes', data: null });
+      if (mobileView.type !== 'classes') {
+        setMobileView({ type: 'classes', data: null });
+      }
     }
-  }, [searchParams, isMobile, groupedFees]);
+  }, [searchParams, isMobile, groupedFees, mobileView.type, mobileView.data?.classCode]);
 
   const fetchAll = async () => {
     try {
@@ -104,9 +115,9 @@ const Fees: React.FC = () => {
     } catch {} finally { setLoading(false); }
   };
 
-  const stdOptions = Array.from(new Set((classes || []).map((c: any) => c.standard).filter(Boolean))).sort((a: any, b: any) => String(a).localeCompare(String(b), undefined, { numeric: true }));
-  const divisionOptions = Array.from(new Set((classes || []).filter((c: any) => !form.std || c.standard === form.std).map((c: any) => c.division).filter(Boolean))).sort();
-  const classCodeOptions = (classes || []).filter((c: any) => (!form.std || c.standard === form.std) && (!form.division || c.division === form.division)).map((c: any) => c.class_code).filter(Boolean);
+  const stdOptions = useMemo(() => Array.from(new Set((classes || []).map((c: any) => c.standard).filter(Boolean))).sort((a: any, b: any) => String(a).localeCompare(String(b), undefined, { numeric: true })), [classes]);
+  const divisionOptions = useMemo(() => Array.from(new Set((classes || []).filter((c: any) => !form.std || c.standard === form.std).map((c: any) => c.division).filter(Boolean))).sort(), [classes, form.std]);
+  const classCodeOptions = useMemo(() => (classes || []).filter((c: any) => (!form.std || c.standard === form.std) && (!form.division || c.division === form.division)).map((c: any) => c.class_code).filter(Boolean), [classes, form.std, form.division]);
 
   const loadGateStatus = async () => {
     try {
@@ -127,10 +138,6 @@ const Fees: React.FC = () => {
     } catch (e: any) { toast.error(e.response?.data?.message || 'Failed'); } finally { setHistoryLoading(false); }
   };
 
-  const getFullName = (student: any) => {
-    const fn = student?.first_name || '', mn = student?.middle_name ? ` ${student.middle_name}` : '', ln = student?.last_name ? ` ${student.last_name}` : '';
-    return `${fn}${mn}${ln}`.trim();
-  };
 
   const downloadReceipt = (fee: any) => {
     try {
@@ -327,8 +334,8 @@ const Fees: React.FC = () => {
                 </div>
               ) : (
                 <div>
-                  <h1 style={{ color: '#fff', fontSize: 20, fontWeight: 800, margin: 0 }}>Fees</h1>
-                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, margin: '2px 0 0', fontWeight: 500 }}>SmartSchool ERP</p>
+                  <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 800, margin: 0 }}>Fees</h1>
+                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, margin: '2px 0 0', fontWeight: 500 }}>Track payments, records, and dues</p>
                 </div>
               )}
             </div>

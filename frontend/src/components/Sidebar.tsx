@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import { SidebarSkeleton } from './Skeleton';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Users, GraduationCap, UserSquare2,
   BookOpen, CalendarCheck2, ClipboardList, Wallet, Bell,
   CalendarDays, FileText, Clock, LogOut, User, School,
-  ShieldCheck, BookMarked, Presentation, X, ChevronLeft,
-  ChevronRight, ChevronDown, Settings, BookCopy, Users2,
+  ShieldCheck, BookMarked, Presentation, X,
+  ChevronDown, Settings, BookCopy, Users2,
   Landmark, Library, FileSpreadsheet, BellRing, CalendarRange,
   History, UserCircle2, UsersRound
 } from 'lucide-react';
@@ -23,9 +24,10 @@ interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
   mobileOnly?: boolean;
+  loading?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, loading }) => {
   const { user, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -54,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly }) 
     { path: '/admin/timetable', icon: History, label: 'Timetable', section: 'academic' },
     { path: '/admin/calendar', icon: CalendarDays, label: 'Holiday Calendar', section: 'academic' },
     { path: '/admin/fees', icon: Wallet, label: 'Fees Management', section: 'finance' },
-    { label: 'Communication', icon: BellRing, section: 'communication', subItems: [
+    { label: 'Communication', icon: Bell, section: 'communication', subItems: [
       { path: '/admin/notices', label: 'Notices' },
       { path: '/admin/events', label: 'Events' },
       { path: '/admin/leaves', label: 'Leave Management' },
@@ -280,6 +282,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly }) 
     );
   }
 
+  if (loading) {
+    return <SidebarSkeleton />;
+  }
+
   // Desktop sidebar (original)
   return (
     <>
@@ -296,22 +302,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly }) 
         className={`fixed lg:relative top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out flex flex-col ${isCollapsed ? 'w-14' : 'w-60'} ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
         style={{ backgroundColor: '#002B5B' }}
       >
-        <div className={`h-16 flex-shrink-0 flex items-center justify-between border-b border-white/5 ${isCollapsed ? 'px-2' : 'px-5'}`}>
-          {!isCollapsed && (
-            <div className="flex items-center space-x-2.5">
-              <span className="font-bold text-white text-lg tracking-tight">SmartSchool ERP</span>
-            </div>
-          )}
-          {isCollapsed && (
-            <div className="w-full flex justify-center">
-              <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                <School className="text-[#002B5B] w-5 h-5" />
-              </div>
-            </div>
-          )}
-          <button onClick={toggleCollapse} className="text-white/40 hover:text-white p-1 rounded-lg transition-colors hidden lg:block hover:bg-white/5">
-            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+        <div className={`h-16 flex-shrink-0 flex items-center justify-between border-b border-white/5 ${isCollapsed ? 'px-2' : 'px-4'}`}>
+          <div className={`flex items-center ${isCollapsed ? 'w-full justify-center' : 'space-x-3'}`}>
+            <button 
+              onClick={toggleCollapse}
+              className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors flex-shrink-0"
+            >
+              <GraduationCap className="text-[#002B5B] w-5 h-5" />
+            </button>
+            {!isCollapsed && (
+              <span className="font-bold text-white text-[15px] tracking-tight truncate">SmartSchool ERP</span>
+            )}
+          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto custom-scrollbar pt-3 pb-4 px-2 space-y-0.5">

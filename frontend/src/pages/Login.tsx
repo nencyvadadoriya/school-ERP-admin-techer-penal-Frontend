@@ -74,9 +74,8 @@ const Login: React.FC = () => {
         {/* Logo/Title */}
         <div className="text-center mb-6"> {/* Reduced margin from mb-8 to mb-6 */}
           <h1 className="text-3xl font-bold text-primary-600 mb-2"> {/* Reduced text size from text-4xl to text-3xl */}
-            School ERP
+            SmartSchool ERP
           </h1>
-          <p className="text-sm text-gray-600">Welcome back! Please login to continue</p> {/* Reduced text size */}
         </div>
 
         {/* Login Card */}
@@ -141,7 +140,7 @@ const Login: React.FC = () => {
             ) : (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1"> {/* Reduced margin from mb-2 to mb-1 */}
-                    Email Address / Teacher Code
+                    Email Address
                   </label>
                   <input
                     type="text"
@@ -149,7 +148,7 @@ const Login: React.FC = () => {
                     value={formData.email}
                     onChange={handleChange}
                     className="input-field w-full px-3 py-2 text-sm"
-                    placeholder="Enter your email or teacher code"
+                    placeholder="Enter your email"
                     required
                   />
               </div>

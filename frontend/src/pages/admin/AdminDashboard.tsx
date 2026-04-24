@@ -137,9 +137,12 @@ const AdminDashboard: React.FC = () => {
           {/* Header */}
           <div className="mobile-header-gradient text-white relative overflow-hidden">
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-black tracking-tight">Welcome, Admin</h2>
-              </div>
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-2xl font-black tracking-tight">Welcome, Admin</h2>
+                </div>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 500, margin: '0 0 10px' }}>
+                  SmartSchool ERP Dashboard
+                </p>
               <div className="flex items-center justify-between text-[11px] text-white/70">
                                 <div className="flex items-center gap-1.5 font-medium">
                   <Calendar size={12} className="text-white/40" />

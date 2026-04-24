@@ -74,7 +74,8 @@ const Login: React.FC = () => {
         </div>
         
         <div className="relative z-10 text-white max-w-lg">
-          <h1 className="text-2xl   font-bold mb-3 text-[#fff] tracking-tight">School ERP</h1>
+          <h1 className="text-2xl   font-bold mb-3 text-[#fff] tracking-tight">SmartSchool ERP
+</h1>
           <h2 className="text-5xl font-extrabold mb-6 leading-tight tracking-tight">
             Manage Your School with Confidence
           </h2>
@@ -120,7 +121,7 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-[#1F2937] uppercase tracking-widest ml-1 opacity-60">
-                {userType === 'admin' ? 'Email Address' : 'Email / Code'}
+                {userType === 'admin' ? 'Email Address' : 'Email Address'}
               </label>
               <input
                 type="text"

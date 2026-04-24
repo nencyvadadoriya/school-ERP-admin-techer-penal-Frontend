@@ -30,7 +30,7 @@ const Attendance: React.FC = () => {
   const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({});
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [filters, setFilters] = useState({ standard: '', medium: '', division: '', from: '', to: '' });
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(window.innerWidth >= 768);
   const [mobileView, setMobileView] = useState<{ type: 'classes' | 'months' | 'days' | 'records', data: any }>({ type: 'classes', data: null });
 
   useEffect(() => {
@@ -315,8 +315,7 @@ const Attendance: React.FC = () => {
           </div>
         </div>
 
-        {/* Filter Section */}
-        {(!isMobile || showFilters) && (
+        {showFilters && (
           <div className={`bg-white rounded-xl shadow-sm border border-gray-100 mb-5 ${isMobile ? 'mx-4 p-3' : 'p-4'}`}>
           <div className="flex items-center gap-2 mb-2">
             <FaFilter size={10} className="text-primary-600" />
