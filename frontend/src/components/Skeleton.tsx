@@ -93,19 +93,19 @@ export const DashboardSkeleton = () => (
 
 export const SidebarSkeleton = () => (
   <div className="h-full w-60 bg-[#002B5B] flex flex-col">
-    <div className="h-16 flex items-center px-5 border-b border-white/5">
-      <Skeleton height={24} width={120} className="bg-white/10" />
+    <div className="h-16 flex items-center px-5 border-b border-white/10">
+      <Skeleton height={24} width={120} className="bg-white/20" />
     </div>
     <div className="flex-1 px-2 pt-3 space-y-6">
       {[1, 2, 3].map(section => (
         <div key={section} className="space-y-2">
           <div className="px-4">
-            <Skeleton height={8} width={60} className="bg-white/5 mb-4" />
+            <Skeleton height={8} width={60} className="bg-white/10 mb-4" />
           </div>
           {[1, 2, 3, 4].map(item => (
             <div key={item} className="flex items-center gap-3 px-2 py-2 rounded-lg">
-              <Skeleton height={18} width={18} className="bg-white/10" />
-              <Skeleton height={12} width="60%" className="bg-white/10" />
+              <Skeleton height={18} width={18} className="bg-white/20" />
+              <Skeleton height={12} width="60%" className="bg-white/20" />
             </div>
           ))}
         </div>
@@ -113,12 +113,12 @@ export const SidebarSkeleton = () => (
     </div>
     <div className="p-3 border-t border-white/10 space-y-2">
       <div className="flex items-center gap-3 px-2 py-2">
-        <Skeleton height={18} width={18} className="bg-white/10" />
-        <Skeleton height={12} width="100" className="bg-white/10" />
+        <Skeleton height={18} width={18} className="bg-white/20" />
+        <Skeleton height={12} width="100" className="bg-white/20" />
       </div>
       <div className="flex items-center gap-3 px-2 py-2">
-        <Skeleton height={18} width={18} className="bg-white/10" />
-        <Skeleton height={12} width="100" className="bg-white/10" />
+        <Skeleton height={18} width={18} className="bg-white/20" />
+        <Skeleton height={12} width="100" className="bg-white/20" />
       </div>
     </div>
   </div>

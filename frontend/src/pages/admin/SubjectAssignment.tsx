@@ -563,93 +563,102 @@ const SubjectAssignment: React.FC = () => {
         </div>
 
         {/* History Section */}
-        <div className={`mt-6 ${isMobile ? 'px-3 pb-10' : ''}`}>
-          <div className="card-base overflow-hidden">
-            <div className={`bg-white ${isMobile ? 'px-4 py-4' : 'px-6 py-5'} border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
-              <h3 className={`${isMobile ? 'text-xs' : 'text-sm'} font-black text-gray-800 uppercase tracking-widest flex items-center gap-2`}>
-                <div className={`w-1.5 ${isMobile ? 'h-4' : 'h-6'} bg-orange-500 rounded-full`}></div>
-                All Assignments
-              </h3>
-              <div className="relative w-full sm:w-80">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={isMobile ? 10 : 12} />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={historySearch}
-                  onChange={(e) => setHistorySearch(e.target.value)}
-                  className={`input-field pl-11 !py-1.5 ${isMobile ? 'text-[11px]' : 'text-xs'}`}
-                />
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gray-50/50 border-b border-gray-100">
-                    <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider`}>Teacher</th>
-                    {!isMobile && <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Subject</th>}
-                    <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider`}>Details</th>
-                    <th className={`${isMobile ? 'px-4 py-2 text-[8px]' : 'px-6 py-4 text-[10px]'} font-bold text-gray-400 uppercase tracking-wider text-right`}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 bg-white">
-                  {filteredHistory.length === 0 ? (
-                    <tr>
-                      <td colSpan={isMobile ? 3 : 5} className="px-6 py-10 text-center">
-                        <FaHistory className="mx-auto text-gray-200 text-3xl mb-2" />
-                        <p className={`${isMobile ? 'text-[11px]' : 'text-sm'} text-gray-400 font-medium`}>No history</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredHistory.map((assignment, index) => (
-                      <tr key={`${assignment.teacher_id}-${index}`} className="hover:bg-gray-50 transition-colors">
-                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'}`}>
-                          <div className={`${isMobile ? 'text-[11px]' : 'text-sm'} font-black text-gray-900`}>{assignment.teacher_name}</div>
-                          <div className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} text-gray-400 font-bold font-mono mt-0.5`}>{assignment.teacher_code}</div>
-                        </td>
-                        {!isMobile && (
-                          <td className="px-6 py-4">
-                            <p className="text-sm font-bold text-gray-700 bg-gray-50 px-3 py-1 rounded-lg inline-block">{assignment.subject_name}</p>
-                          </td>
-                        )}
-                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'}`}>
-                          {isMobile && <p className="text-[10px] font-bold text-gray-700 mb-1">{assignment.subject_name}</p>}
-                          <div className={`grid ${isMobile ? 'grid-cols-2' : 'flex flex-wrap'} gap-1`}>
-                            {assignment.classes.map((cls: string, i: number) => (
-                              <span key={i} className={`bg-white px-1.5 py-0.5 rounded-lg ${isMobile ? 'text-[8px]' : 'text-[10px]'} font-black border border-gray-200 text-gray-500 shadow-sm text-center`}>
-                                {cls}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className={`${isMobile ? 'px-4 py-3' : 'px-6 py-4'} text-right`}>
-                          <div className="flex justify-end gap-1.5">
-                            <button
-                              onClick={() => {
-                                setSelectedTeacherId(assignment.teacher_id);
-                                setSelectedMedium(assignment.medium);
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                              }}
-                              className={`${isMobile ? 'w-7 h-7' : 'w-9 h-9'} rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center`}
-                              title="Edit"
-                            >
-                              <FaEdit size={isMobile ? 12 : 14} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteGroup(assignment.teacher_id, assignment.subject_id, assignment.medium)}
-                              className={`${isMobile ? 'w-7 h-7' : 'w-9 h-9'} rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center`}
-                              title="Delete"
-                            >
-                              <FaTrash size={isMobile ? 12 : 14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+        <div className={`mt-8 ${isMobile ? 'px-3 pb-10' : ''}`}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className={`${isMobile ? 'text-sm' : 'text-lg'} font-bold text-gray-800 flex items-center gap-2`}>
+              <div className="w-1.5 h-6 bg-orange-500 rounded-full"></div>
+              Assignment Records
+            </h3>
+            <div className="relative w-full max-w-[200px] sm:max-w-xs">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+              <input
+                type="text"
+                placeholder="Quick search..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all outline-none"
+              />
             </div>
           </div>
+
+          {filteredHistory.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaHistory className="text-gray-300 text-2xl" />
+              </div>
+              <p className="text-gray-500 font-medium">No assignment records found</p>
+            </div>
+          ) : (
+            <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4`}>
+              {filteredHistory.map((assignment, index) => (
+                <div 
+                  key={`${assignment.teacher_id}-${index}`}
+                  className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all group"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600 font-bold text-sm">
+                        {assignment.teacher_name.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-bold text-gray-900 truncate">{assignment.teacher_name}</h4>
+                        <p className="text-[10px] text-gray-400 font-mono font-bold tracking-wider">{assignment.teacher_code}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => {
+                          setSelectedTeacherId(assignment.teacher_id);
+                          setSelectedMedium(assignment.medium);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+                      >
+                        <FaEdit size={12} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteGroup(assignment.teacher_id, assignment.subject_id, assignment.medium)}
+                        className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                      >
+                        <FaTrash size={12} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Subject</span>
+                      <span className="px-2.5 py-1 bg-gray-50 text-gray-700 rounded-lg text-xs font-bold border border-gray-100">
+                        {assignment.subject_name}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Assigned Classes</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {assignment.classes.map((cls: string, i: number) => (
+                          <span 
+                            key={i} 
+                            className="px-2 py-0.5 bg-white border border-gray-200 text-gray-500 rounded-md text-[10px] font-bold shadow-sm"
+                          >
+                            {cls}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <div className={`w-1.5 h-1.5 rounded-full ${assignment.medium === 'English' ? 'bg-blue-500' : 'bg-orange-500'}`}></div>
+                        <span className="text-[10px] font-bold text-gray-500 uppercase">{assignment.medium} Medium</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-gray-400">{assignment.classes.length} Classes</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

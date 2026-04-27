@@ -27,8 +27,8 @@ const SubjectStyleSheet = () => (
   <style>{`
     .subject-container { background: ${themeConfig.background}; min-height: 100vh; }
     .btn-base { padding: 0.625rem 1.25rem; border: none; border-radius: 0.625rem; font-weight: 600; font-size: 0.8125rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.2s; }
-    .btn-primary { background: ${themeConfig.accent}; color: ${themeConfig.primary}; }
-    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary { background: ${themeConfig.primary}; color: ${themeConfig.white}; }
+    .btn-primary:hover { background: ${themeConfig.secondary}; transform: translateY(-1px); }
     .btn-secondary { background: rgba(0,43,91,0.08); color: ${themeConfig.primary}; border: 1.5px solid ${themeConfig.primary}; }
     .btn-secondary:hover { background: rgba(0,43,91,0.15); }
     .btn-danger { background: rgba(239,68,68,0.08); color: ${themeConfig.danger}; border: 1.5px solid ${themeConfig.danger}; }
@@ -205,7 +205,7 @@ const Subjects = () => {
   };
 
   const toggleStd = (standard: string) => {
-    setExpandedStd(expandedStd === standard ? null : standard);
+    setExpandedStd(prev => prev === standard ? null : standard);
   };
 
   const filtered = subjects.filter(s => {

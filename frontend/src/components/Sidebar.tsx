@@ -126,14 +126,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
           .mobile-drawer-open { transform: translateX(0); }
           .mobile-drawer-closed { transform: translateX(-100%); }
           .mobile-sidebar-scrollbar::-webkit-scrollbar { width: 3px; }
-          .mobile-sidebar-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+          .mobile-sidebar-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
           .mobile-nav-link { display: flex; align-items: center; padding: 11px 16px; border-radius: 12px; transition: all 0.18s; margin-bottom: 2px; }
-          .mobile-nav-link-active { background: rgba(45,84,168,0.9); }
-          .mobile-nav-link-inactive:hover { background: rgba(255,255,255,0.06); }
           .mobile-subnav-link { display: flex; align-items: center; padding: 9px 16px 9px 48px; border-radius: 10px; transition: all 0.18s; margin-bottom: 1px; }
-          .mobile-subnav-link-active { background: rgba(255,255,255,0.12); color: white; font-weight: 600; }
-          .mobile-subnav-link-inactive { color: rgba(255,255,255,0.5); }
-          .mobile-subnav-link-inactive:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
         `}</style>
 
         {/* Overlay */}
@@ -144,38 +139,38 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
         {/* Drawer */}
         <aside
           className={`mobile-drawer fixed top-0 left-0 z-50 h-full w-[280px] flex flex-col ${isOpen ? 'mobile-drawer-open' : 'mobile-drawer-closed'}`}
-          style={{ background: 'linear-gradient(180deg, #002B5B 0%, #001d3d 100%)' }}
+          style={{ background: '#FFFFFF' }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
-                <School size={18} className="text-white" />
+              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                <School size={18} className="text-[#002B5B]" />
               </div>
               <div>
-                <p className="text-white font-bold text-[15px] tracking-wide">SmartSchool</p>
-                <p className="text-white/50 text-[10px] uppercase tracking-widest">ERP System</p>
+                <p className="text-[#002B5B] font-bold text-[15px] tracking-wide">SmartSchool</p>
+                <p className="text-gray-400 text-[10px] uppercase tracking-widest">ERP System</p>
               </div>
             </div>
-            <button onClick={toggleSidebar} className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/20">
-              <X size={16} className="text-white/70" />
+            <button onClick={toggleSidebar} className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 active:bg-gray-100">
+              <X size={16} className="text-gray-400" />
             </button>
           </div>
 
           {/* User Info Card */}
-          <div className="mx-4 mt-4 mb-3 p-3 rounded-xl bg-white/8 border border-white/10">
+          <div className="mx-4 mt-4 mb-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
                 {user?.profile_image
                   ? <img src={user.profile_image} alt="" className="w-full h-full object-cover rounded-xl" />
                   : <User size={18} className="text-white" />
                 }
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm truncate">{user?.first_name} {user?.last_name}</p>
-                <p className="text-white/50 text-xs capitalize">{user?.role?.replace('_', ' ')}</p>
+                <p className="text-[#002B5B] font-semibold text-sm truncate">{user?.first_name} {user?.last_name}</p>
+                <p className="text-gray-500 text-xs capitalize">{user?.role?.replace('_', ' ')}</p>
               </div>
-              <div className="w-2 h-2 rounded-full bg-green-400"></div>
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
             </div>
           </div>
 
@@ -186,7 +181,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
               return (
                 <div key={sectionKey}>
                   {sectionConfig?.showTitle && (
-                    <p className="text-[9px] font-bold text-white/25 uppercase tracking-[0.2em] px-4 mt-5 mb-2">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em] px-4 mt-5 mb-2">
                       {sectionConfig.title}
                     </p>
                   )}
@@ -196,15 +191,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
                         <div>
                           <button
                             onClick={() => toggleDropdown(item.label)}
-                            className={`w-full mobile-nav-link ${openDropdown === item.label ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`}
+                            className={`w-full mobile-nav-link ${openDropdown === item.label ? 'bg-blue-50 text-[#002B5B]' : 'text-gray-600 hover:bg-gray-50'}`}
                           >
-                            <item.icon size={17} className={openDropdown === item.label ? 'text-white' : 'text-white/55'} />
-                            <span className={`ml-3 text-[13px] font-medium flex-1 text-left ${openDropdown === item.label ? 'text-white' : 'text-white/70'}`}>
+                            <item.icon size={17} className={openDropdown === item.label ? 'text-[#002B5B]' : 'text-gray-400'} />
+                            <span className={`ml-3 text-[13px] font-medium flex-1 text-left ${openDropdown === item.label ? 'text-[#002B5B]' : 'text-gray-600'}`}>
                               {item.label}
                             </span>
                             <ChevronDown
                               size={13}
-                              className={`text-white/30 transition-transform duration-200 ${openDropdown === item.label ? 'rotate-180 text-white/60' : ''}`}
+                              className={`text-gray-300 transition-transform duration-200 ${openDropdown === item.label ? 'rotate-180 text-blue-500' : ''}`}
                             />
                           </button>
                           {openDropdown === item.label && (
@@ -215,10 +210,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
                                   to={sub.path}
                                   onClick={toggleSidebar}
                                   className={({ isActive }) =>
-                                    `mobile-subnav-link text-[12px] ${isActive ? 'mobile-subnav-link-active' : 'mobile-subnav-link-inactive'}`
+                                    `mobile-subnav-link text-[12px] ${isActive ? 'bg-blue-50/50 text-[#002B5B] font-semibold' : 'text-gray-500 hover:bg-gray-50'}`
                                   }
                                 >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-white/30 mr-2.5 flex-shrink-0"></span>
+                                  <span className={`w-1.5 h-1.5 rounded-full mr-2.5 flex-shrink-0 ${openDropdown === item.label ? 'bg-blue-200' : 'bg-gray-200'}`}></span>
                                   {sub.label}
                                 </NavLink>
                               ))}
@@ -230,13 +225,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
                           to={item.path!}
                           onClick={toggleSidebar}
                           className={({ isActive }) =>
-                            `mobile-nav-link ${isActive ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`
+                            `mobile-nav-link ${isActive ? 'bg-[#002B5B] text-white' : 'text-gray-600 hover:bg-gray-50'}`
                           }
                         >
                           {({ isActive }) => (
                             <>
-                              <item.icon size={17} className={isActive ? 'text-white' : 'text-white/55'} />
-                              <span className={`ml-3 text-[13px] font-medium ${isActive ? 'text-white' : 'text-white/70'}`}>
+                              <item.icon size={17} className={isActive ? 'text-white' : 'text-gray-400'} />
+                              <span className={`ml-3 text-[13px] font-medium ${isActive ? 'text-white' : 'text-gray-600'}`}>
                                 {item.label}
                               </span>
                               {isActive && (
@@ -254,24 +249,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
           </nav>
 
           {/* Footer */}
-          <div className="p-3 border-t border-white/10 space-y-1">
+          <div className="p-3 border-t border-gray-100 space-y-1">
             <NavLink
               to={`/${user?.role}/profile`}
               onClick={toggleSidebar}
               className={({ isActive }) =>
-                `mobile-nav-link ${isActive ? 'mobile-nav-link-active' : 'mobile-nav-link-inactive'}`
+                `mobile-nav-link ${isActive ? 'bg-blue-50 text-[#002B5B]' : 'text-gray-600 hover:bg-gray-50'}`
               }
             >
               {({ isActive }) => (
                 <>
-                  <User size={17} className={isActive ? 'text-white' : 'text-white/55'} />
-                  <span className={`ml-3 text-[13px] font-medium ${isActive ? 'text-white' : 'text-white/70'}`}>My Profile</span>
+                  <User size={17} className={isActive ? 'text-[#002B5B]' : 'text-gray-400'} />
+                  <span className={`ml-3 text-[13px] font-medium ${isActive ? 'text-[#002B5B]' : 'text-gray-600'}`}>My Profile</span>
                 </>
               )}
             </NavLink>
             <button
               onClick={logout}
-              className="w-full flex items-center px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors"
+              className="w-full flex items-center px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-colors"
             >
               <LogOut size={17} />
               <span className="ml-3 text-[13px] font-medium">Logout</span>
@@ -292,26 +287,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
       `}</style>
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={toggleSidebar}></div>
       )}
       <aside
-        className={`fixed lg:relative top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out flex flex-col ${isCollapsed ? 'w-14' : 'w-60'} ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
-        style={{ backgroundColor: '#002B5B' }}
+        className={`fixed lg:relative top-0 left-0 z-50 h-screen transition-all duration-300 ease-in-out flex flex-col ${isCollapsed ? 'w-14' : 'w-60'} ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 border-r border-gray-100`}
+        style={{ backgroundColor: '#FFFFFF' }}
       >
-        <div className={`h-16 flex-shrink-0 flex items-center justify-between border-b border-white/5 ${isCollapsed ? 'px-2' : 'px-4'}`}>
+        <div className={`h-16 flex-shrink-0 flex items-center justify-between border-b border-gray-100 ${isCollapsed ? 'px-2' : 'px-4'}`}>
           <div className={`flex items-center ${isCollapsed ? 'w-full justify-center' : 'space-x-3'}`}>
             <button 
               onClick={toggleCollapse}
-              className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors flex-shrink-0"
+              className="w-9 h-9 rounded-lg bg-[#002B5B] flex items-center justify-center shadow-sm hover:bg-[#003d82] transition-colors flex-shrink-0"
             >
-              <GraduationCap className="text-[#002B5B] w-5 h-5" />
+              <GraduationCap className="text-white w-5 h-5" />
             </button>
             {!isCollapsed && (
-              <span className="font-bold text-white text-[15px] tracking-tight truncate">SmartSchool ERP</span>
+              <span className="font-bold text-[#002B5B] text-[15px] tracking-tight truncate">SmartSchool ERP</span>
             )}
           </div>
         </div>
@@ -322,7 +317,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
             return (
               <div key={sectionKey}>
                 {!isCollapsed && sectionConfig?.showTitle && (
-                  <h3 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] px-4 mt-4 mb-1.5">
+                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] px-4 mt-4 mb-1.5">
                     {sectionConfig.title}
                   </h3>
                 )}
@@ -333,14 +328,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
                         <div>
                           <button
                             onClick={() => toggleDropdown(item.label)}
-                            className={`w-full flex items-center justify-between rounded-lg px-2 py-2 transition-all duration-200 ${openDropdown === item.label ? 'bg-white/5 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'} ${isCollapsed ? 'justify-center' : ''}`}
+                            className={`w-full flex items-center justify-between rounded-lg px-2 py-2 transition-all duration-200 ${openDropdown === item.label ? 'bg-blue-50 text-[#002B5B]' : 'text-gray-600 hover:bg-gray-50 hover:text-[#002B5B]'} ${isCollapsed ? 'justify-center' : ''}`}
                           >
                             <div className="flex items-center space-x-2.5">
-                              <item.icon size={18} className={openDropdown === item.label ? 'text-white' : 'text-white/60'} />
+                              <item.icon size={18} className={openDropdown === item.label ? 'text-[#002B5B]' : 'text-gray-400'} />
                               {!isCollapsed && <span className="text-[13px] font-medium">{item.label}</span>}
                             </div>
                             {!isCollapsed && (
-                              <ChevronDown size={12} className={`transition-transform duration-200 text-white/30 ${openDropdown === item.label ? 'rotate-180 text-white/70' : ''}`} />
+                              <ChevronDown size={12} className={`transition-transform duration-200 text-gray-300 ${openDropdown === item.label ? 'rotate-180 text-blue-500' : ''}`} />
                             )}
                           </button>
                           {openDropdown === item.label && !isCollapsed && (
@@ -350,7 +345,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
                                   <NavLink
                                     to={sub.path}
                                     className={({ isActive }) =>
-                                      `flex items-center py-2 pl-10 pr-4 text-[12px] rounded-lg transition-all duration-200 ${isActive ? 'text-white font-semibold bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/5'}`
+                                      `flex items-center py-2 pl-10 pr-4 text-[12px] rounded-lg transition-all duration-200 ${isActive ? 'text-[#002B5B] font-semibold bg-blue-50/50' : 'text-gray-500 hover:text-[#002B5B] hover:bg-gray-50'}`
                                     }
                                   >
                                     {sub.label}
@@ -364,13 +359,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
                         <NavLink
                           to={item.path!}
                           className={({ isActive }) =>
-                            `flex items-center rounded-lg px-2 py-2 transition-all duration-200 ${isActive ? 'bg-[#2D54A8] text-white shadow-sm font-semibold' : 'text-white/70 hover:bg-white/5 hover:text-white'} ${isCollapsed ? 'justify-center' : ''}`
+                            `flex items-center rounded-lg px-2 py-2 transition-all duration-200 ${isActive ? 'bg-[#002B5B] text-white shadow-md shadow-blue-900/10 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-[#002B5B]'} ${isCollapsed ? 'justify-center' : ''}`
                           }
                           onClick={() => window.innerWidth < 1024 && toggleSidebar()}
                         >
                           {({ isActive }) => (
                             <>
-                              <item.icon size={18} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-white/60'}`} />
+                              <item.icon size={18} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                               {!isCollapsed && <span className="ml-2.5 text-[13px] font-medium">{item.label}</span>}
                             </>
                           )}
@@ -384,23 +379,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, mobileOnly, lo
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/10">
+        <div className="p-3 border-t border-gray-100">
           <NavLink
             to={`/${user?.role}/profile`}
             className={({ isActive }) =>
-              `flex items-center rounded-xl px-2 py-2 transition-all duration-200 ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'} ${isCollapsed ? 'justify-center' : ''}`
+              `flex items-center rounded-xl px-2 py-2 transition-all duration-200 ${isActive ? 'bg-blue-50 text-[#002B5B]' : 'text-gray-600 hover:bg-gray-50 hover:text-[#002B5B]'} ${isCollapsed ? 'justify-center' : ''}`
             }
           >
             {({ isActive }) => (
               <>
-                <User size={18} className={isActive ? 'text-white' : 'text-white/60'} />
+                <User size={18} className={isActive ? 'text-[#002B5B]' : 'text-gray-400'} />
                 {!isCollapsed && <span className="ml-2.5 text-sm font-medium">My Profile</span>}
               </>
             )}
           </NavLink>
           <button
             onClick={logout}
-            className={`w-full flex items-center rounded-xl px-2 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200 mt-1 ${isCollapsed ? 'justify-center' : ''}`}
+            className={`w-full flex items-center rounded-xl px-2 py-2 text-red-500 hover:bg-red-50 transition-all duration-200 mt-1 ${isCollapsed ? 'justify-center' : ''}`}
           >
             <LogOut size={18} />
             {!isCollapsed && <span className="ml-2.5 text-sm font-medium">Logout</span>}

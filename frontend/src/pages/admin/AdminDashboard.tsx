@@ -419,161 +419,217 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Top Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         {[
           { Icon: GraduationCap, label: 'Total Students', value: stats.totalStudents || 250, color: theme.primary, bg: 'bg-[#002B5B]/10' },
-          { Icon: Users2, label: 'Total Teachers', value: stats.totalTeachers || 32, color: theme.primary, bg: 'bg-[#002B5B]/10' },
-          { Icon: Library, label: 'Total Classes', value: stats.totalClasses || 12, color: theme.secondary, bg: 'bg-[#2D54A8]/10' },
+          { Icon: Users2, label: 'Total Teachers', value: stats.totalTeachers || 10, color: theme.primary, bg: 'bg-[#002B5B]/10' },
+          { Icon: Library, label: 'Total Classes', value: stats.totalClasses || 4, color: theme.secondary, bg: 'bg-[#2D54A8]/10' },
           { Icon: CalendarCheck2, label: 'Attendance', value: `${stats.attendancePercentage || 100}%`, color: theme.secondary, bg: 'bg-[#2D54A8]/10' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between">
+          <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-500 mb-1">{stat.label}</p>
-              <h3 className="text-2xl font-extrabold text-gray-900">{stat.value}</h3>
+              <p className="text-xs font-semibold text-gray-500 mb-1">{stat.label}</p>
+              <h3 className="text-xl font-extrabold text-gray-900">{stat.value}</h3>
             </div>
-            <div className={`p-3 rounded-xl ${stat.bg}`}>
-              <stat.Icon size={22} style={{ color: stat.color }} />
+            <div className={`p-2 rounded-lg ${stat.bg}`}>
+              <stat.Icon size={18} style={{ color: stat.color }} />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Charts + Sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Charts */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Attendance Trends */}
-          <div className="p-8 rounded-2xl bg-white border border-transparent shadow-sm">
-            <h3 className="text-xl font-extrabold text-gray-900 mb-8">Attendance Trends</h3>
-            <div style={{ height: '350px' }}>
+      {/* Charts + Sidebar Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Main Charts (2/3 Width) */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Row 1: Large Main Chart */}
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <TrendingUp size={18} className="text-blue-600" />
+              Attendance Trends
+            </h3>
+            <div style={{ height: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={monthlyAttendance}>
                   <defs>
                     <linearGradient id="colorPercentage" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={theme.secondary} stopOpacity={0.2} />
+                      <stop offset="5%" stopColor={theme.secondary} stopOpacity={0.1} />
                       <stop offset="95%" stopColor={theme.secondary} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} dx={-10} />
-                  <Tooltip cursor={{ fill: '#F8FAFC' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0/0.1)' }} />
-                  <Area type="monotone" dataKey="percentage" stroke={theme.secondary} strokeWidth={3} fillOpacity={1} fill="url(#colorPercentage)" name="Current Year" />
-                  <Line type="monotone" dataKey="target" stroke="#F59E0B" strokeDasharray="5 5" name="Target" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                  <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0/0.1)' }} />
+                  <Area type="monotone" dataKey="percentage" stroke={theme.secondary} strokeWidth={2} fillOpacity={1} fill="url(#colorPercentage)" name="Current" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Weekly Attendance */}
-          <div className="p-8 rounded-2xl bg-white border border-transparent shadow-sm">
-            <h3 className="text-xl font-extrabold text-gray-900 mb-8">Weekly Attendance Overview</h3>
-            <div style={{ height: '350px' }}>
+          {/* Row 2: Two Side-by-Side Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <CalendarCheck2 size={18} className="text-blue-600" />
+                Weekly Attendance
+              </h3>
+              <div style={{ height: '260px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weeklyAttendanceData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0/0.1)' }} />
+                    <Bar dataKey="present" fill={theme.primary} radius={[4, 4, 0, 0]} barSize={20} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <PieChart size={18} className="text-blue-600" />
+                Gender Distribution
+              </h3>
+              <div style={{ height: '260px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RePieChart>
+                    <Pie data={genderDistributionData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                      {genderDistributionData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip />
+                  </RePieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex justify-center gap-6 mt-2">
+                {genderDistributionData.map((d, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
+                    <span className="text-xs font-bold text-gray-600">{d.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Full Width Fees Chart */}
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <Wallet size={18} className="text-blue-600" />
+              Monthly Fees Collection
+            </h3>
+            <div style={{ height: '300px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyAttendanceData}>
+                <BarChart data={monthlyFeesData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} dx={-10} />
-                  <Tooltip cursor={{ fill: '#F8FAFC' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0/0.1)' }} />
-                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
-                  <Bar dataKey="present" fill={theme.primary} name="Present" radius={[6, 6, 0, 0]} barSize={20} />
-                  <Bar dataKey="absent" fill="#EF4444" name="Absent" radius={[6, 6, 0, 0]} barSize={20} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={v => `₹${(v / 1000).toFixed(0)}K`} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#FFFFFF', border: 'none', borderRadius: '10px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                    formatter={(v: number) => [`₹${(v / 1000).toFixed(1)}K`, '']}
+                  />
+                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ fontSize: '10px', paddingBottom: '10px' }} />
+                  <Bar dataKey="collected" name="Collected" fill={theme.primary} radius={[4, 4, 0, 0]} barSize={30} />
+                  <Bar dataKey="pending" name="Pending" fill={theme.secondary} radius={[4, 4, 0, 0]} barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Monthly Fees Collection */}
-          <div className="p-8 rounded-2xl bg-white border border-transparent shadow-sm">
-            <h3 className="text-xl font-extrabold text-gray-900 mb-8">Monthly Fees Collection</h3>
-            <div style={{ height: '320px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyFeesData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dx={-10} tickFormatter={v => `₹${(v / 1000).toFixed(0)}K`} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#FFFFFF', border: 'none', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                    formatter={(v: number) => [`₹${(v / 1000).toFixed(1)}K`, '']}
-                  />
-                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
-                  <Bar dataKey="collected" name="Collected" fill={theme.primary} radius={[8, 8, 0, 0]} barSize={35} />
-                  <Bar dataKey="pending" name="Pending" fill={theme.secondary} radius={[8, 8, 0, 0]} barSize={35} />
-                </BarChart>
-              </ResponsiveContainer>
+          {/* Row 4: Performance Rankings */}
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <Trophy size={18} className="text-amber-500" />
+              Performance Rankings
+            </h3>
+            <div className="space-y-3">
+              {classPerformanceData.sort((a, b) => b.avgScore - a.avgScore).slice(0, 4).map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center font-bold text-sm shadow-sm text-gray-900">
+                      {i + 1}
+                    </div>
+                    <span className="font-bold text-[15px] text-gray-800 tracking-tight">{item.class}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[15px] font-black text-gray-900">{item.avgScore}%</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="space-y-8">
-          {/* Pending Tasks */}
-          <div className="p-6 rounded-2xl bg-white border border-transparent shadow-sm">
-            <h3 className="text-lg font-extrabold text-gray-900 mb-6 flex items-center gap-2">
-              <History size={20} style={{ color: theme.primary }} /> Pending Tasks
+        {/* Right Column - Sidebar Lists (1/3 Width) */}
+        <div className="space-y-6">
+          {/* Class Performance (Moved to Sidebar) */}
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <GraduationCap size={18} className="text-blue-600" />
+              Class Performance
             </h3>
-            <div className="space-y-4">
-              {[
-                { bg: '#F0F9FF', border: theme.primary + '20', iconBg: theme.primary + '10', Icon: AlertTriangle, iconColor: theme.primary, label: 'Teacher Leaves', val: stats.pendingTeacherLeaves ?? 0, valColor: theme.primary },
-                { bg: '#FFF7ED', border: '#F59E0B20', iconBg: '#FEF3C7', Icon: History, iconColor: '#D97706', label: 'Student Leaves', val: stats.pendingStudentLeaves ?? 0, valColor: '#B45309' },
-                { bg: '#ECFDF5', border: '#10B98120', iconBg: '#D1FAE5', Icon: Wallet, iconColor: '#059669', label: 'Pending Fees', val: `₹${((stats.feesPending ?? 213000) / 1000).toFixed(0)}K`, valColor: '#047857' },
-              ].map((row, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-xl transition-all hover:shadow-md" style={{ background: row.bg, border: `1px solid ${row.border}` }}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ background: row.iconBg }}>
-                      <row.Icon size={18} style={{ color: row.iconColor }} />
-                    </div>
-                    <span className="text-sm font-bold" style={{ color: row.valColor }}>{row.label}</span>
-                  </div>
-                  <span className="text-xl font-black" style={{ color: row.valColor }}>{row.val}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Gender Distribution */}
-          <div className="p-6 rounded-2xl bg-white border border-transparent shadow-sm">
-            <h3 className="text-lg font-extrabold text-gray-900 mb-6">Gender Distribution</h3>
-            <div style={{ height: '240px' }}>
+            <div style={{ height: '315px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <RePieChart>
-                  <Pie data={genderDistributionData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                    {genderDistributionData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
-                  </Pie>
-                  <Tooltip />
-                </RePieChart>
+                <BarChart data={classPerformanceData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                  <XAxis dataKey="class" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                  <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', fontSize: '11px' }} />
+                  <Bar dataKey="avgScore" name="Avg Score" fill={theme.primary} radius={[4, 4, 0, 0]} barSize={15} />
+                </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-6 mt-4">
-              {genderDistributionData.map((d, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ background: d.color }} />
-                  <span className="text-sm font-bold text-gray-600">{d.name}</span>
-                </div>
-              ))}
+          </div>
+
+          {/* Target vs Actual Attendance (Moved to Sidebar) */}
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <Percent size={18} className="text-blue-600" />
+              Target vs Actual Attendance
+            </h3>
+            <div style={{ height: '285px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyAttendance}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                  <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', fontSize: '11px' }} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                  <Line type="monotone" dataKey="percentage" stroke={theme.secondary} strokeWidth={2} name="Actual" dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="target" stroke="#F59E0B" strokeDasharray="5 5" name="Target" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Performance Rankings */}
-          <div className="p-6 rounded-2xl bg-white border border-transparent shadow-sm">
-            <h3 className="text-lg font-extrabold text-gray-900 mb-6">Performance Rankings</h3>
-            <div className="space-y-4">
-              {classPerformanceData.sort((a, b) => b.avgScore - a.avgScore).slice(0, 4).map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+          {/* Pending Tasks */}
+          <div className="p-6 rounded-xl bg-white border border-gray-100 shadow-sm h-[362px] flex flex-col">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <History size={18} style={{ color: theme.primary }} /> Pending Tasks
+            </h3>
+            <div className="space-y-3 flex-1 overflow-y-auto">
+              {[
+                { bg: '#F0F9FF', border: theme.primary + '10', Icon: AlertTriangle, iconColor: theme.primary, label: 'Teacher Leaves', val: stats.pendingTeacherLeaves ?? 0 },
+                { bg: '#FFF7ED', border: '#F59E0B10', Icon: History, iconColor: '#D97706', label: 'Student Leaves', val: stats.pendingStudentLeaves ?? 0 },
+                { bg: '#ECFDF5', border: '#10B98110', Icon: Wallet, iconColor: '#059669', label: 'Pending Fees', val: `₹${((stats.feesPending ?? 7000) / 1000).toFixed(0)}K` },
+              ].map((row, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-xl border" style={{ background: row.bg, borderColor: row.border }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-sm shadow-sm" style={{ color: theme.primary }}>{i + 1}</div>
-                    <span className="font-bold text-gray-800">{item.class}</span>
+                    <row.Icon size={16} style={{ color: row.iconColor }} />
+                    <span className="text-sm font-bold text-gray-700">{row.label}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-extrabold" style={{ color: theme.primary }}>{item.avgScore}%</span>
-                    <ArrowUpRight size={14} className="text-emerald-500" />
-                  </div>
+                  <span className="text-lg font-black text-gray-900">{row.val}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <AutoNotificationManager darkMode={false} />
+          {/* Quick Notifications (Moved to sidebar next to Rankings) */}
+          <div className="p-6 rounded-xl bg-white border border-gray-100 shadow-sm h-[290px]">
+            <AutoNotificationManager darkMode={false} />
+          </div>
         </div>
       </div>
     </div>

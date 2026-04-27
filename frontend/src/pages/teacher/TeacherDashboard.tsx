@@ -3,7 +3,7 @@ import Skeleton, { DashboardSkeleton } from '../../components/Skeleton';
 import {
   CalendarCheck, Users, ClipboardList, Presentation,
   FileText, BarChart3, Trophy, GraduationCap, UserMinus, Banknote,
-  TrendingUp, ChevronDown, Clock, AlertTriangle, History, X, ShieldCheck, Calendar , Library
+  TrendingUp, ChevronDown, Clock, AlertTriangle, History, X, ShieldCheck, Calendar, Library
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import {
@@ -19,6 +19,63 @@ const TeacherDashboard: React.FC = () => {
   const { user } = useAuth();
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Static Data for charts and lists
+  const staticData = {
+    charts: {
+      attendanceTrend: [
+        { month: 'Jan', percentage: 85 },
+        { month: 'Feb', percentage: 88 },
+        { month: 'Mar', percentage: 92 },
+        { month: 'Apr', percentage: 90 },
+        { month: 'May', percentage: 87 },
+        { month: 'Jun', percentage: 94 },
+      ],
+      classStrength: [
+        { class_code: '10A', boys: 25, girls: 20 },
+        { class_code: '10B', boys: 22, girls: 23 },
+        { class_code: '9A', boys: 20, girls: 25 },
+        { class_code: '9B', boys: 18, girls: 22 },
+      ],
+      subjectPerformance: [
+        { subject: 'Mathematics', avgScore: 78, class: '10A' },
+        { subject: 'Physics', avgScore: 82, class: '10B' },
+        { subject: 'Chemistry', avgScore: 75, class: '9A' },
+        { subject: 'Mathematics', avgScore: 85, class: '9B' },
+      ],
+      studentPerformanceTrend: [
+        { week: 'W1', score: 72 },
+        { week: 'W2', score: 75 },
+        { week: 'W3', score: 78 },
+        { week: 'W4', score: 82 },
+      ],
+      behaviorAnalysis: [
+        { name: 'Excellent', value: 45, color: '#10B981' },
+        { name: 'Good', value: 35, color: '#3B82F6' },
+        { name: 'Average', value: 15, color: '#F59E0B' },
+        { name: 'Below Avg', value: 5, color: '#EF4444' },
+      ],
+      schoolResources: [
+        { resource: 'Library', usage: 88 },
+        { resource: 'Lab', usage: 72 },
+        { resource: 'Sports', usage: 65 },
+        { resource: 'IT', usage: 92 },
+      ]
+    },
+    upcomingExamsNext2Days: [
+      { exam_name: 'Unit Test 1', class_code: '10A', subject_code: 'MATH', exam_date: new Date().toISOString() },
+      { exam_name: 'Weekly Quiz', class_code: '9B', subject_code: 'PHY', exam_date: new Date(Date.now() + 86400000).toISOString() },
+    ],
+    myClasses: [
+      { standard: '10', division: 'A', class_code: '10-A-MS', medium: 'English', shift: 'Morning' },
+      { standard: '10', division: 'B', class_code: '10-B-MS', medium: 'English', shift: 'Morning' },
+      { standard: '9', division: 'A', class_code: '9-A-MS', medium: 'English', shift: 'Morning' },
+      { standard: '9', division: 'B', class_code: '9-B-MS', medium: 'English', shift: 'Morning' },
+    ],
+    totalStudentsInClasses: 185,
+    pendingStudentLeaves: 4,
+    homeworkGiven: 12
+  };
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showStatsSheet, setShowStatsSheet] = useState<boolean>(false);
 
@@ -37,8 +94,22 @@ const TeacherDashboard: React.FC = () => {
     window.addEventListener('resize', checkMobile);
 
     dashboardAPI.teacher()
-      .then(r => setData(r.data.data))
-      .catch(console.error)
+      .then(r => {
+        const apiData = r.data.data || {};
+        const mergedCharts = {
+          ...staticData.charts,
+          ...(apiData.charts || {})
+        };
+        setData({ 
+          ...staticData, 
+          ...apiData,
+          charts: mergedCharts
+        });
+      })
+      .catch((err) => {
+        console.error('Dashboard API Error:', err);
+        setData(staticData);
+      })
       .finally(() => setLoading(false));
 
     attendanceAPI.checkMyMissingAttendance()
@@ -184,6 +255,7 @@ const TeacherDashboard: React.FC = () => {
                 ))}
               </div>
             </div>
+
           </div>
 
           {/* Stats Bottom Sheet */}
@@ -247,12 +319,75 @@ const TeacherDashboard: React.FC = () => {
                     <h4 className="text-xs font-extrabold text-gray-700 mb-3 uppercase tracking-wider">Subject Performance</h4>
                     <div style={{ height: 200 }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={data?.charts?.subjectPerformance || []} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <BarChart data={data?.charts?.subjectPerformance?.length ? data.charts.subjectPerformance : staticData.charts.subjectPerformance} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
                           <XAxis type="number" hide />
                           <YAxis dataKey="subject" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} width={80} />
                           <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', fontSize: '11px' }} />
                           <Bar dataKey="avgScore" name="Avg %" fill="#F59E0B" radius={[0, 4, 4, 0]} barSize={14} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Student Progress Trend */}
+                  <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                    <h4 className="text-xs font-extrabold text-gray-700 mb-3 uppercase tracking-wider">Student Progress Trend</h4>
+                    <div style={{ height: 200 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={data?.charts?.studentPerformanceTrend?.length ? data.charts.studentPerformanceTrend : staticData.charts.studentPerformanceTrend}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                          <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                          <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', fontSize: '11px' }} />
+                          <Line type="monotone" dataKey="score" stroke="#10B981" strokeWidth={2.5} dot={{ r: 3, fill: '#10B981' }} name="Avg Score" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Behavior Analysis */}
+                  <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                    <h4 className="text-xs font-extrabold text-gray-700 mb-3 uppercase tracking-wider">Behavior Analysis</h4>
+                    <div style={{ height: 200 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={data?.charts?.behaviorAnalysis?.length ? data.charts.behaviorAnalysis : staticData.charts.behaviorAnalysis}
+                            innerRadius={50}
+                            outerRadius={70}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {(data?.charts?.behaviorAnalysis?.length ? data.charts.behaviorAnalysis : staticData.charts.behaviorAnalysis).map((entry: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', fontSize: '11px' }} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-center gap-3 mt-2">
+                      {(data?.charts?.behaviorAnalysis?.length ? data.charts.behaviorAnalysis : staticData.charts.behaviorAnalysis).map((d: any, i: number) => (
+                        <div key={i} className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full" style={{ background: d.color }} />
+                          <span className="text-[9px] font-bold text-gray-600">{d.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* School Resource Usage */}
+                  <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                    <h4 className="text-xs font-extrabold text-gray-700 mb-3 uppercase tracking-wider">School Resource Usage</h4>
+                    <div style={{ height: 200 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={data?.charts?.schoolResources?.length ? data.charts.schoolResources : staticData.charts.schoolResources} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                          <XAxis dataKey="resource" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                          <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', fontSize: '11px' }} />
+                          <Bar dataKey="usage" fill="#6366F1" radius={[4, 4, 0, 0]} barSize={20} name="Usage %" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -277,42 +412,42 @@ const TeacherDashboard: React.FC = () => {
             {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
         </div>
-       
+
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
         {[
           { Icon: Library, label: 'My Classes', value: data?.myClasses?.length || 0, color: theme.primary, bg: 'bg-[#002B5B]/10' },
           { Icon: GraduationCap, label: 'Total Students', value: data?.totalStudentsInClasses || 0, color: theme.primary, bg: 'bg-[#002B5B]/10' },
-          { Icon: CalendarCheck, label: 'Student Leaves', value: data?.pendingStudentLeaves || 0, color: theme.secondary, bg: 'bg-[#2D54A8]/10',  },
+          { Icon: CalendarCheck, label: 'Student Leaves', value: data?.pendingStudentLeaves || 0, color: theme.secondary, bg: 'bg-[#2D54A8]/10', },
           { Icon: ClipboardList, label: 'Homework', value: data?.homeworkGiven || 0, color: theme.secondary, bg: 'bg-[#2D54A8]/10' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between transition-all hover:shadow-md">
+          <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between transition-all hover:shadow-md">
             <div>
-              <p className="text-sm font-semibold text-gray-500 mb-1">{stat.label}</p>
-              <h3 className="text-2xl font-extrabold text-gray-900">{stat.value}</h3>
-             
+              <p className="text-xs font-semibold text-gray-500 mb-1">{stat.label}</p>
+              <h3 className="text-xl font-extrabold text-gray-900">{stat.value}</h3>
             </div>
-            <div className={`p-4 rounded-xl ${stat.bg}`}>
-              <stat.Icon size={24} style={{ color: stat.color }} />
+            <div className={`p-2 rounded-lg ${stat.bg}`}>
+              <stat.Icon size={18} style={{ color: stat.color }} />
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Analytics */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Attendance Trends */}
-          <div className="bg-white rounded-2xl p-8 border border-transparent shadow-sm">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-extrabold text-gray-900">Attendance Trends</h3>
-              <div className="px-4 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 border border-gray-100">Last 6 Months</div>
-            </div>
-            <div style={{ height: '350px' }}>
+      {/* Charts + Sidebar Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Main Charts (2/3 Width) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Row 1: Large Main Chart */}
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <TrendingUp size={18} className="text-blue-600" />
+              Attendance Trends
+            </h3>
+            <div style={{ height: '320px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data?.charts?.attendanceTrend || []}>
+                <AreaChart data={data?.charts?.attendanceTrend?.length ? data.charts.attendanceTrend : staticData.charts.attendanceTrend}>
                   <defs>
                     <linearGradient id="colorAttendDesktop" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={theme.primary} stopOpacity={0.1} />
@@ -320,29 +455,29 @@ const TeacherDashboard: React.FC = () => {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} dy={10} />
-                  <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 600 }} dx={-10} />
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0/0.1)' }} />
-                  <Area type="monotone" dataKey="percentage" stroke={theme.primary} strokeWidth={3} fillOpacity={1} fill="url(#colorAttendDesktop)" name="Attendance %" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                  <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                  <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0/0.1)' }} />
+                  <Area type="monotone" dataKey="percentage" stroke={theme.primary} strokeWidth={2} fillOpacity={1} fill="url(#colorAttendDesktop)" name="Attendance %" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Gender Distribution Bar */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-extrabold text-gray-900 mb-6 flex items-center gap-2">
-                <Users size={20} style={{ color: theme.primary }} /> Gender Distribution
+          {/* Row 2: Two Side-by-Side Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Gender Distribution */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Users size={18} style={{ color: theme.primary }} /> Gender Distribution
               </h3>
-              <div style={{ height: '280px' }}>
+              <div style={{ height: '260px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data?.charts?.classStrength || []}>
+                  <BarChart data={data?.charts?.classStrength?.length ? data.charts.classStrength : staticData.charts.classStrength}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis dataKey="class_code" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
-                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
-                    <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px', fontSize: '11px', fontWeight: 600 }} />
+                    <XAxis dataKey="class_code" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                    <Tooltip contentStyle={{ borderRadius: '10px', border: 'none' }} />
                     <Bar dataKey="boys" fill={theme.primary} name="Boys" radius={[4, 4, 0, 0]} barSize={15} />
                     <Bar dataKey="girls" fill="#EC4899" name="Girls" radius={[4, 4, 0, 0]} barSize={15} />
                   </BarChart>
@@ -351,79 +486,164 @@ const TeacherDashboard: React.FC = () => {
             </div>
 
             {/* Subject Performance */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h3 className="text-lg font-extrabold text-gray-900 mb-6 flex items-center gap-2">
-                <Trophy size={20} style={{ color: '#F59E0B' }} /> Subject Performance
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Trophy size={18} style={{ color: '#F59E0B' }} /> Assigned Subjects Performance
               </h3>
-              <div style={{ height: '280px' }}>
+              <div style={{ height: '260px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data?.charts?.subjectPerformance || []} layout="vertical">
+                  <BarChart data={data?.charts?.subjectPerformance?.length ? data.charts.subjectPerformance : staticData.charts.subjectPerformance} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="subject" type="category" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11, fontWeight: 600 }} width={80} />
-                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                    <XAxis type="number" hide domain={[0, 100]} />
+                    <YAxis
+                      dataKey="subject"
+                      type="category"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748B', fontSize: 10 }}
+                      width={100}
+                    />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '10px', border: 'none' }}
+                      formatter={(value: any, name: any, props: any) => [`${value}%`, `Avg Score (${props.payload.class})`]}
+                    />
                     <Bar dataKey="avgScore" fill="#F59E0B" radius={[0, 4, 4, 0]} barSize={15} name="Avg %" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
+          {/* Row 3: Student & School Analytics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Student Performance Trend */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <TrendingUp size={18} className="text-emerald-500" /> Student Progress Trend
+              </h3>
+              <div style={{ height: '240px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={data?.charts?.studentPerformanceTrend?.length ? data.charts.studentPerformanceTrend : staticData.charts.studentPerformanceTrend}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                    <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                    <Tooltip contentStyle={{ borderRadius: '10px', border: 'none' }} />
+                    <Line type="monotone" dataKey="score" stroke="#10B981" strokeWidth={3} dot={{ r: 4, fill: '#10B981' }} name="Avg Score" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Behavior Analysis */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <BarChart3 className="text-blue-500" /> Behavior Analysis
+              </h3>
+              <div style={{ height: '240px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={data?.charts?.behaviorAnalysis?.length ? data.charts.behaviorAnalysis : staticData.charts.behaviorAnalysis}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {(data?.charts?.behaviorAnalysis?.length ? data.charts.behaviorAnalysis : staticData.charts.behaviorAnalysis).map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex justify-center gap-4 mt-2">
+                {(data?.charts?.behaviorAnalysis?.length ? data.charts.behaviorAnalysis : staticData.charts.behaviorAnalysis).map((d: any, i: number) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ background: d.color }} />
+                    <span className="text-[10px] font-bold text-gray-600">{d.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            
+          </div>
         </div>
 
-        {/* Right Column - Lists */}
-        <div className="space-y-8">
-          {/* Upcoming Exams */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-extrabold text-gray-900 mb-6 flex items-center gap-2">
-              <CalendarCheck size={20} className="text-red-500" /> Upcoming Exams
+        {/* Right Column - Sidebar Lists (1/3 Width) */}
+        <div className="space-y-6">
+          {/* Assigned Classes */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <Library size={18} style={{ color: theme.primary }} /> My Classes
             </h3>
-            <div className="space-y-4">
-              {!data?.upcomingExamsNext2Days?.length ? (
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Calendar size={20} className="text-gray-300" />
-                  </div>
-                  <p className="text-sm text-gray-400 font-medium">No schedules found</p>
-                </div>
-              ) : (
-                data.upcomingExamsNext2Days.map((ex: any, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between p-4 rounded-xl bg-red-50 border border-red-100 transition-all hover:shadow-md">
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{ex.exam_name}</p>
-                      <p className="text-[10px] text-red-600 font-black uppercase tracking-wider">{ex.class_code} • {ex.subject_code}</p>
+            <div style={{ height: '315px' }} className="overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-3">
+                {data?.myClasses?.map((c: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 border border-gray-100 group transition-all hover:bg-gray-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center font-bold text-base shadow-sm text-[#002B5B]">
+                        {c.standard}{c.division}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{c.class_code}</p>
+                        <p className="text-[10px] text-gray-500 font-medium uppercase">{c.medium} Medium • {c.shift}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-gray-900">{new Date(ex.exam_date).toLocaleDateString()}</p>
-                      <p className="text-[9px] text-gray-400 font-bold uppercase">Exam Date</p>
-                    </div>
+                    <TrendingUp size={16} className="text-gray-300" />
                   </div>
-                ))
-              )}
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Assigned Classes */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-extrabold text-gray-900 mb-6">My Classes</h3>
-            <div className="space-y-3">
-              {data?.myClasses?.map((c: any, idx: number) => (
-                <div key={idx} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center font-black text-lg shadow-sm text-[#002B5B]">
-                      {c.standard}{c.division}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{c.class_code}</p>
-                      <p className="text-xs text-gray-500 font-medium">{c.medium} Medium | {c.shift}</p>
-                    </div>
+          {/* Upcoming Exams */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <CalendarCheck size={18} className="text-red-500" /> Upcoming Exams
+            </h3>
+            <div style={{ height: '285px' }} className="overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-3">
+                {!data?.upcomingExamsNext2Days?.length ? (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400 py-8">
+                    <AlertTriangle size={24} className="mb-2 opacity-20" />
+                    <p className="text-xs font-medium">No schedules found</p>
                   </div>
-                  <button className="p-2 text-gray-300 group-hover:text-[#002B5B] transition-colors">
-                    <TrendingUp size={20} />
-                  </button>
-                </div>
-              ))}
+                ) : (
+                  data.upcomingExamsNext2Days.map((ex: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl bg-red-50/50 border border-red-100 group transition-all hover:bg-red-50">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{ex.exam_name}</p>
+                        <p className="text-[10px] text-red-600 font-bold uppercase tracking-tight">{ex.class_code} • {ex.subject_code}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[11px] font-black text-gray-900 bg-white px-2 py-1 rounded-lg shadow-sm border border-red-50">
+                          {new Date(ex.exam_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
+          {/* School Resource Usage */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <Library size={18} className="text-indigo-500" /> School Resource Usage Index
+              </h3>
+              <div style={{ height: '240px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data?.charts?.schoolResources?.length ? data.charts.schoolResources : staticData.charts.schoolResources} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                    <XAxis dataKey="resource" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} />
+                    <Tooltip contentStyle={{ borderRadius: '10px', border: 'none' }} />
+                    <Bar dataKey="usage" fill="#6366F1" radius={[4, 4, 0, 0]} barSize={40} name="Usage %" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
         </div>
       </div>
     </div>
